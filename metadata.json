@@ -1,0 +1,5 @@
+{
+  "name": "Friends Group Savings App",
+  "description": "A modern, colorful mobile-first savings management app for friends groups with Supabase backend.",
+  "requestFramePermissions": []
+}
