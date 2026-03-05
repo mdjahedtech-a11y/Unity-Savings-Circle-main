@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-violet-500 flex items-center justify-center">
             <PieChart className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-lg tracking-tight">SavingsApp</span>
+          <span className="font-bold text-lg tracking-tight">Unity Savings Circle</span>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X /> : <Menu />}
@@ -94,7 +94,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
               <PieChart className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-xl tracking-tight">SavingsApp</span>
+            <span className="font-bold text-xl tracking-tight">Unity Savings Circle</span>
           </div>
 
           <nav className="flex-1 flex flex-col gap-2">

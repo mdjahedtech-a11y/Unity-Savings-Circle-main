@@ -6,8 +6,11 @@ import { MonthlySavingsChart, DistributionChart, GrowthChart } from '../componen
 import { Users, Wallet, TrendingUp, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 
+import { useNavigate } from 'react-router-dom';
+
 export default function Dashboard() {
   const { member, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalMembers: 0,
     totalShares: 0,
@@ -115,6 +118,7 @@ export default function Dashboard() {
           icon={Users} 
           color="text-purple-400"
           delay={0.3}
+          onClick={() => navigate('/members')}
         />
         <StatsCard 
           title="Pending Payments" 

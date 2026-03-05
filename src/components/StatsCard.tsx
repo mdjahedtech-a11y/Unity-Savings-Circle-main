@@ -10,14 +10,17 @@ interface StatsCardProps {
   trend?: string;
   color?: string;
   delay?: number;
+  onClick?: () => void;
 }
 
-export function StatsCard({ title, value, icon: Icon, trend, color = "text-white", delay = 0 }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, trend, color = "text-white", delay = 0, onClick }: StatsCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay }}
+      onClick={onClick}
+      className={cn(onClick && "cursor-pointer")}
     >
       <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group">
         <CardContent className="p-6">

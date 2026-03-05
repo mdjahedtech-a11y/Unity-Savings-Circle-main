@@ -9,6 +9,7 @@ export interface Member {
   share_count: number;
   role: Role;
   created_at?: string;
+  total_savings?: number;
 }
 
 export type PaymentStatus = 'paid' | 'pending' | 'unpaid';

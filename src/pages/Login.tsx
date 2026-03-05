@@ -10,10 +10,24 @@ export default function Login() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    let timer: any;
+    if (cooldown > 0) {
+      timer = setInterval(() => {
+        setCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (cooldown > 0) return;
+
     setLoading(true);
     setError(null);
 
@@ -31,8 +45,8 @@ export default function Login() {
 
       // 2. Auto-login using a fixed password for all users (since password is removed from UI)
       // In a real app, this would be OTP. For this request, we use a shared secret.
-      const cleanPhone = phone.trim().replace(/\s+/g, '');
-      const email = `${cleanPhone}@example.com`; // Use a standard domain to avoid validation issues
+      const cleanPhone = phone.trim().replace(/[^0-9]/g, ''); // Remove all non-numeric characters
+      const email = `${cleanPhone}@savings.app`; // Use a simple, valid domain
       const password = `savings-app-${cleanPhone}`; // Deterministic password
 
       // Try to sign in
@@ -58,8 +72,8 @@ export default function Login() {
 
         if (signUpError) {
           // Check for rate limit specifically
-          if (signUpError.message.includes('rate limit')) {
-            throw new Error('Rate limit exceeded. Please wait a moment or check if "Confirm Email" is disabled in Supabase.');
+          if (signUpError.message.includes('security purposes') || signUpError.message.includes('rate limit')) {
+            throw new Error('Too many attempts. Please wait 60 seconds before trying again.');
           }
           throw signUpError;
         }
@@ -82,8 +96,9 @@ export default function Login() {
       
       if (message === 'Invalid login credentials') {
         message = 'Login failed. Please try again.';
-      } else if (message.includes('rate limit')) {
-        message = 'Too many attempts. Please wait or disable Email Confirmation in Supabase.';
+      } else if (message.includes('security purposes') || message.includes('rate limit')) {
+        message = 'Too many attempts. Please wait.';
+        setCooldown(60);
       }
       
       setError(message);
@@ -120,7 +135,7 @@ export default function Login() {
               {error && (
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-200 text-sm">
                   <AlertCircle className="w-4 h-4" />
-                  {error}
+                  {error} {cooldown > 0 && `(${cooldown}s)`}
                 </div>
               )}
               
@@ -135,16 +150,17 @@ export default function Login() {
                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all"
                     placeholder="017..."
                     required
+                    disabled={cooldown > 0}
                   />
                 </div>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-400 hover:to-violet-500 text-white border-0 h-12 text-lg shadow-lg shadow-pink-500/20 mt-4"
-                disabled={loading}
+                className="w-full bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-400 hover:to-violet-500 text-white border-0 h-12 text-lg shadow-lg shadow-pink-500/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || cooldown > 0}
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue'}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : cooldown > 0 ? `Wait ${cooldown}s` : 'Continue'}
               </Button>
             </form>
             

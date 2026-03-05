@@ -5,7 +5,7 @@ import { Member, Payment } from '../types/index';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert } from 'lucide-react';
+import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 
@@ -19,6 +19,7 @@ export default function Members() {
   // Modals
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   
   // Payment Form State
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -26,7 +27,7 @@ export default function Members() {
   const [paymentYear, setPaymentYear] = useState(new Date().getFullYear().toString());
   const [penaltyAmount, setPenaltyAmount] = useState('0');
 
-  // Add Member Form State
+  // Add/Edit Member Form State
   const [newMemberName, setNewMemberName] = useState('');
   const [newMemberPhone, setNewMemberPhone] = useState('');
   const [newMemberShares, setNewMemberShares] = useState('1');
@@ -37,13 +38,32 @@ export default function Members() {
 
   const fetchMembers = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch members
+      const { data: membersData, error: membersError } = await supabase
         .from('members')
         .select('*')
         .order('name');
       
-      if (error) throw error;
-      setMembers(data || []);
+      if (membersError) throw membersError;
+
+      // Fetch total savings for each member
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from('payments')
+        .select('member_id, total_amount')
+        .eq('payment_status', 'paid');
+
+      if (paymentsError) throw paymentsError;
+
+      // Calculate total savings per member
+      const membersWithSavings = membersData?.map(member => {
+        const memberSavings = paymentsData
+          ?.filter(p => p.member_id === member.id)
+          .reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
+        
+        return { ...member, total_savings: memberSavings };
+      });
+
+      setMembers(membersWithSavings || []);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -65,14 +85,53 @@ export default function Members() {
       
       toast.success('Member added successfully');
       setIsAddMemberModalOpen(false);
-      setNewMemberName('');
-      setNewMemberPhone('');
-      setNewMemberShares('1');
+      resetForm();
       fetchMembers();
     } catch (error: any) {
       console.error('Error adding member:', error);
       toast.error(error.message || 'Failed to add member');
     }
+  };
+
+  const handleEditMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMember) return;
+
+    try {
+      const { error } = await supabase
+        .from('members')
+        .update({
+          name: newMemberName,
+          phone: newMemberPhone,
+          share_count: parseInt(newMemberShares)
+        })
+        .eq('id', selectedMember.id);
+
+      if (error) throw error;
+      
+      toast.success('Member updated successfully');
+      setIsEditMemberModalOpen(false);
+      resetForm();
+      fetchMembers();
+    } catch (error: any) {
+      console.error('Error updating member:', error);
+      toast.error(error.message || 'Failed to update member');
+    }
+  };
+
+  const resetForm = () => {
+    setNewMemberName('');
+    setNewMemberPhone('');
+    setNewMemberShares('1');
+    setSelectedMember(null);
+  };
+
+  const openEditModal = (member: Member) => {
+    setSelectedMember(member);
+    setNewMemberName(member.name);
+    setNewMemberPhone(member.phone);
+    setNewMemberShares(member.share_count.toString());
+    setIsEditMemberModalOpen(true);
   };
 
   const handlePromoteAdmin = async (memberId: string) => {
@@ -272,6 +331,53 @@ export default function Members() {
 
           <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white mt-4">
             Add Member
+          </Button>
+        </form>
+      </Modal>
+
+      {/* Edit Member Modal */}
+      <Modal
+        isOpen={isEditMemberModalOpen}
+        onClose={() => setIsEditMemberModalOpen(false)}
+        title="Edit Member Details"
+      >
+        <form onSubmit={handleEditMember} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm text-white/70">Full Name</label>
+            <input
+              type="text"
+              value={newMemberName}
+              onChange={(e) => setNewMemberName(e.target.value)}
+              className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-pink-500/50"
+              required
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm text-white/70">Phone Number</label>
+            <input
+              type="tel"
+              value={newMemberPhone}
+              onChange={(e) => setNewMemberPhone(e.target.value)}
+              className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-pink-500/50"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-white/70">Number of Shares</label>
+            <input
+              type="number"
+              min="1"
+              value={newMemberShares}
+              onChange={(e) => setNewMemberShares(e.target.value)}
+              className="w-full px-4 py-2 bg-black/20 border border-white/10 rounded-lg text-white focus:ring-2 focus:ring-pink-500/50"
+              required
+            />
+          </div>
+
+          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4">
+            Update Member
           </Button>
         </form>
       </Modal>
