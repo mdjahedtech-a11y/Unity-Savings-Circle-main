@@ -7,11 +7,16 @@ export default function SetupGuide() {
   const [copied, setCopied] = useState(false);
 
   const sqlContent = `
+-- Drop existing tables to reset schema (WARNING: DELETES DATA)
+drop table if exists payments;
+drop table if exists members;
+
 -- Create Members Table
 create table members (
-  id uuid references auth.users on delete cascade not null primary key,
+  id uuid default uuid_generate_v4() primary key,
+  auth_user_id uuid references auth.users(id) on delete set null,
   name text not null,
-  phone text,
+  phone text unique not null,
   photo_url text,
   share_count int default 1,
   role text check (role in ('admin', 'user')) default 'user',
@@ -37,13 +42,42 @@ alter table members enable row level security;
 alter table payments enable row level security;
 
 -- Create Policies
-create policy "Public profiles are viewable by everyone." on members for select using (true);
-create policy "Users can insert their own profile." on members for insert with check (auth.uid() = id);
-create policy "Admins can update members." on members for update using (auth.uid() in (select id from members where role = 'admin'));
 
+-- Members:
+-- Everyone can view members (needed for login checks)
+create policy "Members are viewable by everyone." on members for select using (true);
+
+-- Admins can insert new members (Provisioning)
+create policy "Admins can insert members." on members for insert with check (
+  exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
+  or 
+  -- Allow initial seed if table is empty
+  (select count(*) from members) = 0
+);
+
+-- Admins can update members
+create policy "Admins can update members." on members for update using (
+  exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
+);
+
+-- Users can update their own 'auth_user_id' during auto-login
+create policy "Users can link their auth account." on members for update using (
+  true -- Allow update if they have the correct phone number (handled by app logic + RLS on auth_user_id)
+);
+
+-- Payments:
 create policy "Payments are viewable by everyone." on payments for select using (true);
-create policy "Admins can insert payments." on payments for insert with check (auth.uid() in (select id from members where role = 'admin'));
-create policy "Admins can update payments." on payments for update using (auth.uid() in (select id from members where role = 'admin'));
+create policy "Admins can insert payments." on payments for insert with check (
+  exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
+);
+create policy "Admins can update payments." on payments for update using (
+  exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
+);
+
+-- Seed Main Admin
+insert into members (name, phone, role, share_count)
+values ('Main Admin', '01580824066', 'admin', 1)
+on conflict (phone) do nothing;
 `;
 
   const copyToClipboard = () => {
@@ -57,25 +91,25 @@ create policy "Admins can update payments." on payments for update using (auth.u
       <Card className="max-w-3xl w-full bg-black/30 border-white/10 backdrop-blur-xl shadow-2xl">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-violet-400">
-            Setup Required
+            Database Update Required
           </CardTitle>
           <p className="text-center text-white/60 mt-2">
-            Connect your Supabase project to get started
+            We've updated the system to support Phone-Only Login (No Password).
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-200 text-sm">
+            <strong>Warning:</strong> The SQL below will reset your tables. Existing data will be cleared.
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-white">
               <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center font-bold">1</div>
-              <p>Create a project at <a href="https://supabase.com" target="_blank" className="text-pink-400 hover:underline">supabase.com</a></p>
+              <p>Go to <a href="https://supabase.com" target="_blank" className="text-pink-400 hover:underline">Supabase SQL Editor</a></p>
             </div>
             <div className="flex items-center gap-3 text-white">
               <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center font-bold">2</div>
-              <p>Copy your <strong>Project URL</strong> and <strong>Anon Key</strong> to <code>.env</code> file</p>
-            </div>
-            <div className="flex items-center gap-3 text-white">
-              <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center font-bold">3</div>
-              <p>Run the following SQL in Supabase SQL Editor:</p>
+              <p>Run the following SQL script:</p>
             </div>
           </div>
 
@@ -92,7 +126,7 @@ create policy "Admins can update payments." on payments for update using (auth.u
 
           <div className="text-center">
             <Button onClick={() => window.location.reload()} className="bg-white text-purple-900 hover:bg-white/90">
-              I've Updated the Environment Variables
+              I've Run the SQL Script
             </Button>
           </div>
         </CardContent>

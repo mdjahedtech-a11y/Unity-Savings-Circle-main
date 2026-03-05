@@ -2,6 +2,7 @@ export type Role = 'admin' | 'user';
 
 export interface Member {
   id: string;
+  auth_user_id?: string;
   name: string;
   phone: string;
   photo_url?: string;

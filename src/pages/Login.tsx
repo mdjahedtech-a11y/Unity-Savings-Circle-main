@@ -4,11 +4,10 @@ import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { motion } from 'motion/react';
-import { PieChart, Loader2, AlertCircle } from 'lucide-react';
+import { PieChart, Loader2, AlertCircle, Phone } from 'lucide-react';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -19,15 +18,56 @@ export default function Login() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      // 1. Check if member exists
+      const { data: member, error: memberError } = await supabase
+        .from('members')
+        .select('*')
+        .eq('phone', phone)
+        .single();
+
+      if (memberError || !member) {
+        throw new Error('Member not found. Please contact admin.');
+      }
+
+      // 2. Auto-login using a fixed password for all users (since password is removed from UI)
+      // In a real app, this would be OTP. For this request, we use a shared secret.
+      const email = `${phone}@savingsapp.com`;
+      const password = `savings-app-${phone}`; // Deterministic password
+
+      // Try to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      // If sign in fails, try to sign up (auto-register)
+      if (signInError) {
+        const { error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: member.name,
+            }
+          }
+        });
+
+        if (signUpError) throw signUpError;
+
+        // Link auth user to member record
+        const { data: user } = await supabase.auth.getUser();
+        if (user?.user) {
+          await supabase
+            .from('members')
+            .update({ auth_user_id: user.user.id })
+            .eq('phone', phone);
+        }
+      }
+
       navigate('/');
     } catch (err: any) {
-      setError(err.message);
+      console.error('Login error:', err);
+      setError(err.message === 'Invalid login credentials' ? 'Login failed. Please try again.' : err.message);
     } finally {
       setLoading(false);
     }
@@ -53,7 +93,7 @@ export default function Login() {
               Welcome Back
             </CardTitle>
             <p className="text-white/50 text-sm mt-2">
-              Sign in to manage your group savings
+              Enter your phone number to continue
             </p>
           </CardHeader>
           <CardContent>
@@ -66,27 +106,18 @@ export default function Login() {
               )}
               
               <div className="space-y-2">
-                <label className="text-sm font-medium text-white/70 ml-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all"
-                  placeholder="admin@example.com"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-white/70 ml-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all"
-                  placeholder="••••••••"
-                  required
-                />
+                <label className="text-sm font-medium text-white/70 ml-1">Phone Number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all"
+                    placeholder="017..."
+                    required
+                  />
+                </div>
               </div>
 
               <Button 
@@ -94,13 +125,13 @@ export default function Login() {
                 className="w-full bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-400 hover:to-violet-500 text-white border-0 h-12 text-lg shadow-lg shadow-pink-500/20 mt-4"
                 disabled={loading}
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue'}
               </Button>
             </form>
             
             <div className="mt-6 text-center">
               <p className="text-xs text-white/30">
-                Don't have an account? Contact your group admin.
+                Contact admin if you are not a member yet.
               </p>
             </div>
           </CardContent>

@@ -9,6 +9,7 @@ interface AuthContextType {
   member: Member | null;
   loading: boolean;
   isAdmin: boolean;
+  isMainAdmin: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   member: null,
   loading: true,
   isAdmin: false,
+  isMainAdmin: false,
   signOut: async () => {},
 });
 
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data, error } = await supabase
         .from('members')
         .select('*')
-        .eq('id', userId)
+        .eq('auth_user_id', userId)
         .single();
 
       if (error) {
@@ -80,9 +82,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const isAdmin = member?.role === 'admin';
+  const isMainAdmin = member?.phone === '01580824066';
 
   return (
-    <AuthContext.Provider value={{ session, user, member, loading, isAdmin, signOut }}>
+    <AuthContext.Provider value={{ session, user, member, loading, isAdmin, isMainAdmin, signOut }}>
       {children}
     </AuthContext.Provider>
   );
