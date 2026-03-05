@@ -31,8 +31,9 @@ export default function Login() {
 
       // 2. Auto-login using a fixed password for all users (since password is removed from UI)
       // In a real app, this would be OTP. For this request, we use a shared secret.
-      const email = `${phone}@savingsapp.com`;
-      const password = `savings-app-${phone}`; // Deterministic password
+      const cleanPhone = phone.trim().replace(/\s+/g, '');
+      const email = `${cleanPhone}@example.com`; // Use a standard domain to avoid validation issues
+      const password = `savings-app-${cleanPhone}`; // Deterministic password
 
       // Try to sign in
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -42,7 +43,10 @@ export default function Login() {
 
       // If sign in fails, try to sign up (auto-register)
       if (signInError) {
-        const { error: signUpError } = await supabase.auth.signUp({
+        // If the error is NOT "Invalid login credentials", it might be a network issue or something else.
+        // But usually, if the user doesn't exist, signIn returns "Invalid login credentials".
+        
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -52,22 +56,37 @@ export default function Login() {
           }
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          // Check for rate limit specifically
+          if (signUpError.message.includes('rate limit')) {
+            throw new Error('Rate limit exceeded. Please wait a moment or check if "Confirm Email" is disabled in Supabase.');
+          }
+          throw signUpError;
+        }
 
-        // Link auth user to member record
-        const { data: user } = await supabase.auth.getUser();
-        if (user?.user) {
-          await supabase
+        // Link auth user to member record if sign up was successful
+        if (signUpData.user) {
+          const { error: updateError } = await supabase
             .from('members')
-            .update({ auth_user_id: user.user.id })
+            .update({ auth_user_id: signUpData.user.id })
             .eq('phone', phone);
+            
+          if (updateError) console.error('Error linking member:', updateError);
         }
       }
 
       navigate('/');
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.message === 'Invalid login credentials' ? 'Login failed. Please try again.' : err.message);
+      let message = err.message;
+      
+      if (message === 'Invalid login credentials') {
+        message = 'Login failed. Please try again.';
+      } else if (message.includes('rate limit')) {
+        message = 'Too many attempts. Please wait or disable Email Confirmation in Supabase.';
+      }
+      
+      setError(message);
     } finally {
       setLoading(false);
     }
