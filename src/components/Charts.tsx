@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { 
   BarChart, 
   Bar, 
@@ -18,20 +19,29 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 const COLORS = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981'];
 
 export function MonthlySavingsChart({ data }: { data: any[] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
-    <Card className="col-span-2 bg-white/5 border-white/10">
+    <Card className="col-span-2 bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
       <CardHeader>
-        <CardTitle>Monthly Savings</CardTitle>
+        <CardTitle className="text-gray-900 dark:text-white">Monthly Savings</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-            <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} vertical={false} />
+            <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={12} tickLine={false} axisLine={false} />
+            <YAxis stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }}
-              cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+              contentStyle={{ 
+                backgroundColor: isDark ? '#1f2937' : '#fff', 
+                border: isDark ? 'none' : '1px solid #e5e7eb', 
+                borderRadius: '8px', 
+                color: isDark ? '#fff' : '#111827',
+                boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+              }}
+              cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
             />
             <Bar dataKey="amount" fill="#ec4899" radius={[4, 4, 0, 0]} />
           </BarChart>
@@ -42,10 +52,13 @@ export function MonthlySavingsChart({ data }: { data: any[] }) {
 }
 
 export function DistributionChart({ data }: { data: any[] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
-    <Card className="bg-white/5 border-white/10">
+    <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
       <CardHeader>
-        <CardTitle>Share Distribution</CardTitle>
+        <CardTitle className="text-gray-900 dark:text-white">Share Distribution</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -63,14 +76,20 @@ export function DistributionChart({ data }: { data: any[] }) {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
+            <Tooltip contentStyle={{ 
+              backgroundColor: isDark ? '#1f2937' : '#fff', 
+              border: isDark ? 'none' : '1px solid #e5e7eb', 
+              borderRadius: '8px', 
+              color: isDark ? '#fff' : '#111827',
+              boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }} />
           </PieChart>
         </ResponsiveContainer>
         <div className="flex justify-center gap-4 mt-4">
           {data.map((entry, index) => (
             <div key={index} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-              <span className="text-xs text-white/60">{entry.name}</span>
+              <span className="text-xs text-gray-500 dark:text-white/60">{entry.name}</span>
             </div>
           ))}
         </div>
@@ -80,10 +99,13 @@ export function DistributionChart({ data }: { data: any[] }) {
 }
 
 export function GrowthChart({ data }: { data: any[] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
-    <Card className="col-span-3 bg-white/5 border-white/10">
+    <Card className="col-span-3 bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
       <CardHeader>
-        <CardTitle>Total Savings Growth</CardTitle>
+        <CardTitle className="text-gray-900 dark:text-white">Total Savings Growth</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -94,10 +116,16 @@ export function GrowthChart({ data }: { data: any[] }) {
                 <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" vertical={false} />
-            <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" fontSize={12} tickLine={false} axisLine={false} />
-            <YAxis stroke="rgba(255,255,255,0.5)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
-            <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} vertical={false} />
+            <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={12} tickLine={false} axisLine={false} />
+            <YAxis stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
+            <Tooltip contentStyle={{ 
+              backgroundColor: isDark ? '#1f2937' : '#fff', 
+              border: isDark ? 'none' : '1px solid #e5e7eb', 
+              borderRadius: '8px', 
+              color: isDark ? '#fff' : '#111827',
+              boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+            }} />
             <Area type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
           </AreaChart>
         </ResponsiveContainer>

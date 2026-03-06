@@ -22,19 +22,19 @@ export function StatsCard({ title, value, icon: Icon, trend, color = "text-white
       onClick={onClick}
       className={cn(onClick && "cursor-pointer")}
     >
-      <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group">
+      <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors group shadow-sm dark:shadow-none">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-white/60">{title}</p>
-              <h3 className="text-2xl font-bold text-white mt-2 tracking-tight">{value}</h3>
+              <p className="text-sm font-medium text-gray-500 dark:text-white/60">{title}</p>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight">{value}</h3>
               {trend && (
-                <p className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
                   <span>↑</span> {trend}
                 </p>
               )}
             </div>
-            <div className={cn("p-3 rounded-xl bg-white/5 group-hover:scale-110 transition-transform", color)}>
+            <div className={cn("p-3 rounded-xl bg-gray-100 dark:bg-white/5 group-hover:scale-110 transition-transform", color)}>
               <Icon className="w-6 h-6" />
             </div>
           </div>

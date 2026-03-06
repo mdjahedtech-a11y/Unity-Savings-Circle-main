@@ -17,10 +17,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'md', ...props }, ref) => {
     const baseStyles = 'inline-flex items-center justify-center rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 active:scale-95';
     
-    const variants = {
-      default: 'bg-white text-purple-900 hover:bg-white/90 shadow-sm',
-      outline: 'border border-white/30 bg-transparent hover:bg-white/10 text-white',
-      ghost: 'hover:bg-white/10 text-white',
+    const variants: Record<string, string> = {
+      default: 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-white/90 shadow-sm',
+      outline: 'border border-gray-200 dark:border-white/30 bg-transparent hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white',
+      ghost: 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-900 dark:text-white',
       danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
       success: 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm',
     };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { 
   LayoutDashboard, 
   Users, 
@@ -9,7 +10,9 @@ import {
   Menu, 
   X, 
   Wallet,
-  PieChart
+  PieChart,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -17,6 +20,7 @@ import { Button } from './ui/Button';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,18 +38,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white font-sans selection:bg-pink-500 selection:text-white">
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 dark:text-white font-sans selection:bg-pink-500 selection:text-white">
       {/* Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between p-4 bg-white/5 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+      <div className="lg:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-white/5 backdrop-blur-lg border-b border-gray-200 dark:border-white/10 sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-violet-500 flex items-center justify-center">
-            <PieChart className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-sm">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
-          <span className="font-bold text-lg tracking-tight">Unity Savings Circle</span>
+          <span className="font-bold text-lg tracking-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          {isMobileMenuOpen ? <X /> : <Menu />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80">
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600 dark:text-white/80">
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -55,7 +64,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden fixed inset-0 z-40 bg-black/90 pt-20 px-6"
+            className="lg:hidden fixed inset-0 z-40 bg-white/95 dark:bg-black/90 pt-20 px-6"
           >
             <div className="flex flex-col gap-4">
               {navItems.filter(item => item.show).map((item) => (
@@ -66,8 +75,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "flex items-center gap-3 p-4 rounded-xl transition-all",
                     location.pathname === item.path
-                      ? "bg-white/20 text-white shadow-lg border border-white/10"
-                      : "text-white/60 hover:bg-white/10 hover:text-white"
+                      ? "bg-pink-50 text-pink-600 dark:bg-white/20 dark:text-white shadow-sm dark:shadow-lg border border-pink-100 dark:border-white/10"
+                      : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white"
                   )}
                 >
                   <item.icon className="w-5 h-5" />
@@ -89,12 +98,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-black/20 backdrop-blur-xl border-r border-white/10 p-6">
+        <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-white/80 dark:bg-black/20 backdrop-blur-xl border-r border-gray-200 dark:border-white/10 p-6 transition-colors duration-300">
           <div className="flex items-center gap-3 mb-10 px-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-violet-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <PieChart className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg shadow-purple-500/30 overflow-hidden">
+              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="font-bold text-xl tracking-tight">Unity Savings Circle</span>
+            <span className="font-bold text-xl tracking-tight leading-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
           </div>
 
           <nav className="flex-1 flex flex-col gap-2">
@@ -105,30 +114,36 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                   location.pathname === item.path
-                    ? "bg-gradient-to-r from-white/20 to-white/5 text-white shadow-lg border border-white/10"
-                    : "text-white/60 hover:bg-white/10 hover:text-white hover:pl-5"
+                    ? "bg-pink-50 text-pink-600 dark:bg-gradient-to-r dark:from-white/20 dark:to-white/5 dark:text-white shadow-sm dark:shadow-lg border border-pink-100 dark:border-white/10"
+                    : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white hover:pl-5"
                 )}
               >
                 <item.icon className={cn(
                   "w-5 h-5 transition-colors",
-                  location.pathname === item.path ? "text-pink-400" : "text-white/60 group-hover:text-white"
+                  location.pathname === item.path ? "text-pink-600 dark:text-pink-400" : "text-gray-400 dark:text-white/60 group-hover:text-gray-600 dark:group-hover:text-white"
                 )} />
                 <span className="font-medium">{item.name}</span>
               </Link>
             ))}
           </nav>
 
-          <div className="pt-6 border-t border-white/10">
+          <div className="pt-6 border-t border-gray-200 dark:border-white/10">
+            <div className="flex items-center justify-between mb-4 px-2">
+               <span className="text-sm font-medium text-gray-500 dark:text-white/50">Theme</span>
+               <Button variant="ghost" size="sm" onClick={toggleTheme} className="h-8 w-8 p-0 rounded-full bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white">
+                 {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+               </Button>
+            </div>
             <div className="flex items-center gap-3 px-4 mb-4">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-300" />
               <div className="flex flex-col">
-                <span className="text-sm font-medium text-white truncate w-32">{user?.email}</span>
-                <span className="text-xs text-white/50 capitalize">{isAdmin ? 'Admin' : 'Member'}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white truncate w-32">{user?.email}</span>
+                <span className="text-xs text-gray-500 dark:text-white/50 capitalize">{isAdmin ? 'Admin' : 'Member'}</span>
               </div>
             </div>
             <Button 
               variant="ghost" 
-              className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              className="w-full justify-start gap-3 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10"
               onClick={handleSignOut}
             >
               <LogOut className="w-4 h-4" />
@@ -146,7 +161,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-white/10 p-4 pb-6 z-40">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 p-4 pb-6 z-40">
         <div className="flex justify-around items-center">
           {navItems.filter(item => item.show).map((item) => (
             <Link
@@ -155,8 +170,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               className={cn(
                 "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
                 location.pathname === item.path
-                  ? "text-pink-400"
-                  : "text-white/50 hover:text-white"
+                  ? "text-pink-600 dark:text-pink-400"
+                  : "text-gray-400 dark:text-white/50 hover:text-gray-900 dark:hover:text-white"
               )}
             >
               <item.icon className={cn("w-6 h-6", location.pathname === item.path && "fill-current/20")} />
