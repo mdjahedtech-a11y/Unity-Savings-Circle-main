@@ -76,8 +76,8 @@ create policy "Admins can update payments." on payments for update using (
 
 -- Seed Main Admin
 insert into members (name, phone, role, share_count)
-values ('Main Admin', '01580824066', 'admin', 1)
-on conflict (phone) do nothing;
+values ('Jahed', '01580824066', 'admin', 1)
+on conflict (phone) do update set name = 'Jahed';
 `;
 
   const copyToClipboard = () => {

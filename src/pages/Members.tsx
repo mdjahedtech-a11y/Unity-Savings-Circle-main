@@ -5,7 +5,7 @@ import { Member, Payment } from '../types/index';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2 } from 'lucide-react';
+import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 
@@ -168,6 +168,26 @@ export default function Members() {
     } catch (error) {
       console.error('Error promoting user:', error);
       toast.error('Failed to promote user');
+    }
+  };
+
+  const handleDeleteMember = async (memberId: string, memberName: string) => {
+    if (!confirm(`Are you sure you want to delete ${memberName}? This will permanently delete all their data, including payment history.`)) return;
+
+    try {
+      // Delete member (cascade will handle payments if set up, but let's be safe)
+      const { error } = await supabase
+        .from('members')
+        .delete()
+        .eq('id', memberId);
+
+      if (error) throw error;
+      
+      toast.success('Member deleted successfully');
+      fetchMembers();
+    } catch (error: any) {
+      console.error('Error deleting member:', error);
+      toast.error(error.message || 'Failed to delete member');
     }
   };
 
@@ -336,6 +356,18 @@ export default function Members() {
                         onClick={() => handlePromoteAdmin(member.id)}
                       >
                         <ShieldAlert className="w-4 h-4" />
+                      </Button>
+                    )}
+
+                    {isAdmin && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        className="text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300"
+                        title="Delete Member"
+                        onClick={() => handleDeleteMember(member.id, member.name)}
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     )}
                     
