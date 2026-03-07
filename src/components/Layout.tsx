@@ -160,24 +160,43 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 p-4 pb-6 z-40">
-        <div className="flex justify-around items-center">
-          {navItems.filter(item => item.show).map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex flex-col items-center gap-1 p-2 rounded-lg transition-colors",
-                location.pathname === item.path
-                  ? "text-pink-600 dark:text-pink-400"
-                  : "text-gray-400 dark:text-white/50 hover:text-gray-900 dark:hover:text-white"
-              )}
-            >
-              <item.icon className={cn("w-6 h-6", location.pathname === item.path && "fill-current/20")} />
-              <span className="text-[10px] font-medium">{item.name}</span>
-            </Link>
-          ))}
+      {/* Mobile Bottom Nav - Floating & Stylish */}
+      <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50">
+        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-2xl shadow-pink-500/10 p-1.5 flex justify-between items-center">
+          {navItems.filter(item => item.show).map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="relative flex-1 flex flex-col items-center justify-center py-2"
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="mobile-nav-active"
+                    className="absolute inset-0 bg-gradient-to-tr from-pink-600 to-purple-600 rounded-xl shadow-lg shadow-pink-500/25"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <div className={cn(
+                  "relative z-10 flex flex-col items-center gap-0.5 transition-colors duration-200",
+                  isActive ? "text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                )}>
+                  <item.icon className={cn("w-5 h-5", isActive && "fill-white/20")} strokeWidth={isActive ? 2.5 : 2} />
+                  {isActive && (
+                    <motion.span 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="text-[10px] font-bold tracking-wide"
+                    >
+                      {item.name}
+                    </motion.span>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
