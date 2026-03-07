@@ -1,6 +1,6 @@
-# Deploying to Vercel
+# Deploying to Vercel (Step-by-Step Guide)
 
-This guide will help you deploy your Unity Savings Circle application to Vercel.
+This guide will help you deploy your **Unity Savings Circle** application to Vercel for free.
 
 ## Prerequisites
 
@@ -8,46 +8,71 @@ This guide will help you deploy your Unity Savings Circle application to Vercel.
 2.  A [Vercel](https://vercel.com/) account.
 3.  Your Supabase project URL and Anon Key.
 
+---
+
 ## Step 1: Push Your Code to GitHub
 
-1.  Create a new repository on GitHub.
-2.  Push your local code to this repository.
-    *   If you are using this AI Studio environment, you might need to download the code first or use the provided Git integration if available.
-    *   Ideally, initialize git: `git init`, `git add .`, `git commit -m "Initial commit"`, `git remote add origin <your-repo-url>`, `git push -u origin main`.
+Since you are currently in the AI Studio environment, you need to get your code onto GitHub.
+
+1.  **Download/Export Code:** If you have a "Download" or "Export to GitHub" button in your AI Studio interface, use it.
+    *   *Alternative:* If you are copying files manually, make sure to copy everything except `node_modules` and `.env`.
+2.  **Create a New Repository:** Go to GitHub and create a new repository (e.g., `unity-savings-app`).
+3.  **Push Code:** Push your code to this new repository.
+
+---
 
 ## Step 2: Import Project to Vercel
 
-1.  Log in to your Vercel Dashboard.
-2.  Click **"Add New..."** -> **"Project"**.
-3.  Select **"Import"** next to the GitHub repository you just created.
+1.  Log in to your [Vercel Dashboard](https://vercel.com/dashboard).
+2.  Click the **"Add New..."** button and select **"Project"**.
+3.  You will see a list of your GitHub repositories. Find `unity-savings-app` and click **"Import"**.
+
+---
 
 ## Step 3: Configure Project Settings
 
-Vercel should automatically detect that this is a **Vite** project.
+Vercel is smart and will auto-detect that this is a **Vite** project.
 
 1.  **Framework Preset:** Ensure it says `Vite`.
 2.  **Root Directory:** Leave as `./`.
 3.  **Build Command:** `npm run build` (default).
 4.  **Output Directory:** `dist` (default).
+5.  **Install Command:** `npm install` (default).
 
-## Step 4: Add Environment Variables (Crucial!)
+---
 
-Before clicking Deploy, expand the **"Environment Variables"** section. Add the following variables from your Supabase project:
+## Step 4: Add Environment Variables (IMPORTANT)
+
+Before clicking Deploy, expand the **"Environment Variables"** section. You need to add your Supabase keys here so the app can connect to your database.
+
+Add the following variables:
 
 | Key | Value |
 | --- | --- |
 | `VITE_SUPABASE_URL` | Your Supabase Project URL (e.g., `https://xyz.supabase.co`) |
 | `VITE_SUPABASE_ANON_KEY` | Your Supabase Anon/Public Key |
 
-> **Note:** You can find these in your Supabase Dashboard under **Project Settings -> API**.
+> **Where to find these?**
+> Go to your Supabase Dashboard -> Select Project -> **Settings** (Gear Icon) -> **API**.
+
+---
 
 ## Step 5: Deploy
 
-1.  Click **"Deploy"**.
-2.  Wait for the build to complete.
-3.  Once finished, you will get a live URL (e.g., `https://your-project.vercel.app`).
+1.  Click the **"Deploy"** button.
+2.  Wait for a minute or two while Vercel builds your app.
+3.  Once finished, you will see a success screen with a **Visit** button.
+4.  Click it to see your live app! (e.g., `https://unity-savings-app.vercel.app`)
+
+---
 
 ## Troubleshooting
 
-*   **404 on Refresh:** If you refresh a page and get a 404 error, ensure the `vercel.json` file is present in your repository root. This handles client-side routing.
-*   **Database Connection Error:** Double-check your Environment Variables in Vercel settings. If they are wrong, the app won't connect to Supabase.
+### 404 Error on Refresh
+If you refresh a page (like `/members`) and get a 404 error, ensure the `vercel.json` file is present in your repository root. This file handles the routing for Single Page Applications.
+
+### Database Connection Error
+If the app loads but you can't log in or see data:
+1.  Go to your Vercel Project Settings -> **Environment Variables**.
+2.  Check if `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are correct.
+3.  If you changed them, you must **Redeploy** for changes to take effect (Go to Deployments -> Redeploy).
