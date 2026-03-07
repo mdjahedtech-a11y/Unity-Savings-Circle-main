@@ -358,12 +358,12 @@ export default function Members() {
                   </div>
                 </div>
                 
-                <div className="mt-6 flex items-center justify-between gap-2">
+                <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="text-sm text-gray-500 dark:text-white/60">
                     Monthly: <span className="text-gray-900 dark:text-white font-medium">৳{(member.share_count * 1000).toLocaleString()}</span>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {isMainAdmin && (
                       <Button 
                         size="sm" 
