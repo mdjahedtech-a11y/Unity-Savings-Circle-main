@@ -18,7 +18,14 @@ export default function Members() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'admin'>('all');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [viewingPassword, setViewingPassword] = useState<string | null>(null);
+  
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+
+  // Password Modal State
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordToShow, setPasswordToShow] = useState<{name: string, password: string} | null>(null);
   
   // Month/Year Selection for View
   const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
@@ -174,23 +181,39 @@ export default function Members() {
     }
   };
 
-  const handleDeleteMember = async (memberId: string, memberName: string) => {
-    if (!confirm(`Are you sure you want to delete ${memberName}? This will permanently delete all their data, including payment history.`)) return;
+  const handleDeleteClick = (member: Member) => {
+    setMemberToDelete(member);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteMember = async () => {
+    if (!memberToDelete) return;
 
     try {
       // Delete member (cascade will handle payments if set up, but let's be safe)
       const { error } = await supabase
         .from('members')
         .delete()
-        .eq('id', memberId);
+        .eq('id', memberToDelete.id);
 
       if (error) throw error;
       
       toast.success('Member deleted successfully');
+      setIsDeleteModalOpen(false);
+      setMemberToDelete(null);
       fetchMembers();
     } catch (error: any) {
       console.error('Error deleting member:', error);
       toast.error(error.message || 'Failed to delete member');
+    }
+  };
+
+  const handleViewPassword = (member: Member) => {
+    if (member.password) {
+      setPasswordToShow({ name: member.name, password: member.password });
+      setIsPasswordModalOpen(true);
+    } else {
+      toast.info('No password set yet');
     }
   };
 
@@ -370,7 +393,7 @@ export default function Members() {
                         variant="ghost"
                         className="text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300"
                         title="Delete Member"
-                        onClick={() => handleDeleteMember(member.id, member.name)}
+                        onClick={() => handleDeleteClick(member)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -382,13 +405,7 @@ export default function Members() {
                         variant="ghost"
                         className="text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-500/10 hover:text-gray-600 dark:hover:text-gray-300"
                         title="View Password"
-                        onClick={() => {
-                          if (member.password) {
-                            prompt(`Password for ${member.name}`, member.password);
-                          } else {
-                            toast.info('No password set yet');
-                          }
-                        }}
+                        onClick={() => handleViewPassword(member)}
                       >
                         <Key className="w-4 h-4" />
                       </Button>
@@ -596,6 +613,91 @@ export default function Members() {
             Confirm Payment
           </Button>
         </form>
+      </Modal>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Member"
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-red-900 dark:text-red-200">
+                Are you sure you want to delete {memberToDelete?.name}?
+              </p>
+              <p className="text-xs text-red-700 dark:text-red-300">
+                This action cannot be undone. All payment history and data associated with this member will be permanently removed.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3 justify-end mt-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="text-gray-600 dark:text-white/70"
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={confirmDeleteMember}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Member
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* View Password Modal */}
+      <Modal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        title="Member Password"
+      >
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 bg-pink-100 dark:bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Key className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              Password for {passwordToShow?.name}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-white/50">
+              Share this password with the member so they can log in.
+            </p>
+          </div>
+
+          <div className="p-4 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-between">
+            <code className="text-xl font-mono font-bold text-gray-900 dark:text-white tracking-wider">
+              {passwordToShow?.password}
+            </code>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                if (passwordToShow?.password) {
+                  navigator.clipboard.writeText(passwordToShow.password);
+                  toast.success('Password copied to clipboard');
+                }
+              }}
+              title="Copy to clipboard"
+            >
+              <Database className="w-4 h-4" /> {/* Reusing icon for copy since Copy icon not imported, or just use text */}
+              <span className="ml-2">Copy</span>
+            </Button>
+          </div>
+
+          <Button 
+            className="w-full bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800"
+            onClick={() => setIsPasswordModalOpen(false)}
+          >
+            Close
+          </Button>
+        </div>
       </Modal>
     </div>
   );
