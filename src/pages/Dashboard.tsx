@@ -32,6 +32,22 @@ export default function Dashboard() {
     if (isAdmin) {
       fetchRecentPayments();
     }
+
+    // Real-time subscription for payments
+    const subscription = supabase
+      .channel('public:payments')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
+        console.log('Payment change received!', payload);
+        fetchDashboardData();
+        if (isAdmin) {
+          fetchRecentPayments();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, [isAdmin]);
 
   const fetchRecentPayments = async () => {
