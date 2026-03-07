@@ -48,6 +48,10 @@ export default function Members() {
   const [newMemberPhone, setNewMemberPhone] = useState('');
   const [newMemberShares, setNewMemberShares] = useState('1');
 
+  // Revoke Payment Modal State
+  const [isRevokePaymentModalOpen, setIsRevokePaymentModalOpen] = useState(false);
+  const [memberToRevokePayment, setMemberToRevokePayment] = useState<Member | null>(null);
+
   useEffect(() => {
     fetchMembers();
   }, [selectedMonth, selectedYear]);
@@ -98,6 +102,34 @@ export default function Members() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRevokePayment = async () => {
+    if (!memberToRevokePayment) return;
+
+    try {
+      const { error } = await supabase
+        .from('payments')
+        .delete()
+        .eq('member_id', memberToRevokePayment.id)
+        .eq('month', selectedMonth)
+        .eq('year', parseInt(selectedYear));
+
+      if (error) throw error;
+      
+      toast.success(`Payment for ${selectedMonth} revoked`);
+      setIsRevokePaymentModalOpen(false);
+      setMemberToRevokePayment(null);
+      fetchMembers();
+    } catch (error: any) {
+      console.error('Error revoking payment:', error);
+      toast.error(error.message || 'Failed to revoke payment');
+    }
+  };
+
+  const confirmRevokePayment = (member: Member) => {
+    setMemberToRevokePayment(member);
+    setIsRevokePaymentModalOpen(true);
   };
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -412,10 +444,32 @@ export default function Members() {
                     )}
 
                     {monthlyPayments.has(member.id) ? (
-                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>Paid</span>
-                      </div>
+                      isAdmin ? (
+                        <button
+                          onClick={() => confirmRevokePayment(member)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all group/paid relative overflow-hidden"
+                          title="Click to mark as Unpaid"
+                        >
+                          <div className="flex items-center gap-1.5 group-hover/paid:translate-y-[-150%] transition-transform duration-300 absolute inset-0 justify-center w-full h-full">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Paid</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 translate-y-[150%] group-hover/paid:translate-y-0 transition-transform duration-300">
+                            <XCircle className="w-4 h-4" />
+                            <span>Unpay?</span>
+                          </div>
+                          {/* Invisible spacer to maintain width */}
+                          <div className="flex items-center gap-1.5 opacity-0 pointer-events-none">
+                            <CheckCircle className="w-4 h-4" />
+                            <span>Paid</span>
+                          </div>
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Paid</span>
+                        </div>
+                      )
                     ) : (
                       isAdmin ? (
                         <Button 
@@ -697,6 +751,44 @@ export default function Members() {
           >
             Close
           </Button>
+        </div>
+      </Modal>
+
+      {/* Revoke Payment Confirmation Modal */}
+      <Modal
+        isOpen={isRevokePaymentModalOpen}
+        onClose={() => setIsRevokePaymentModalOpen(false)}
+        title="Revoke Payment"
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-lg flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
+                Are you sure you want to mark {memberToRevokePayment?.name} as Unpaid for {selectedMonth} {selectedYear}?
+              </p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                This will delete the payment record. You can add it again later if needed.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3 justify-end mt-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsRevokePaymentModalOpen(false)}
+              className="text-gray-600 dark:text-white/70"
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={handleRevokePayment}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Revoke Payment
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>
