@@ -260,14 +260,14 @@ export default function Members() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Members</h1>
-        <div className="flex items-center gap-4 w-full md:w-auto flex-wrap justify-end">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto flex-wrap justify-end">
+          <div className="flex gap-2 w-full sm:w-auto">
             <select 
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+              className="flex-1 sm:flex-none px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
             >
               {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                 <option key={m} value={m}>{m}</option>
@@ -276,7 +276,7 @@ export default function Members() {
             <select 
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+              className="flex-1 sm:flex-none px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
             >
               {[2024, 2025, 2026].map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -284,10 +284,10 @@ export default function Members() {
             </select>
           </div>
 
-          <div className="flex bg-white dark:bg-white/5 p-1 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+          <div className="flex bg-white dark:bg-white/5 p-1 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none w-full sm:w-auto">
             <button
               onClick={() => setFilter('all')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 filter === 'all' 
                   ? 'bg-pink-500 text-white shadow-lg' 
                   : 'text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white'
@@ -297,7 +297,7 @@ export default function Members() {
             </button>
             <button
               onClick={() => setFilter('admin')}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 filter === 'admin' 
                   ? 'bg-pink-500 text-white shadow-lg' 
                   : 'text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white'
@@ -307,7 +307,7 @@ export default function Members() {
             </button>
           </div>
 
-          <div className="relative flex-1 md:w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-white/50" />
             <input
               type="text"
@@ -318,8 +318,8 @@ export default function Members() {
             />
           </div>
           {isAdmin && (
-            <div className="flex gap-2">
-              <Button onClick={() => setIsAddMemberModalOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white shrink-0 shadow-md">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button onClick={() => setIsAddMemberModalOpen(true)} className="flex-1 sm:flex-none bg-pink-600 hover:bg-pink-700 text-white shrink-0 shadow-md justify-center">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Member
               </Button>

@@ -89,28 +89,30 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Monthly Reports</h1>
-        <div className="flex gap-2">
-          <select 
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
-          >
-            {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-          <select 
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
-            className="px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
-          >
-            {[2024, 2025, 2026].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-          <Button onClick={exportReport} className="bg-emerald-500 hover:bg-emerald-600 text-white gap-2 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto">
+            <select 
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
+            >
+              {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+            <select 
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
+            >
+              {[2024, 2025, 2026].map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+          <Button onClick={exportReport} className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white gap-2 shadow-sm justify-center">
             <Download className="w-4 h-4" />
             Export CSV
           </Button>

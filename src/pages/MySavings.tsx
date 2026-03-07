@@ -93,10 +93,10 @@ export default function MySavings() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors gap-4 sm:gap-0"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-full ${
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <div className={`p-3 rounded-full shrink-0 ${
                       payment.payment_status === 'paid' 
                         ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
                         : 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'
@@ -110,7 +110,7 @@ export default function MySavings() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right w-full sm:w-auto pl-[60px] sm:pl-0">
                     <p className="font-bold text-gray-900 dark:text-white">৳{payment.total_amount.toLocaleString()}</p>
                     {payment.penalty > 0 && (
                       <p className="text-xs text-red-500 dark:text-red-400">+৳{payment.penalty} penalty</p>
