@@ -5,6 +5,7 @@ export interface Member {
   auth_user_id?: string;
   name: string;
   phone: string;
+  password?: string;
   photo_url?: string;
   share_count: number;
   role: Role;

@@ -17,6 +17,7 @@ create table members (
   auth_user_id uuid references auth.users(id) on delete set null,
   name text not null,
   phone text unique not null,
+  password text, -- Storing explicitly for admin recovery as requested
   photo_url text,
   share_count int default 1,
   role text check (role in ('admin', 'user')) default 'user',
@@ -60,6 +61,11 @@ create policy "Admins can update members." on members for update using (
   exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
 );
 
+-- Admins can delete members
+create policy "Admins can delete members." on members for delete using (
+  exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
+);
+
 -- Users can update their own 'auth_user_id' during auto-login
 create policy "Users can link their auth account." on members for update using (
   true -- Allow update if they have the correct phone number (handled by app logic + RLS on auth_user_id)
@@ -73,11 +79,14 @@ create policy "Admins can insert payments." on payments for insert with check (
 create policy "Admins can update payments." on payments for update using (
   exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
 );
+create policy "Admins can delete payments." on payments for delete using (
+  exists (select 1 from members where auth_user_id = auth.uid() and role = 'admin')
+);
 
 -- Seed Main Admin
-insert into members (name, phone, role, share_count)
-values ('Jahed', '01580824066', 'admin', 1)
-on conflict (phone) do update set name = 'Jahed';
+insert into members (name, phone, role, share_count, password)
+values ('Jahed', '01580824066', 'admin', 1, '1414635406')
+on conflict (phone) do update set name = 'Jahed', role = 'admin', password = '1414635406';
 `;
 
   const copyToClipboard = () => {

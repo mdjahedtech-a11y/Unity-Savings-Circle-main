@@ -66,6 +66,12 @@ const AppContent = () => {
             <MySavings />
           </ProtectedRoute>
         } />
+        
+        <Route path="/setup" element={
+          <ProtectedRoute>
+            <SetupGuide />
+          </ProtectedRoute>
+        } />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

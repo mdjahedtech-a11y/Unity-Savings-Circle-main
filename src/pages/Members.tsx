@@ -5,17 +5,20 @@ import { Member, Payment } from '../types/index';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Members() {
   const { isAdmin, isMainAdmin } = useAuth();
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'admin'>('all');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [viewingPassword, setViewingPassword] = useState<string | null>(null);
   
   // Month/Year Selection for View
   const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
@@ -292,10 +295,12 @@ export default function Members() {
             />
           </div>
           {isAdmin && (
-            <Button onClick={() => setIsAddMemberModalOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white shrink-0 shadow-md">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Member
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setIsAddMemberModalOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white shrink-0 shadow-md">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Member
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -372,12 +377,30 @@ export default function Members() {
                     )}
                     
                     {isAdmin && (
-                      monthlyPayments.has(member.id) ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-                          <CheckCircle className="w-4 h-4" />
-                          <span>Paid</span>
-                        </div>
-                      ) : (
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        className="text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-500/10 hover:text-gray-600 dark:hover:text-gray-300"
+                        title="View Password"
+                        onClick={() => {
+                          if (member.password) {
+                            prompt(`Password for ${member.name}`, member.password);
+                          } else {
+                            toast.info('No password set yet');
+                          }
+                        }}
+                      >
+                        <Key className="w-4 h-4" />
+                      </Button>
+                    )}
+
+                    {monthlyPayments.has(member.id) ? (
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Paid</span>
+                      </div>
+                    ) : (
+                      isAdmin ? (
                         <Button 
                           size="sm" 
                           className="bg-pink-50 dark:bg-pink-500/20 hover:bg-pink-100 dark:hover:bg-pink-500/30 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30"
@@ -386,6 +409,11 @@ export default function Members() {
                           <Plus className="w-4 h-4 mr-1" />
                           Pay
                         </Button>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
+                          <XCircle className="w-4 h-4" />
+                          <span>Unpaid</span>
+                        </div>
                       )
                     )}
                   </div>

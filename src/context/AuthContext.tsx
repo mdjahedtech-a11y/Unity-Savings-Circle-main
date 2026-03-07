@@ -11,6 +11,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isMainAdmin: boolean;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   isAdmin: false,
   isMainAdmin: false,
   signOut: async () => {},
+  refreshProfile: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -81,11 +83,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setMember(null);
   };
 
-  const isAdmin = member?.role === 'admin';
-  const isMainAdmin = member?.phone === '01580824066';
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchMemberProfile(user.id);
+    }
+  };
+
+  const phoneFromEmail = user?.email?.split('@')[0]?.split('_')[0];
+  const isMainAdmin = member?.phone === '01580824066' || phoneFromEmail === '01580824066';
+  const isAdmin = member?.role === 'admin' || isMainAdmin;
 
   return (
-    <AuthContext.Provider value={{ session, user, member, loading, isAdmin, isMainAdmin, signOut }}>
+    <AuthContext.Provider value={{ session, user, member, loading, isAdmin, isMainAdmin, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
