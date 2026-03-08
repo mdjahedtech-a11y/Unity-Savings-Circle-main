@@ -64,12 +64,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .from('members')
         .select('*')
         .eq('auth_user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows gracefully
 
       if (error) {
         console.error('Error fetching member profile:', error);
-      } else {
+      } else if (data) {
         setMember(data);
+      } else {
+        // No member profile found for this user yet
+        setMember(null);
       }
     } catch (err) {
       console.error('Unexpected error:', err);

@@ -16,9 +16,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
-      generateReport();
-    }
+    generateReport();
   }, [selectedMonth, selectedYear]);
 
   const generateReport = async () => {
@@ -75,14 +73,6 @@ export default function Reports() {
     link.click();
     document.body.removeChild(link);
   };
-
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center h-[50vh] text-white/50">
-        Access Denied. Admin only.
-      </div>
-    );
-  }
 
   const totalCollection = reportData.reduce((sum, item) => sum + item.amountPaid, 0);
   const totalPending = reportData.filter(item => item.paymentStatus !== 'paid').length;

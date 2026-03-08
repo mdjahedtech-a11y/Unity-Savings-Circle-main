@@ -44,7 +44,9 @@ export default function MySavings() {
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Savings</h1>
-          <p className="text-gray-500 dark:text-white/60 mt-1">Track your contributions and history</p>
+          <p className="text-gray-500 dark:text-white/60 mt-1">
+            Welcome back, <span className="font-semibold text-pink-600 dark:text-pink-400">{member?.name}</span>
+          </p>
         </div>
         <div className="bg-white dark:bg-white/10 px-4 py-2 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
           <span className="text-gray-500 dark:text-white/60 text-sm">My Shares: </span>
