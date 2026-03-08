@@ -195,21 +195,25 @@ export default function Members() {
     setIsEditMemberModalOpen(true);
   };
 
-  const handlePromoteAdmin = async (memberId: string) => {
-    if (!confirm('Are you sure you want to promote this user to Admin?')) return;
+  const handleToggleAdmin = async (member: Member) => {
+    const newRole = member.role === 'admin' ? 'user' : 'admin';
+    const action = member.role === 'admin' ? 'demote this Admin to Member' : 'promote this user to Admin';
+    
+    if (!confirm(`Are you sure you want to ${action}?`)) return;
 
     try {
       const { error } = await supabase
         .from('members')
-        .update({ role: 'admin' })
-        .eq('id', memberId);
+        .update({ role: newRole })
+        .eq('id', member.id);
 
       if (error) throw error;
-      toast.success('User promoted to Admin');
+      
+      toast.success(member.role === 'admin' ? 'Admin demoted to Member' : 'User promoted to Admin');
       fetchMembers();
     } catch (error) {
-      console.error('Error promoting user:', error);
-      toast.error('Failed to promote user');
+      console.error('Error updating role:', error);
+      toast.error('Failed to update user role');
     }
   };
 
@@ -407,15 +411,19 @@ export default function Members() {
                       </Button>
                     )}
 
-                    {isMainAdmin && member.role !== 'admin' && (
+                    {isMainAdmin && (
                       <Button 
                         size="sm" 
                         variant="ghost"
-                        className="text-yellow-500 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 hover:text-yellow-600 dark:hover:text-yellow-300"
-                        title="Promote to Admin"
-                        onClick={() => handlePromoteAdmin(member.id)}
+                        className={`${
+                          member.role === 'admin'
+                            ? 'text-purple-500 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 hover:text-purple-600 dark:hover:text-purple-300'
+                            : 'text-yellow-500 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 hover:text-yellow-600 dark:hover:text-yellow-300'
+                        }`}
+                        title={member.role === 'admin' ? "Demote to Member" : "Promote to Admin"}
+                        onClick={() => handleToggleAdmin(member)}
                       >
-                        <ShieldAlert className="w-4 h-4" />
+                        {member.role === 'admin' ? <Shield className="w-4 h-4" /> : <ShieldAlert className="w-4 h-4" />}
                       </Button>
                     )}
 
