@@ -11,6 +11,7 @@ import {
   X, 
   Wallet,
   PieChart,
+  StickyNote,
   Sun,
   Moon
 } from 'lucide-react';
@@ -84,6 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard, show: true },
     { name: 'Members', path: '/members', icon: Users, show: true },
     { name: 'Reports', path: '/reports', icon: FileText, show: true },
+    { name: 'Investments', path: '/investments', icon: StickyNote, show: true },
     { name: 'My Savings', path: '/my-savings', icon: Wallet, show: true },
   ];
 

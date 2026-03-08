@@ -11,6 +11,8 @@ import Reports from './pages/Reports';
 import MySavings from './pages/MySavings';
 import SetupGuide from './components/SetupGuide';
 
+import Investments from './pages/Investments';
+
 // Check for Supabase keys
 const hasSupabaseKeys = true; // Keys are now hardcoded as fallbacks in supabase.ts
 
@@ -64,6 +66,12 @@ const AppContent = () => {
         <Route path="/my-savings" element={
           <ProtectedRoute>
             <MySavings />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/investments" element={
+          <ProtectedRoute>
+            <Investments />
           </ProtectedRoute>
         } />
         
