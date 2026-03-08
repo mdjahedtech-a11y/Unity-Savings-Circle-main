@@ -45,13 +45,13 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
                 className
               )}
             >
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-white/10">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-white/10">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{title}</h2>
                 <Button variant="ghost" size="icon" onClick={onClose}>
                   <X className="w-5 h-5 text-gray-500 dark:text-white/70" />
                 </Button>
               </div>
-              <div className="p-6 max-h-[80vh] overflow-y-auto text-gray-900 dark:text-white">
+              <div className="p-4 sm:p-6 max-h-[85vh] overflow-y-auto text-gray-900 dark:text-white">
                 {children}
               </div>
             </motion.div>
