@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -17,6 +17,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/Button';
+import { toast } from 'sonner';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, signOut } = useAuth();
@@ -24,10 +25,59 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const lastBackPress = useRef<number>(0);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/login');
+  };
+
+  // Double back to exit logic
+  useEffect(() => {
+    // Only active on main pages to prevent interfering with deep navigation
+    const mainPaths = ['/', '/members', '/reports', '/my-savings'];
+    if (!mainPaths.includes(location.pathname)) return;
+
+    // Push state to intercept back button
+    window.history.pushState(null, '', window.location.pathname);
+
+    const handlePopState = (e: PopStateEvent) => {
+      // Prevent default back navigation
+      e.preventDefault();
+      
+      // If we are on a main page, we intercept
+      if (mainPaths.includes(location.pathname)) {
+        const now = Date.now();
+        
+        // Always push state back so we stay on the page
+        window.history.pushState(null, '', window.location.pathname);
+
+        if (now - lastBackPress.current < 2000) {
+          // Second press within 2 seconds
+          setShowExitModal(true);
+        } else {
+          // First press
+          toast("Press back again to exit app");
+          lastBackPress.current = now;
+        }
+      } else {
+        // Allow normal back navigation for other pages (if any)
+        navigate(-1);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [location.pathname, navigate]);
+
+  const confirmExit = () => {
+    window.close();
+    // Fallback if window.close() is blocked
+    if (!window.closed) {
+      toast.error("Browser prevented closing. Please close the tab manually.");
+    }
+    setShowExitModal(false);
   };
 
   const navItems = [
@@ -38,7 +88,32 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 dark:text-white font-sans selection:bg-pink-500 selection:text-white">
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 dark:text-white font-sans selection:bg-pink-50 selection:text-white">
+      {/* Exit Confirmation Modal */}
+      <AnimatePresence>
+        {showExitModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-white/10"
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Exit App?</h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">Are you sure you want to close the application?</p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="ghost" onClick={() => setShowExitModal(false)}>
+                  No, Stay
+                </Button>
+                <Button variant="danger" onClick={confirmExit}>
+                  Yes, Exit
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-white/5 backdrop-blur-lg border-b border-gray-200 dark:border-white/10 sticky top-0 z-50">
         <div className="flex items-center gap-2">
