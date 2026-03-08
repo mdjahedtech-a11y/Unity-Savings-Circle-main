@@ -5,7 +5,7 @@ import { Member, Payment } from '../types/index';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key } from 'lucide-react';
+import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key, Phone, Calendar, Award, TrendingUp, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +18,10 @@ export default function Members() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'admin'>('all');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  
+  // View Member Modal State
+  const [isViewMemberModalOpen, setIsViewMemberModalOpen] = useState(false);
+  const [memberToView, setMemberToView] = useState<Member | null>(null);
   
   // Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -102,6 +106,11 @@ export default function Members() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewMember = (member: Member) => {
+    setMemberToView(member);
+    setIsViewMemberModalOpen(true);
   };
 
   const handleRevokePayment = async () => {
@@ -372,7 +381,13 @@ export default function Members() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-all group shadow-sm dark:shadow-none">
+            <Card 
+              className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-all group shadow-sm dark:shadow-none cursor-pointer relative overflow-hidden"
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('button')) return;
+                handleViewMember(member);
+              }}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
@@ -760,6 +775,118 @@ export default function Members() {
             Close
           </Button>
         </div>
+      </Modal>
+
+      {/* View Member Details Modal */}
+      <Modal
+        isOpen={isViewMemberModalOpen}
+        onClose={() => setIsViewMemberModalOpen(false)}
+        title="Member Profile"
+      >
+        {memberToView && (
+          <div className="space-y-6">
+            {/* Header Section with Gradient */}
+            <div className="relative -mx-6 -mt-6 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 p-8 text-center text-white mb-10">
+              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+                <div className="w-24 h-24 rounded-full bg-white dark:bg-gray-900 p-1 shadow-xl">
+                  <div className="w-full h-full rounded-full bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 flex items-center justify-center text-4xl font-bold text-pink-600 dark:text-pink-400">
+                    {memberToView.name.charAt(0)}
+                  </div>
+                </div>
+              </div>
+              <div className="absolute top-4 right-4">
+                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${
+                  memberToView.role === 'admin' 
+                    ? 'bg-yellow-400 text-yellow-900 border-yellow-500' 
+                    : 'bg-white/20 text-white border-white/30'
+                }`}>
+                  {memberToView.role}
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center pt-4 space-y-1">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{memberToView.name}</h3>
+              <p className="text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${memberToView.auth_user_id ? 'bg-emerald-500' : 'bg-orange-500'}`} />
+                {memberToView.auth_user_id ? 'Active Member' : 'Pending Activation'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-pink-50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-500/20 space-y-2">
+                <div className="flex items-center gap-2 text-pink-600 dark:text-pink-400 mb-1">
+                  <DollarSign className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Total Savings</span>
+                </div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                  ৳{(memberToView.total_savings || 0).toLocaleString()}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-500/20 space-y-2">
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1">
+                  <Award className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Shares</span>
+                </div>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">
+                  {memberToView.share_count} <span className="text-sm font-normal opacity-70">({memberToView.share_count * 1000}/mo)</span>
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-500/20 space-y-2 col-span-2">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
+                  <Phone className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Contact Info</span>
+                </div>
+                <p className="text-lg font-medium text-gray-900 dark:text-white font-mono">
+                  {memberToView.phone}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Member Stats</h4>
+              
+              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Joined</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {memberToView.created_at ? new Date(memberToView.created_at).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Status</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {memberToView.auth_user_id ? 'Account Verified' : 'Account Not Verified'}
+                    </p>
+                  </div>
+                </div>
+                {memberToView.auth_user_id && (
+                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                )}
+              </div>
+            </div>
+            
+            <div className="pt-4">
+              <Button className="w-full" onClick={() => setIsViewMemberModalOpen(false)}>
+                Close Profile
+              </Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* Revoke Payment Confirmation Modal */}
