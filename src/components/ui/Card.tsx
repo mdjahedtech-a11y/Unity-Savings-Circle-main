@@ -7,9 +7,9 @@ const Card = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
+    transition={{ duration: 0.15 }}
     ref={ref}
     className={cn(
       'rounded-2xl border border-gray-200 dark:border-white/20 bg-white dark:bg-white/10 backdrop-blur-md shadow-sm dark:shadow-lg text-gray-900 dark:text-white overflow-hidden',

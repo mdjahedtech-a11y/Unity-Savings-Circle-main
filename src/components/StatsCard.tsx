@@ -16,9 +16,9 @@ interface StatsCardProps {
 export function StatsCard({ title, value, icon: Icon, trend, color = "text-white", delay = 0, onClick }: StatsCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
+      transition={{ duration: 0.15, delay: delay * 0.5 }}
       onClick={onClick}
       className={cn(onClick && "cursor-pointer")}
     >

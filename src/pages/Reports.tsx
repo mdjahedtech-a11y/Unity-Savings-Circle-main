@@ -168,9 +168,9 @@ export default function Reports() {
                 {reportData.map((row, index) => (
                   <motion.tr 
                     key={row.id}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
+                    transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
                     className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
                     <td className="p-4 font-medium">{row.name}</td>

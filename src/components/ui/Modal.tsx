@@ -37,9 +37,10 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
           />
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
               className={cn(
                 "bg-white dark:bg-[#1a1b26] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl w-full max-w-lg pointer-events-auto overflow-hidden",
                 className

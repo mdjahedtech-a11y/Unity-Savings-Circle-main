@@ -92,9 +92,9 @@ export default function MySavings() {
               payments.map((payment, index) => (
                 <motion.div
                   key={payment.id}
-                  initial={{ opacity: 0, x: -20 }}
+                  initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
                   className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors gap-4 sm:gap-0"
                 >
                   <div className="flex items-center gap-4 w-full sm:w-auto">

@@ -253,7 +253,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     layoutId="mobile-nav-active"
                     className="absolute inset-0 bg-gradient-to-tr from-pink-600 to-purple-600 rounded-xl shadow-lg shadow-pink-500/25"
                     initial={false}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
                 <div className={cn(
