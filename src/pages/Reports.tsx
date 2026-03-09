@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { Download, FileText, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export default function Reports() {
   const { isAdmin } = useAuth();
@@ -110,41 +111,57 @@ export default function Reports() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/20 dark:to-purple-500/20 border-indigo-100 dark:border-white/10 shadow-sm dark:shadow-none">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 dark:text-white/60 text-sm">Total Collection</p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">৳{totalCollection.toLocaleString()}</h3>
+        {loading ? (
+          [...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-xl" />
+              </div>
             </div>
-            <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
-              <DollarSign className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-500/20 dark:to-rose-500/20 border-pink-100 dark:border-white/10 shadow-sm dark:shadow-none">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 dark:text-white/60 text-sm">Pending Members</p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalPending}</h3>
-            </div>
-            <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
-              <AlertTriangle className="w-6 h-6 text-pink-500 dark:text-pink-400" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-500/20 dark:to-cyan-500/20 border-blue-100 dark:border-white/10 shadow-sm dark:shadow-none">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 dark:text-white/60 text-sm">Total Shares</p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                {reportData.reduce((sum, item) => sum + item.share_count, 0)}
-              </h3>
-            </div>
-            <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
-              <FileText className="w-6 h-6 text-blue-500 dark:text-blue-400" />
-            </div>
-          </CardContent>
-        </Card>
+          ))
+        ) : (
+          <>
+            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-500/20 dark:to-purple-500/20 border-indigo-100 dark:border-white/10 shadow-sm dark:shadow-none">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 dark:text-white/60 text-sm">Total Collection</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">৳{totalCollection.toLocaleString()}</h3>
+                </div>
+                <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
+                  <DollarSign className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-500/20 dark:to-rose-500/20 border-pink-100 dark:border-white/10 shadow-sm dark:shadow-none">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 dark:text-white/60 text-sm">Pending Members</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalPending}</h3>
+                </div>
+                <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
+                  <AlertTriangle className="w-6 h-6 text-pink-500 dark:text-pink-400" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-500/20 dark:to-cyan-500/20 border-blue-100 dark:border-white/10 shadow-sm dark:shadow-none">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 dark:text-white/60 text-sm">Total Shares</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    {reportData.reduce((sum, item) => sum + item.share_count, 0)}
+                  </h3>
+                </div>
+                <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
+                  <FileText className="w-6 h-6 text-blue-500 dark:text-blue-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-none">
@@ -165,37 +182,50 @@ export default function Reports() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5 text-gray-700 dark:text-white/80">
-                {reportData.map((row, index) => (
-                  <motion.tr 
-                    key={row.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
-                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                  >
-                    <td className="p-4 font-medium">{row.name}</td>
-                    <td className="p-4 text-center">{row.share_count}</td>
-                    <td className="p-4 text-center">৳{row.expectedAmount.toLocaleString()}</td>
-                    <td className="p-4 text-center text-emerald-600 dark:text-emerald-400 font-medium">
-                      {row.amountPaid > 0 ? `৳${row.amountPaid.toLocaleString()}` : '-'}
-                    </td>
-                    <td className="p-4 text-center text-red-500 dark:text-red-400">
-                      {row.penalty > 0 ? `৳${row.penalty}` : '-'}
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex justify-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                          row.paymentStatus === 'paid' 
-                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20' 
-                            : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/20'
-                        }`}>
-                          {row.paymentStatus === 'paid' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                          {row.paymentStatus.toUpperCase()}
-                        </span>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i}>
+                      <td className="p-4"><Skeleton className="h-5 w-32" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-8 mx-auto" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-16 mx-auto" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-16 mx-auto" /></td>
+                      <td className="p-4"><Skeleton className="h-5 w-12 mx-auto" /></td>
+                      <td className="p-4"><Skeleton className="h-6 w-20 rounded-full mx-auto" /></td>
+                    </tr>
+                  ))
+                ) : (
+                  reportData.map((row, index) => (
+                    <motion.tr 
+                      key={row.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
+                      className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    >
+                      <td className="p-4 font-medium">{row.name}</td>
+                      <td className="p-4 text-center">{row.share_count}</td>
+                      <td className="p-4 text-center">৳{row.expectedAmount.toLocaleString()}</td>
+                      <td className="p-4 text-center text-emerald-600 dark:text-emerald-400 font-medium">
+                        {row.amountPaid > 0 ? `৳${row.amountPaid.toLocaleString()}` : '-'}
+                      </td>
+                      <td className="p-4 text-center text-red-500 dark:text-red-400">
+                        {row.penalty > 0 ? `৳${row.penalty}` : '-'}
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex justify-center">
+                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                            row.paymentStatus === 'paid' 
+                              ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20' 
+                              : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/20'
+                          }`}>
+                            {row.paymentStatus === 'paid' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                            {row.paymentStatus.toUpperCase()}
+                          </span>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -5,6 +5,7 @@ import { StatsCard } from '../components/StatsCard';
 import { MonthlySavingsChart, DistributionChart, GrowthChart } from '../components/Charts';
 import { Users, Wallet, TrendingUp, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Skeleton } from '../components/ui/Skeleton';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -26,6 +27,7 @@ export default function Dashboard() {
 
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
@@ -168,6 +170,8 @@ export default function Dashboard() {
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,40 +188,65 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard 
-          title="Total Savings" 
-          value={`৳${stats.totalSavings.toLocaleString()}`} 
-          icon={Wallet} 
-          color="text-emerald-500 dark:text-emerald-400"
-          delay={0.1}
-        />
-        <StatsCard 
-          title="Monthly Collection" 
-          value={`৳${stats.monthlyCollection.toLocaleString()}`} 
-          icon={TrendingUp} 
-          color="text-blue-500 dark:text-blue-400"
-          delay={0.2}
-        />
-        <StatsCard 
-          title="Total Members" 
-          value={stats.totalMembers} 
-          icon={Users} 
-          color="text-purple-500 dark:text-purple-400"
-          delay={0.3}
-          onClick={() => navigate('/members')}
-        />
-        <StatsCard 
-          title="Pending Payments" 
-          value={stats.pendingCount} 
-          icon={AlertCircle} 
-          color="text-pink-500 dark:text-pink-400"
-          delay={0.4}
-        />
+        {loading ? (
+          [...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-xl" />
+              </div>
+            </div>
+          ))
+        ) : (
+          <>
+            <StatsCard 
+              title="Total Savings" 
+              value={`৳${stats.totalSavings.toLocaleString()}`} 
+              icon={Wallet} 
+              color="text-emerald-500 dark:text-emerald-400"
+              delay={0.1}
+            />
+            <StatsCard 
+              title="Monthly Collection" 
+              value={`৳${stats.monthlyCollection.toLocaleString()}`} 
+              icon={TrendingUp} 
+              color="text-blue-500 dark:text-blue-400"
+              delay={0.2}
+            />
+            <StatsCard 
+              title="Total Members" 
+              value={stats.totalMembers} 
+              icon={Users} 
+              color="text-purple-500 dark:text-purple-400"
+              delay={0.3}
+              onClick={() => navigate('/members')}
+            />
+            <StatsCard 
+              title="Pending Payments" 
+              value={stats.pendingCount} 
+              icon={AlertCircle} 
+              color="text-pink-500 dark:text-pink-400"
+              delay={0.4}
+            />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <MonthlySavingsChart data={chartData.monthly} />
-        <DistributionChart data={chartData.distribution} />
+        {loading ? (
+          <>
+            <Skeleton className="h-[380px] rounded-2xl col-span-1 lg:col-span-2" />
+            <Skeleton className="h-[380px] rounded-2xl" />
+          </>
+        ) : (
+          <>
+            <MonthlySavingsChart data={chartData.monthly} />
+            <DistributionChart data={chartData.distribution} />
+          </>
+        )}
         
         {isAdmin && (
           <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-sm dark:shadow-none">
@@ -232,8 +261,22 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4">
               {loadingPayments ? (
-                <div className="animate-pulse space-y-4">
-                  {[1, 2, 3].map(i => <div key={i} className="h-12 bg-gray-100 dark:bg-white/5 rounded-lg" />)}
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="w-8 h-8 rounded-full" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-16" />
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-right">
+                        <Skeleton className="h-4 w-16 ml-auto" />
+                        <Skeleton className="h-3 w-20 ml-auto" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : recentPayments.length > 0 ? (
                 recentPayments.map((p, i) => (
@@ -262,7 +305,11 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1">
-        <GrowthChart data={chartData.growth} />
+        {loading ? (
+          <Skeleton className="h-[380px] rounded-2xl" />
+        ) : (
+          <GrowthChart data={chartData.growth} />
+        )}
       </div>
     </div>
   );

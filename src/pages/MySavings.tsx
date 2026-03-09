@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { StatsCard } from '../components/StatsCard';
 import { Wallet, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export default function MySavings() {
   const { member } = useAuth();
@@ -55,27 +56,43 @@ export default function MySavings() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard 
-          title="Total Contributed" 
-          value={`৳${totalPaid.toLocaleString()}`} 
-          icon={Wallet} 
-          color="text-emerald-500 dark:text-emerald-400"
-          delay={0.1}
-        />
-        <StatsCard 
-          title="Total Penalties" 
-          value={`৳${totalPenalty.toLocaleString()}`} 
-          icon={XCircle} 
-          color="text-red-500 dark:text-red-400"
-          delay={0.2}
-        />
-        <StatsCard 
-          title="Last Payment" 
-          value={lastPayment ? `${lastPayment.month} ${lastPayment.year}` : 'N/A'} 
-          icon={Calendar} 
-          color="text-blue-500 dark:text-blue-400"
-          delay={0.3}
-        />
+        {loading ? (
+          [...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-xl" />
+              </div>
+            </div>
+          ))
+        ) : (
+          <>
+            <StatsCard 
+              title="Total Contributed" 
+              value={`৳${totalPaid.toLocaleString()}`} 
+              icon={Wallet} 
+              color="text-emerald-500 dark:text-emerald-400"
+              delay={0.1}
+            />
+            <StatsCard 
+              title="Total Penalties" 
+              value={`৳${totalPenalty.toLocaleString()}`} 
+              icon={XCircle} 
+              color="text-red-500 dark:text-red-400"
+              delay={0.2}
+            />
+            <StatsCard 
+              title="Last Payment" 
+              value={lastPayment ? `${lastPayment.month} ${lastPayment.year}` : 'N/A'} 
+              icon={Calendar} 
+              color="text-blue-500 dark:text-blue-400"
+              delay={0.3}
+            />
+          </>
+        )}
       </div>
 
       <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
@@ -84,7 +101,23 @@ export default function MySavings() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {payments.length === 0 ? (
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 gap-4 sm:gap-0">
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <Skeleton className="w-11 h-11 rounded-full shrink-0" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-24" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </div>
+                  <div className="w-full sm:w-auto pl-[60px] sm:pl-0 space-y-2 flex flex-col items-start sm:items-end">
+                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              ))
+            ) : payments.length === 0 ? (
               <div className="text-center py-10 text-gray-400 dark:text-white/40">
                 No payment history found.
               </div>

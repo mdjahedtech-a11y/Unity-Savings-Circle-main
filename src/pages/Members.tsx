@@ -9,6 +9,7 @@ import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle,
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import { Skeleton } from '../components/ui/Skeleton';
 
 export default function Members() {
   const { isAdmin, isMainAdmin } = useAuth();
@@ -374,8 +375,34 @@ export default function Members() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredMembers.map((member, index) => (
-          <motion.div
+        {loading ? (
+          [...Array(6)].map((_, i) => (
+            <Card key={i} className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="w-12 h-12 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <Skeleton className="h-5 w-32" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-16 rounded-md" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          filteredMembers.map((member, index) => (
+            <motion.div
             key={member.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -521,7 +548,7 @@ export default function Members() {
               </CardContent>
             </Card>
           </motion.div>
-        ))}
+        )))}
       </div>
 
       {/* Add Member Modal */}

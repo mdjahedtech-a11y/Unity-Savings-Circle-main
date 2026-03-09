@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { Plus, Trash2, Calendar, DollarSign, FileText, StickyNote, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
+import { Skeleton } from '../components/ui/Skeleton';
 
 type Note = {
   id: string;
@@ -166,7 +167,23 @@ export default function Investments() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-48 bg-gray-100 dark:bg-white/5 rounded-2xl animate-pulse" />
+            <Card key={i} className="h-full border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/3" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-20" />
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : notes.length === 0 ? (
