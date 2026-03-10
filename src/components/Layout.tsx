@@ -12,6 +12,7 @@ import {
   Wallet,
   PieChart,
   StickyNote,
+  MessageSquare,
   Sun,
   Moon
 } from 'lucide-react';
@@ -86,6 +87,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: 'Members', path: '/members', icon: Users, show: true },
     { name: 'Reports', path: '/reports', icon: FileText, show: true },
     { name: 'Investments', path: '/investments', icon: StickyNote, show: true },
+    { name: 'Discussion', path: '/discussion', icon: MessageSquare, show: true },
     { name: 'My Savings', path: '/my-savings', icon: Wallet, show: true },
   ];
 

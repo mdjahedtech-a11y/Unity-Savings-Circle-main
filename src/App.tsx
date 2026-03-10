@@ -10,6 +10,7 @@ import Members from './pages/Members';
 import Reports from './pages/Reports';
 import MySavings from './pages/MySavings';
 import SetupGuide from './components/SetupGuide';
+import Discussion from './pages/Discussion';
 
 import Investments from './pages/Investments';
 
@@ -72,6 +73,12 @@ const AppContent = () => {
         <Route path="/investments" element={
           <ProtectedRoute>
             <Investments />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/discussion" element={
+          <ProtectedRoute>
+            <Discussion />
           </ProtectedRoute>
         } />
         
