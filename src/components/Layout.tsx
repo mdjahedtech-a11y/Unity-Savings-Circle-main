@@ -8,8 +8,6 @@ import {
   Users, 
   FileText, 
   LogOut, 
-  Menu, 
-  X, 
   Wallet,
   PieChart,
   StickyNote,
@@ -29,7 +27,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const { settings } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
   const lastBackPress = useRef<number>(0);
 
@@ -134,50 +131,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80">
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600 dark:text-white/80">
-            {isMobileMenuOpen ? <X /> : <Menu />}
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">
+            <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </div>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden fixed inset-0 z-40 bg-white/95 dark:bg-black/90 pt-20 px-6"
-          >
-            <div className="flex flex-col gap-4">
-              {navItems.filter(item => item.show).map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-xl transition-all",
-                    location.pathname === item.path
-                      ? "bg-pink-50 text-pink-600 dark:bg-white/20 dark:text-white shadow-sm dark:shadow-lg border border-pink-100 dark:border-white/10"
-                      : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white"
-                  )}
-                >
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium text-lg">{item.name}</span>
-                </Link>
-              ))}
-              <Button 
-                variant="danger" 
-                className="mt-8 w-full justify-start gap-3 p-4"
-                onClick={handleSignOut}
-              >
-                <LogOut className="w-5 h-5" />
-                Sign Out
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="flex">
         {/* Desktop Sidebar */}
@@ -244,15 +202,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav - Floating & Stylish */}
-      <div className="lg:hidden fixed bottom-6 left-4 right-4 z-50">
-        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-2xl shadow-pink-500/10 p-1.5 flex justify-between items-center">
+      <div className="lg:hidden fixed bottom-6 left-2 right-2 z-50">
+        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-2xl shadow-pink-500/10 p-1.5 flex items-center overflow-x-auto hide-scrollbar gap-1">
           {navItems.filter(item => item.show).map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative flex-1 flex flex-col items-center justify-center py-2"
+                className="relative flex-none w-[4.5rem] flex flex-col items-center justify-center py-2"
               >
                 {isActive && (
                   <motion.div
