@@ -121,7 +121,7 @@ export default function Discussion() {
       fetchPosts();
     } catch (error: any) {
       console.error('Error creating post:', error);
-      toast.error('Failed to create post');
+      toast.error(error.message || 'Failed to create post');
     } finally {
       setSubmittingPost(false);
     }
@@ -147,7 +147,7 @@ export default function Discussion() {
       fetchPosts();
     } catch (error: any) {
       console.error('Error creating comment:', error);
-      toast.error('Failed to add comment');
+      toast.error(error.message || 'Failed to add comment');
     } finally {
       setSubmittingComment(null);
     }

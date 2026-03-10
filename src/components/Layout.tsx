@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useSettings } from '../context/SettingsContext';
 import { 
   LayoutDashboard, 
   Users, 
@@ -13,6 +14,7 @@ import {
   PieChart,
   StickyNote,
   MessageSquare,
+  Settings as SettingsIcon,
   Sun,
   Moon
 } from 'lucide-react';
@@ -24,6 +26,7 @@ import { toast } from 'sonner';
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, isAdmin, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { settings } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -83,12 +86,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard, show: true },
-    { name: 'Members', path: '/members', icon: Users, show: true },
-    { name: 'Reports', path: '/reports', icon: FileText, show: true },
-    { name: 'Investments', path: '/investments', icon: StickyNote, show: true },
-    { name: 'Discussion', path: '/discussion', icon: MessageSquare, show: true },
-    { name: 'My Savings', path: '/my-savings', icon: Wallet, show: true },
+    { name: 'Dashboard', path: '/', icon: LayoutDashboard, show: isAdmin || settings.show_dashboard },
+    { name: 'Members', path: '/members', icon: Users, show: isAdmin || settings.show_members },
+    { name: 'Reports', path: '/reports', icon: FileText, show: isAdmin || settings.show_reports },
+    { name: 'Investments', path: '/investments', icon: StickyNote, show: isAdmin || settings.show_investments },
+    { name: 'Discussion', path: '/discussion', icon: MessageSquare, show: isAdmin || settings.show_discussion },
+    { name: 'My Savings', path: '/my-savings', icon: Wallet, show: isAdmin || settings.show_my_savings },
+    { name: 'Settings', path: '/settings', icon: SettingsIcon, show: isAdmin },
   ];
 
   return (
