@@ -47,6 +47,7 @@ export default function Members() {
   const [paymentMonth, setPaymentMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
   const [paymentYear, setPaymentYear] = useState(new Date().getFullYear().toString());
   const [penaltyAmount, setPenaltyAmount] = useState('0');
+  const [paymentMethod, setPaymentMethod] = useState('bKash');
 
   // Add/Edit Member Form State
   const [newMemberName, setNewMemberName] = useState('');
@@ -276,6 +277,7 @@ export default function Members() {
         penalty: parseInt(penaltyAmount),
         total_amount: parseInt(paymentAmount) + parseInt(penaltyAmount),
         payment_status: 'paid',
+        payment_method: paymentMethod,
         payment_date: new Date().toISOString(),
       });
 
@@ -295,6 +297,7 @@ export default function Members() {
     setPaymentAmount((member.share_count * 1000).toString());
     setPaymentMonth(selectedMonth);
     setPaymentYear(selectedYear);
+    setPaymentMethod('bKash');
     setIsPaymentModalOpen(true);
   };
 
@@ -704,6 +707,19 @@ export default function Members() {
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-white/40">Add ৳100 if unpaid for 2 months</p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-600 dark:text-white/70">Payment Method</label>
+            <select 
+              value={paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white"
+            >
+              {['bKash', 'Nagad', 'Bank', 'Cash'].map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
           </div>
 
           <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between items-center">

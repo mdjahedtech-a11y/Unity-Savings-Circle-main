@@ -24,6 +24,7 @@ export interface Payment {
   penalty: number;
   total_amount: number;
   payment_status: PaymentStatus;
+  payment_method?: string;
   payment_date?: string;
   created_at?: string;
   members?: Member; // For join queries

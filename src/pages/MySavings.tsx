@@ -142,6 +142,7 @@ export default function MySavings() {
                       <h4 className="font-semibold text-gray-900 dark:text-white">{payment.month} {payment.year}</h4>
                       <p className="text-xs text-gray-500 dark:text-white/50">
                         Paid on {new Date(payment.payment_date || '').toLocaleDateString()}
+                        {payment.payment_method && ` via ${payment.payment_method}`}
                       </p>
                     </div>
                   </div>

@@ -292,7 +292,10 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">৳{p.total_amount.toLocaleString()}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-white/40">{new Date(p.payment_date).toLocaleDateString()}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-white/40">
+                        {new Date(p.payment_date).toLocaleDateString()}
+                        {p.payment_method && ` • ${p.payment_method}`}
+                      </p>
                     </div>
                   </div>
                 ))

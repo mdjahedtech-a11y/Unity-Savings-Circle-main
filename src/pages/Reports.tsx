@@ -46,6 +46,7 @@ export default function Reports() {
         return {
           ...member,
           paymentStatus: payment ? payment.payment_status : 'unpaid',
+          paymentMethod: payment ? payment.payment_method : '-',
           amountPaid: payment ? payment.total_amount : 0,
           penalty: payment ? payment.penalty : 0,
           expectedAmount: member.share_count * 1000
@@ -63,8 +64,8 @@ export default function Reports() {
 
   const exportReport = () => {
     const csvContent = "data:text/csv;charset=utf-8," 
-      + "Name,Phone,Shares,Status,Amount Paid,Penalty,Expected Amount\n"
-      + reportData.map(row => `${row.name},${row.phone},${row.share_count},${row.paymentStatus},${row.amountPaid},${row.penalty},${row.expectedAmount}`).join("\n");
+      + "Name,Phone,Shares,Status,Method,Amount Paid,Penalty,Expected Amount\n"
+      + reportData.map(row => `${row.name},${row.phone},${row.share_count},${row.paymentStatus},${row.paymentMethod || '-'},${row.amountPaid},${row.penalty},${row.expectedAmount}`).join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -177,6 +178,7 @@ export default function Reports() {
                   <th className="p-4 font-medium text-center">Shares</th>
                   <th className="p-4 font-medium text-center">Expected</th>
                   <th className="p-4 font-medium text-center">Paid</th>
+                  <th className="p-4 font-medium text-center">Method</th>
                   <th className="p-4 font-medium text-center">Penalty</th>
                   <th className="p-4 font-medium text-center">Status</th>
                 </tr>
@@ -207,6 +209,9 @@ export default function Reports() {
                       <td className="p-4 text-center">৳{row.expectedAmount.toLocaleString()}</td>
                       <td className="p-4 text-center text-emerald-600 dark:text-emerald-400 font-medium">
                         {row.amountPaid > 0 ? `৳${row.amountPaid.toLocaleString()}` : '-'}
+                      </td>
+                      <td className="p-4 text-center text-gray-500 dark:text-white/60 text-sm">
+                        {row.paymentMethod || '-'}
                       </td>
                       <td className="p-4 text-center text-red-500 dark:text-red-400">
                         {row.penalty > 0 ? `৳${row.penalty}` : '-'}
