@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { StatsCard } from '../components/StatsCard';
 import { MonthlySavingsChart, DistributionChart, GrowthChart } from '../components/Charts';
+import { CountdownTimer } from '../components/CountdownTimer';
 import { Users, Wallet, TrendingUp, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -177,10 +178,15 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-gray-500 dark:text-white/60 mt-1">Welcome back, {member?.name || 'User'}</p>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 w-full lg:w-auto">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="text-gray-500 dark:text-white/60 mt-1">Welcome back, {member?.name || 'User'}</p>
+          </div>
+          <div className="flex-1 sm:flex-none">
+            <CountdownTimer />
+          </div>
         </div>
         <div className="bg-white dark:bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-sm font-mono text-pink-600 dark:text-pink-300 shadow-sm dark:shadow-none">
           {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
