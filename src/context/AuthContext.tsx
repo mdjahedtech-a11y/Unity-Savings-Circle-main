@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchMemberProfile(session.user.id);
+        fetchMemberProfile(session.user.id, session.user.email);
       } else {
         setLoading(false);
       }
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchMemberProfile(session.user.id);
+        fetchMemberProfile(session.user.id, session.user.email);
       } else {
         setMember(null);
         setLoading(false);
@@ -58,20 +58,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchMemberProfile = async (userId: string) => {
+  const fetchMemberProfile = async (userId: string, userEmail?: string) => {
     try {
-      const { data, error } = await supabase
+      // 1. Try to find by auth_user_id
+      let { data, error } = await supabase
         .from('members')
         .select('*')
         .eq('auth_user_id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single to handle 0 rows gracefully
+        .maybeSingle();
 
       if (error) {
-        console.error('Error fetching member profile:', error);
-      } else if (data) {
+        console.error('Error fetching member profile by ID:', error);
+      }
+
+      // 2. If not found by ID, try to find by phone extracted from email
+      if (!data && userEmail) {
+        const phone = userEmail.split('@')[0]?.split('_')[0];
+        if (phone && phone.length >= 10) {
+          const { data: phoneData, error: phoneError } = await supabase
+            .from('members')
+            .select('*')
+            .eq('phone', phone)
+            .maybeSingle();
+          
+          if (!phoneError && phoneData) {
+            data = phoneData;
+            // Link the auth_user_id if it's not set
+            if (!data.auth_user_id) {
+              await supabase
+                .from('members')
+                .update({ auth_user_id: userId })
+                .eq('id', data.id);
+            }
+          }
+        }
+      }
+
+      if (data) {
         setMember(data);
       } else {
-        // No member profile found for this user yet
         setMember(null);
       }
     } catch (err) {

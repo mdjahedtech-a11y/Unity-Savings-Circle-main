@@ -40,6 +40,21 @@ export default function MySavings() {
   const totalPenalty = payments.reduce((sum, p) => sum + p.penalty, 0);
   const lastPayment = payments[0];
 
+  if (!loading && !member) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+        <div className="h-20 w-20 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
+          <User className="h-10 w-10 text-gray-400" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile Not Found</h2>
+        <p className="text-gray-500 dark:text-white/60 max-w-md">
+          We couldn't find a member profile associated with your account. 
+          Please contact the administrator to link your phone number.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 pb-12">
       {/* Hero Section - Colorful & Stylish */}
@@ -56,7 +71,7 @@ export default function MySavings() {
           <div className="relative">
             <div className="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20 p-1 backdrop-blur-md">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-white/40 to-white/10 text-3xl font-bold">
-                {member?.name?.charAt(0)}
+                {member?.name?.charAt(0) || 'A'}
               </div>
             </div>
             <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 border-2 border-white shadow-lg">
@@ -66,20 +81,24 @@ export default function MySavings() {
           
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight">{member?.name}</h1>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight">{member?.name || 'Administrator'}</h1>
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-widest border border-white/10">
-                Active Member
+                {member?.role === 'admin' ? 'Admin' : 'Active Member'}
               </span>
             </div>
             
             <div className="flex flex-wrap justify-center md:justify-start gap-4 text-white/80">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <span className="text-sm font-medium">{member?.phone}</span>
+                <span className="text-sm font-medium">{member?.phone || 'N/A'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">Joined {new Date(member?.created_at || '').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                <span className="text-sm font-medium">
+                  {member?.created_at 
+                    ? `Joined ${new Date(member.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
+                    : 'System Account'}
+                </span>
               </div>
             </div>
           </div>
