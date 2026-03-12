@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../components/ui/Skeleton';
+import { sendPushNotification } from '../lib/notifications';
 
 export default function Members() {
   const { isAdmin, isMainAdmin } = useAuth();
@@ -156,6 +157,14 @@ export default function Members() {
       if (error) throw error;
       
       toast.success('Member added successfully');
+
+      // Send push notification
+      sendPushNotification(
+        'New Member Joined',
+        `${newMemberName} has joined our savings group!`,
+        '/members'
+      );
+
       setIsAddMemberModalOpen(false);
       resetForm();
       fetchMembers();
@@ -284,6 +293,14 @@ export default function Members() {
       if (error) throw error;
       
       toast.success('Payment recorded successfully');
+      
+      // Send push notification to all users
+      sendPushNotification(
+        'New Payment Added',
+        `${selectedMember.name} paid ৳${(parseInt(paymentAmount) + parseInt(penaltyAmount)).toLocaleString()} for ${paymentMonth} ${paymentYear}.`,
+        '/my-savings'
+      );
+
       setIsPaymentModalOpen(false);
       fetchMembers();
     } catch (error) {

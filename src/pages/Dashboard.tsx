@@ -9,10 +9,14 @@ import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 
 import { useNavigate } from 'react-router-dom';
+import { subscribeToPush } from '../lib/notifications';
+import { Bell } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { member, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [isSubscribing, setIsSubscribing] = useState(false);
   const [stats, setStats] = useState({
     totalMembers: 0,
     totalShares: 0,
@@ -176,6 +180,19 @@ export default function Dashboard() {
     }
   };
 
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      await subscribeToPush();
+      toast.success('Notifications enabled successfully!');
+    } catch (error) {
+      console.error('Subscription error:', error);
+      toast.error('Failed to enable notifications. Please check browser permissions.');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -184,8 +201,16 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
             <p className="text-gray-500 dark:text-white/60 mt-1">Welcome back, {member?.name || 'User'}</p>
           </div>
-          <div className="flex-1 sm:flex-none">
+          <div className="flex-1 sm:flex-none flex items-center gap-3">
             <CountdownTimer />
+            <button
+              onClick={handleSubscribe}
+              disabled={isSubscribing}
+              className="p-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-600 dark:text-white/70 hover:text-pink-500 dark:hover:text-pink-400 transition-all shadow-sm disabled:opacity-50"
+              title="Enable Push Notifications"
+            >
+              <Bell className={`w-5 h-5 ${isSubscribing ? 'animate-pulse' : ''}`} />
+            </button>
           </div>
         </div>
         <div className="bg-white dark:bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-sm font-mono text-pink-600 dark:text-pink-300 shadow-sm dark:shadow-none">
