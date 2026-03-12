@@ -3,10 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { StatsCard } from '../components/StatsCard';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { cn } from '../lib/utils';
 
 export default function MySavings() {
   const { member } = useAuth();
@@ -41,19 +41,55 @@ export default function MySavings() {
   const lastPayment = payments[0];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Savings</h1>
-          <p className="text-gray-500 dark:text-white/60 mt-1">
-            Welcome back, <span className="font-semibold text-pink-600 dark:text-pink-400">{member?.name}</span>
-          </p>
+    <div className="space-y-8 pb-12">
+      {/* Hero Section - Colorful & Stylish */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 text-white shadow-2xl shadow-purple-500/20"
+      >
+        {/* Decorative Circles */}
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-pink-500/20 blur-3xl" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+          <div className="relative">
+            <div className="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20 p-1 backdrop-blur-md">
+              <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-white/40 to-white/10 text-3xl font-bold">
+                {member?.name?.charAt(0)}
+              </div>
+            </div>
+            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 border-2 border-white shadow-lg">
+              <Award className="h-4 w-4 text-white" />
+            </div>
+          </div>
+          
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight">{member?.name}</h1>
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-widest border border-white/10">
+                Active Member
+              </span>
+            </div>
+            
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 text-white/80">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span className="text-sm font-medium">{member?.phone}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium">Joined {new Date(member?.created_at || '').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-md rounded-3xl border border-white/10 min-w-[140px]">
+            <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/60 mb-1">Total Shares</span>
+            <span className="text-4xl font-black">{member?.share_count || 0}</span>
+          </div>
         </div>
-        <div className="bg-white dark:bg-white/10 px-4 py-2 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
-          <span className="text-gray-500 dark:text-white/60 text-sm">My Shares: </span>
-          <span className="text-pink-600 dark:text-pink-300 font-bold text-lg">{member?.share_count || 0}</span>
-        </div>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
@@ -70,90 +106,150 @@ export default function MySavings() {
           ))
         ) : (
           <>
-            <StatsCard 
-              title="Total Contributed" 
-              value={`৳${totalPaid.toLocaleString()}`} 
-              icon={Wallet} 
-              color="text-emerald-500 dark:text-emerald-400"
-              delay={0.1}
-            />
-            <StatsCard 
-              title="Total Penalties" 
-              value={`৳${totalPenalty.toLocaleString()}`} 
-              icon={XCircle} 
-              color="text-red-500 dark:text-red-400"
-              delay={0.2}
-            />
-            <StatsCard 
-              title="Last Payment" 
-              value={lastPayment ? `${lastPayment.month} ${lastPayment.year}` : 'N/A'} 
-              icon={Calendar} 
-              color="text-blue-500 dark:text-blue-400"
-              delay={0.3}
-            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/20">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest mb-1">Total Contributed</p>
+                      <h3 className="text-3xl font-black">৳{totalPaid.toLocaleString()}</h3>
+                    </div>
+                    <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
+                      <Wallet className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-xl shadow-rose-500/20">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-rose-100 text-xs font-bold uppercase tracking-widest mb-1">Total Penalties</p>
+                      <h3 className="text-3xl font-black">৳{totalPenalty.toLocaleString()}</h3>
+                    </div>
+                    <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
+                      <XCircle className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl shadow-blue-500/20">
+                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Last Payment</p>
+                      <h3 className="text-2xl font-black">{lastPayment ? `${lastPayment.month} ${lastPayment.year}` : 'N/A'}</h3>
+                    </div>
+                    <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
+                      <Calendar className="h-6 w-6" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </>
         )}
       </div>
 
-      <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
-        <CardHeader>
-          <CardTitle className="text-gray-900 dark:text-white">Payment History</CardTitle>
+      <Card className="overflow-hidden border-none bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl shadow-2xl shadow-gray-200/50 dark:shadow-none">
+        <CardHeader className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 px-8 py-6">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Payment History</CardTitle>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500/10 text-pink-500">
+              <ArrowUpRight className="h-4 w-4" />
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-0">
+          <div className="divide-y divide-gray-100 dark:divide-white/5">
             {loading ? (
               [...Array(3)].map((_, i) => (
-                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 gap-4 sm:gap-0">
-                  <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <Skeleton className="w-11 h-11 rounded-full shrink-0" />
+                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-8 gap-4 sm:gap-0">
+                  <div className="flex items-center gap-6 w-full sm:w-auto">
+                    <Skeleton className="w-14 h-14 rounded-2xl shrink-0" />
                     <div className="space-y-2">
-                      <Skeleton className="h-5 w-24" />
-                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-4 w-48" />
                     </div>
                   </div>
-                  <div className="w-full sm:w-auto pl-[60px] sm:pl-0 space-y-2 flex flex-col items-start sm:items-end">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-4 w-16" />
+                  <div className="w-full sm:w-auto pl-20 sm:pl-0 space-y-2 flex flex-col items-start sm:items-end">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-4 w-20" />
                   </div>
                 </div>
               ))
             ) : payments.length === 0 ? (
-              <div className="text-center py-10 text-gray-400 dark:text-white/40">
-                No payment history found.
+              <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-white/20">
+                <Clock className="h-12 w-12 mb-4 opacity-20" />
+                <p className="text-lg font-medium">No payment history found.</p>
               </div>
             ) : (
-              payments.map((payment, index) => (
-                <motion.div
-                  key={payment.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors gap-4 sm:gap-0"
-                >
-                  <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className={`p-3 rounded-full shrink-0 ${
-                      payment.payment_status === 'paid' 
-                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
-                        : 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'
-                    }`}>
-                      {payment.payment_status === 'paid' ? <CheckCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+              <AnimatePresence>
+                {payments.map((payment, index) => (
+                  <motion.div
+                    key={payment.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-8 hover:bg-gray-50 dark:hover:bg-white/5 transition-all gap-4 sm:gap-0"
+                  >
+                    <div className="flex items-center gap-6 w-full sm:w-auto">
+                      <div className={cn(
+                        "flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-transform group-hover:scale-110",
+                        payment.payment_status === 'paid' 
+                          ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
+                          : 'bg-amber-500 text-white shadow-amber-500/20'
+                      )}>
+                        {payment.payment_status === 'paid' ? <CheckCircle className="h-7 w-7" /> : <Clock className="h-7 w-7" />}
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">{payment.month} {payment.year}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs font-bold text-gray-400 dark:text-white/40 uppercase tracking-widest">
+                            {new Date(payment.payment_date || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                          {payment.payment_method && (
+                            <>
+                              <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
+                              <span className="text-xs font-black text-pink-500 uppercase tracking-widest">via {payment.payment_method}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{payment.month} {payment.year}</h4>
-                      <p className="text-xs text-gray-500 dark:text-white/50">
-                        Paid on {new Date(payment.payment_date || '').toLocaleDateString()}
-                        {payment.payment_method && ` via ${payment.payment_method}`}
-                      </p>
+                    <div className="text-left sm:text-right w-full sm:w-auto pl-20 sm:pl-0">
+                      <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">৳{payment.total_amount.toLocaleString()}</p>
+                      {payment.penalty > 0 && (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-500 uppercase tracking-widest mt-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          +৳{payment.penalty} Penalty
+                        </span>
+                      )}
                     </div>
-                  </div>
-                  <div className="text-left sm:text-right w-full sm:w-auto pl-[60px] sm:pl-0">
-                    <p className="font-bold text-gray-900 dark:text-white">৳{payment.total_amount.toLocaleString()}</p>
-                    {payment.penalty > 0 && (
-                      <p className="text-xs text-red-500 dark:text-red-400">+৳{payment.penalty} penalty</p>
-                    )}
-                  </div>
-                </motion.div>
-              ))
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             )}
           </div>
         </CardContent>
