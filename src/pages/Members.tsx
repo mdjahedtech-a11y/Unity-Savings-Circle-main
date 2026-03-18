@@ -5,11 +5,12 @@ import { Member, Payment } from '../types/index';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key, Phone, Calendar, Award, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key, Phone, Calendar, Award, TrendingUp, ShieldCheck, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../components/ui/Skeleton';
+import { cn } from '../lib/utils';
 
 export default function Members() {
   const { isAdmin, isMainAdmin } = useAuth();
@@ -58,49 +59,42 @@ export default function Members() {
   const [isRevokePaymentModalOpen, setIsRevokePaymentModalOpen] = useState(false);
   const [memberToRevokePayment, setMemberToRevokePayment] = useState<Member | null>(null);
 
-  const fetchMembers = async () => {
+  const fetchMembers = async (isRefresh = false) => {
+    if (isRefresh) setLoading(true);
     try {
-      // Fetch members
-      const { data: membersData, error: membersError } = await supabase
-        .from('members')
-        .select('*')
-        .order('name');
+      // Fetch all data in parallel
+      const [membersRes, paymentsRes] = await Promise.all([
+        supabase.from('members').select('*').order('name'),
+        supabase.from('payments').select('member_id, total_amount, month, year, payment_status')
+      ]);
       
-      if (membersError) throw membersError;
+      if (membersRes.error) throw membersRes.error;
+      if (paymentsRes.error) throw paymentsRes.error;
 
-      // Fetch payments for the selected month/year
-      const { data: currentMonthPayments, error: currentMonthError } = await supabase
-        .from('payments')
-        .select('member_id')
-        .eq('month', selectedMonth)
-        .eq('year', parseInt(selectedYear))
-        .eq('payment_status', 'paid');
+      const membersData = membersRes.data || [];
+      const allPayments = paymentsRes.data || [];
 
-      if (currentMonthError) throw currentMonthError;
-      
-      const paidMemberIds = new Set(currentMonthPayments?.map(p => p.member_id) || []);
+      // Filter paid payments for the selected month/year
+      const paidMemberIds = new Set(
+        allPayments
+          .filter(p => p.month === selectedMonth && p.year === parseInt(selectedYear) && p.payment_status === 'paid')
+          .map(p => p.member_id)
+      );
       setMonthlyPayments(paidMemberIds);
 
-      // Fetch total savings for each member
-      const { data: paymentsData, error: paymentsError } = await supabase
-        .from('payments')
-        .select('member_id, total_amount')
-        .eq('payment_status', 'paid');
-
-      if (paymentsError) throw paymentsError;
-
-      // Calculate total savings per member
-      const membersWithSavings = membersData?.map(member => {
-        const memberSavings = paymentsData
-          ?.filter(p => p.member_id === member.id)
-          .reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
+      // Calculate total savings per member from allPayments
+      const membersWithSavings = membersData.map(member => {
+        const memberSavings = allPayments
+          .filter(p => p.member_id === member.id && p.payment_status === 'paid')
+          .reduce((sum, p) => sum + (p.total_amount || 0), 0);
         
         return { ...member, total_savings: memberSavings };
       });
 
-      setMembers(membersWithSavings || []);
+      setMembers(membersWithSavings);
     } catch (error) {
       console.error('Error fetching members:', error);
+      toast.error('Failed to fetch members');
     } finally {
       setLoading(false);
     }
@@ -314,7 +308,20 @@ export default function Members() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Members</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Members</h1>
+          <button 
+            onClick={() => fetchMembers(true)}
+            disabled={loading}
+            className={cn(
+              "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all",
+              loading && "animate-spin opacity-50"
+            )}
+            title="Refresh Members"
+          >
+            <RefreshCcw className="w-5 h-5 text-gray-500 dark:text-white/60" />
+          </button>
+        </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto flex-wrap justify-end">
           <div className="flex gap-2 w-full sm:w-auto">
             <select 

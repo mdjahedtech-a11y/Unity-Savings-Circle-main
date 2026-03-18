@@ -4,9 +4,10 @@ import { supabase } from '../lib/supabase';
 import { StatsCard } from '../components/StatsCard';
 import { MonthlySavingsChart, DistributionChart, GrowthChart, RecentPaymentsChart } from '../components/Charts';
 import { CountdownTimer } from '../components/CountdownTimer';
-import { Users, Wallet, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, Wallet, TrendingUp, AlertCircle, RefreshCcw } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { cn } from '../lib/utils';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -53,101 +54,46 @@ export default function Dashboard() {
     }
   };
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (isRefresh = false) => {
+    if (isRefresh) setLoading(true);
     try {
-      // Fetch Members Count
-      const { count: membersCount, error: membersError } = await supabase
-        .from('members')
-        .select('*', { count: 'exact', head: true });
-      
-      if (membersError) {
-        if (membersError.code === 'PGRST205' || membersError.code === '42P01') {
-          console.warn('Members table not found.');
-        } else {
-          throw membersError;
-        }
-      }
-      
-      // Fetch Total Shares
-      const { data: members, error: sharesError } = await supabase
-        .from('members')
-        .select('share_count');
-      
-      if (sharesError) {
-        if (sharesError.code === 'PGRST205' || sharesError.code === '42P01') {
-          console.warn('Members table not found.');
-        } else {
-          throw sharesError;
-        }
-      }
-      
-      const totalShares = members?.reduce((sum, m) => sum + (m.share_count || 0), 0) || 0;
-
-      // Fetch Total Savings
-      const { data: payments, error: paymentsError } = await supabase
-        .from('payments')
-        .select('total_amount')
-        .eq('payment_status', 'paid');
-      
-      if (paymentsError) {
-        if (paymentsError.code === 'PGRST205' || paymentsError.code === '42P01') {
-          console.warn('Payments table not found.');
-        } else {
-          throw paymentsError;
-        }
-      }
-      
-      const totalSavings = payments?.reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
-
-      // Fetch Monthly Collection (current month)
       const currentMonth = new Date().toLocaleString('default', { month: 'long' });
       const currentYear = new Date().getFullYear();
-      
-      const { data: monthlyPayments, error: monthlyError } = await supabase
-        .from('payments')
-        .select('total_amount')
-        .eq('month', currentMonth)
-        .eq('year', currentYear)
-        .eq('payment_status', 'paid');
-      
-      if (monthlyError) {
-        if (monthlyError.code === 'PGRST205' || monthlyError.code === '42P01') {
-          console.warn('Payments table not found.');
-        } else {
-          throw monthlyError;
-        }
-      }
-      
-      const monthlyCollection = monthlyPayments?.reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
 
-      // Fetch Pending Count
-      const { count: pendingCount, error: pendingError } = await supabase
-        .from('payments')
-        .select('*', { count: 'exact', head: true })
-        .eq('month', currentMonth)
-        .eq('year', currentYear)
-        .eq('payment_status', 'pending');
+      // Fetch all data in parallel
+      const [membersRes, paymentsRes] = await Promise.all([
+        supabase.from('members').select('id, share_count'),
+        supabase.from('payments').select('total_amount, month, year, payment_status')
+      ]);
+
+      if (membersRes.error) throw membersRes.error;
+      if (paymentsRes.error) throw paymentsRes.error;
+
+      const members = membersRes.data || [];
+      const allPayments = paymentsRes.data || [];
+
+      // Calculate Stats
+      const totalMembers = members.length;
+      const totalShares = members.reduce((sum, m) => sum + (m.share_count || 0), 0);
+      
+      const paidPayments = allPayments.filter(p => p.payment_status === 'paid');
+      const totalSavings = paidPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+      
+      const monthlyCollection = paidPayments
+        .filter(p => p.month === currentMonth && p.year === currentYear)
+        .reduce((sum, p) => sum + (p.total_amount || 0), 0);
+      
+      const pendingCount = allPayments
+        .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'pending')
+        .length;
 
       setStats({
-        totalMembers: membersCount || 0,
+        totalMembers,
         totalShares,
         totalSavings,
         monthlyCollection,
-        pendingCount: pendingCount || 0,
+        pendingCount,
       });
-
-      // Fetch all payments for chart processing
-      const { data: allPayments, error: allPaymentsError } = await supabase
-        .from('payments')
-        .select('total_amount, month, year, payment_status');
-      
-      if (allPaymentsError) {
-        if (allPaymentsError.code === 'PGRST205' || allPaymentsError.code === '42P01') {
-          console.warn('Payments table not found.');
-        } else {
-          throw allPaymentsError;
-        }
-      }
 
       // Process Chart Data
       const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -166,20 +112,20 @@ export default function Dashboard() {
       }
 
       const monthlyData = last6Months.map(m => {
-        const amount = allPayments
-          ?.filter(p => p.month === m.month && p.year === m.year && p.payment_status === 'paid')
-          .reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
+        const amount = paidPayments
+          .filter(p => p.month === m.month && p.year === m.year)
+          .reduce((sum, p) => sum + (p.total_amount || 0), 0);
         return { name: m.name, amount };
       });
 
-      // Share Distribution (using members data from above)
-      const shareDistribution = members?.reduce((acc: any, curr) => {
+      // Share Distribution
+      const shareDistribution = members.reduce((acc: any, curr) => {
         const key = `${curr.share_count} Share${curr.share_count > 1 ? 's' : ''}`;
         acc[key] = (acc[key] || 0) + 1;
         return acc;
       }, {});
 
-      const distributionData = Object.entries(shareDistribution || {}).map(([name, value]) => ({
+      const distributionData = Object.entries(shareDistribution).map(([name, value]) => ({
         name,
         value
       }));
@@ -237,7 +183,23 @@ export default function Dashboard() {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 w-full lg:w-auto">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+              <button 
+                onClick={() => {
+                  fetchDashboardData(true);
+                  if (isAdmin) fetchRecentPayments();
+                }}
+                disabled={loading}
+                className={cn(
+                  "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all",
+                  loading && "animate-spin opacity-50"
+                )}
+                title="Refresh Data"
+              >
+                <RefreshCcw className="w-5 h-5 text-gray-500 dark:text-white/60" />
+              </button>
+            </div>
             <p className="text-gray-500 dark:text-white/60 mt-1">Welcome back, {member?.name || 'User'}</p>
           </div>
           <div className="flex-1 sm:flex-none">

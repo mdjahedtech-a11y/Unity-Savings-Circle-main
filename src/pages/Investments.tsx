@@ -4,10 +4,11 @@ import { supabase } from '../lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Plus, Trash2, Calendar, DollarSign, FileText, StickyNote, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Calendar, DollarSign, FileText, StickyNote, AlertCircle, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { cn } from '../lib/utils';
 
 type Note = {
   id: string;
@@ -32,6 +33,7 @@ export default function Investments() {
   const { isAdmin } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [tableError, setTableError] = useState(false);
 
@@ -46,8 +48,9 @@ export default function Investments() {
     fetchNotes();
   }, []);
 
-  const fetchNotes = async () => {
+  const fetchNotes = async (isRefresh = false) => {
     try {
+      if (isRefresh) setRefreshing(true);
       const { data, error } = await supabase
         .from('notes')
         .select('*')
@@ -61,10 +64,13 @@ export default function Investments() {
       }
 
       setNotes(data || []);
+      if (isRefresh) toast.success('Data refreshed');
     } catch (error) {
       console.error('Error fetching notes:', error);
+      if (isRefresh) toast.error('Failed to refresh data');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -151,6 +157,17 @@ export default function Investments() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <StickyNote className="w-8 h-8 text-pink-500" />
             Investments & Notes
+            <button
+              onClick={() => fetchNotes(true)}
+              disabled={refreshing}
+              className={cn(
+                "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all active:scale-95 disabled:opacity-50",
+                refreshing && "animate-spin"
+              )}
+              title="Refresh Data"
+            >
+              <RefreshCcw className="w-4 h-4 text-gray-400" />
+            </button>
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
             Track investments and keep important notes for the circle.

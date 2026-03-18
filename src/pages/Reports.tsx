@@ -4,10 +4,11 @@ import { supabase } from '../lib/supabase';
 import { Member, Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Download, FileText, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Download, FileText, CheckCircle, XCircle, AlertTriangle, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { cn } from '../lib/utils';
 
 export default function Reports() {
   const { isAdmin } = useAuth();
@@ -20,29 +21,24 @@ export default function Reports() {
     generateReport();
   }, [selectedMonth, selectedYear]);
 
-  const generateReport = async () => {
+  const generateReport = async (isRefresh = false) => {
     setLoading(true);
     try {
-      // Fetch all members
-      const { data: members, error: membersError } = await supabase
-        .from('members')
-        .select('*')
-        .order('name');
+      // Fetch all data in parallel
+      const [membersRes, paymentsRes] = await Promise.all([
+        supabase.from('members').select('*').order('name'),
+        supabase.from('payments').select('*').eq('month', selectedMonth).eq('year', parseInt(selectedYear))
+      ]);
       
-      if (membersError) throw membersError;
+      if (membersRes.error) throw membersRes.error;
+      if (paymentsRes.error) throw paymentsRes.error;
 
-      // Fetch payments for the selected month/year
-      const { data: payments, error: paymentsError } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('month', selectedMonth)
-        .eq('year', parseInt(selectedYear));
-
-      if (paymentsError) throw paymentsError;
+      const members = membersRes.data || [];
+      const payments = paymentsRes.data || [];
 
       // Combine data
       const report = members.map(member => {
-        const payment = payments?.find(p => p.member_id === member.id);
+        const payment = payments.find(p => p.member_id === member.id);
         return {
           ...member,
           paymentStatus: payment ? payment.payment_status : 'unpaid',
@@ -82,7 +78,20 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Monthly Reports</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Monthly Reports</h1>
+          <button 
+            onClick={() => generateReport(true)}
+            disabled={loading}
+            className={cn(
+              "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all",
+              loading && "animate-spin opacity-50"
+            )}
+            title="Refresh Report"
+          >
+            <RefreshCcw className="w-5 h-5 text-gray-500 dark:text-white/60" />
+          </button>
+        </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <div className="flex gap-2 w-full sm:w-auto">
             <select 

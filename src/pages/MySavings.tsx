@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2 } from 'lucide-react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
@@ -13,6 +13,7 @@ export default function MySavings() {
   const { member, refreshProfile } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -22,8 +23,9 @@ export default function MySavings() {
     }
   }, [member]);
 
-  const fetchMyPayments = async () => {
+  const fetchMyPayments = async (isRefresh = false) => {
     try {
+      if (isRefresh) setRefreshing(true);
       const { data, error } = await supabase
         .from('payments')
         .select('*')
@@ -32,11 +34,21 @@ export default function MySavings() {
 
       if (error) throw error;
       setPayments(data || []);
+      if (isRefresh) toast.success('Data refreshed');
     } catch (error) {
       console.error('Error fetching payments:', error);
+      if (isRefresh) toast.error('Failed to refresh data');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    await Promise.all([
+      fetchMyPayments(true),
+      refreshProfile()
+    ]);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,9 +158,21 @@ export default function MySavings() {
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
               <h1 className="text-3xl md:text-4xl font-black tracking-tight">{member?.name || 'Administrator'}</h1>
-              <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-widest border border-white/10">
-                {member?.role === 'admin' ? 'Admin' : 'Active Member'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-widest border border-white/10">
+                  {member?.role === 'admin' ? 'Admin' : 'Active Member'}
+                </span>
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className={cn(
+                    "p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50",
+                    refreshing && "animate-spin"
+                  )}
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
             
             <div className="flex flex-wrap justify-center md:justify-start gap-4 text-white/80">
