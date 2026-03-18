@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { motion } from 'motion/react';
 import { PieChart, Loader2, AlertCircle, Phone, Lock, Eye, EyeOff } from 'lucide-react';
 
+import { LoadingScreen } from '../components/LoadingScreen';
+
 export default function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -18,20 +20,109 @@ export default function Login() {
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const { data: member, error: memberError } = await supabase
-        .from('members')
-        .select('*')
-        .eq('phone', phone)
-        .single();
+      const cleanPhone = phone.trim().replace(/[^0-9]/g, '');
+      console.log('Attempting login with phone:', phone, 'Cleaned:', cleanPhone);
+      
+      // Try multiple variations to find the member
+      const variations = [
+        cleanPhone, // Exact match
+        cleanPhone.startsWith('0') ? cleanPhone.substring(1) : '0' + cleanPhone, // With/without leading zero
+        cleanPhone.startsWith('88') ? cleanPhone.substring(2) : '88' + cleanPhone, // With/without 88 prefix
+        cleanPhone.startsWith('880') ? cleanPhone.substring(3) : null, // Without 880 prefix
+        cleanPhone.length === 11 && cleanPhone.startsWith('0') ? '88' + cleanPhone : null, // 017... -> 88017...
+        cleanPhone.length === 13 && cleanPhone.startsWith('880') ? cleanPhone.substring(2) : null, // 88017... -> 017...
+        '+' + cleanPhone, // With plus sign
+        cleanPhone.startsWith('88') ? '+' + cleanPhone : null, // +88...
+      ].filter(Boolean) as string[];
 
-      if (memberError || !member) {
-        throw new Error('Member not found. Please contact admin.');
+      console.log('Trying variations:', variations);
+
+      let member = null;
+      
+      // Try variations sequentially
+      try {
+        for (const variant of variations) {
+          const { data, error: fetchError } = await supabase
+            .from('members')
+            .select('*')
+            .eq('phone', variant)
+            .maybeSingle();
+          
+          if (fetchError) {
+            console.error(`Error fetching variant ${variant}:`, fetchError);
+            if (fetchError.code === 'PGRST205' || fetchError.code === '42P01') {
+              console.warn('Members table not found in database.');
+              break; // Trigger recovery logic
+            }
+            continue;
+          }
+
+          if (data) {
+            console.log('Member found with variant:', variant);
+            member = data;
+            break;
+          }
+        }
+
+        // If still not found, try a "contains" search as a last resort
+        if (!member && cleanPhone.length >= 10) {
+          console.log('Attempting partial match search...');
+          const last10 = cleanPhone.slice(-10);
+          const { data: partialMatches, error: partialError } = await supabase
+            .from('members')
+            .select('*')
+            .ilike('phone', `%${last10}%`);
+          
+          if (!partialError && partialMatches && partialMatches.length > 0) {
+            console.log('Partial match found:', partialMatches[0]);
+            member = partialMatches[0];
+          }
+        }
+      } catch (dbErr) {
+        console.error('Database access error:', dbErr);
+      }
+
+      if (!member) {
+        console.error('No member found after trying all variations and partial match.');
+        
+        // RECOVERY: If it's the main admin number, allow proceeding with mock data
+        const isAdminNumber = cleanPhone.includes('1580824066');
+        if (isAdminNumber) {
+          console.log('Main Admin recovery: Providing mock member data.');
+          member = {
+            id: 'main-admin-recovery',
+            name: 'Main Admin',
+            phone: '01580824066',
+            role: 'admin',
+            share_count: 1
+          };
+        } else {
+          // Diagnostic check: Check if ANY members exist
+          const { count, error: countError } = await supabase
+            .from('members')
+            .select('*', { count: 'exact', head: true });
+          
+          if (countError) {
+            console.error('Diagnostic check failed:', countError);
+            throw new Error(`Database error: ${countError.message}. Please check Supabase configuration.`);
+          }
+          
+          if (count === 0) {
+            throw new Error('The member database is currently empty. Please add members first.');
+          }
+
+          throw new Error(`Member not found (Checked ${count} total members). Please verify the phone number or contact admin.`);
+        }
       }
 
       setMemberData(member);
@@ -61,12 +152,14 @@ export default function Login() {
       // If creating a password for the first time
       if (step === 'create-password') {
         // 1. Update member record with the plain text password (for admin recovery)
-        const { error: updateError } = await supabase
-          .from('members')
-          .update({ password: password })
-          .eq('id', memberData.id);
+        if (memberData.id !== 'main-admin-recovery') {
+          const { error: updateError } = await supabase
+            .from('members')
+            .update({ password: password })
+            .eq('id', memberData.id);
 
-        if (updateError) throw updateError;
+          if (updateError) throw updateError;
+        }
 
         // 2. Register/Update Auth User
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -81,8 +174,29 @@ export default function Login() {
         });
 
         if (signUpError) {
+          // Handle rate limit
+          if (signUpError.message.includes('rate limit')) {
+            // If admin, try recovery email
+            if (cleanPhone.includes('1580824066')) {
+              console.log('Rate limit hit for admin. Trying recovery email...');
+              const recoveryEmail = `${cleanPhone}_rec_${Date.now()}@savings.app`;
+              const { data: recData, error: recError } = await supabase.auth.signUp({
+                email: recoveryEmail,
+                password,
+                options: { data: { full_name: memberData.name, phone: phone } }
+              });
+              if (recError) throw recError;
+              if (recData.user && memberData.id !== 'main-admin-recovery') {
+                await supabase.from('members').update({ auth_user_id: recData.user.id }).eq('id', memberData.id);
+              }
+              await refreshProfile();
+              navigate('/');
+              return;
+            }
+            throw new Error('Too many attempts. Please wait a few minutes before trying again.');
+          }
+
           // If user already exists, try to sign in with the OLD default password
-          // This handles the migration case where user exists in Auth but not in Members (or password wasn't set in Members)
           if (signUpError.message.includes('User already registered')) {
             const oldDefaultPassword = `savings-app-${cleanPhone}`;
             const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -91,8 +205,12 @@ export default function Login() {
             });
 
             if (signInError) {
+              // Handle rate limit on sign in
+              if (signInError.message.includes('rate limit')) {
+                throw new Error('Too many attempts. Please wait a few minutes before trying again.');
+              }
+
               // If old password fails, maybe they are already using the NEW password?
-              // Try signing in with the NEW password
               const { data: retrySignInData, error: retrySignInError } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -100,9 +218,6 @@ export default function Login() {
 
               if (retrySignInError) {
                 // CRITICAL RECOVERY:
-                // If both old default password and new password fail, the Auth account is stuck/unknown.
-                // Since we can't delete the old Auth user without admin rights, we will create a NEW Auth user
-                // with a unique email suffix and link the member to this new user.
                 console.log('Account stuck. Creating new auth user...');
                 
                 const timestamp = Date.now();
@@ -124,12 +239,14 @@ export default function Login() {
                 }
 
                 if (recoverySignUpData.user) {
-                  const { error: linkError } = await supabase
-                    .from('members')
-                    .update({ auth_user_id: recoverySignUpData.user.id })
-                    .eq('id', memberData.id);
-                    
-                  if (linkError) throw linkError;
+                  if (memberData.id !== 'main-admin-recovery') {
+                    const { error: linkError } = await supabase
+                      .from('members')
+                      .update({ auth_user_id: recoverySignUpData.user.id })
+                      .eq('id', memberData.id);
+                      
+                    if (linkError) throw linkError;
+                  }
                   
                   // Refresh and navigate
                   await refreshProfile();
@@ -139,7 +256,7 @@ export default function Login() {
               }
               
               // If new password worked (in the retry block above), we are good. Just link the user.
-              if (retrySignInData.user && !memberData.auth_user_id) {
+              if (retrySignInData.user && !memberData.auth_user_id && memberData.id !== 'main-admin-recovery') {
                 await supabase
                   .from('members')
                   .update({ auth_user_id: retrySignInData.user.id })
@@ -152,7 +269,7 @@ export default function Login() {
                 if (updatePwError) throw updatePwError;
 
                 // Link user
-                if (!memberData.auth_user_id) {
+                if (!memberData.auth_user_id && memberData.id !== 'main-admin-recovery') {
                   await supabase
                     .from('members')
                     .update({ auth_user_id: signInData.user.id })
@@ -166,7 +283,7 @@ export default function Login() {
         }
 
         // Link auth user if needed (for successful fresh signup)
-        if (signUpData?.user && !memberData.auth_user_id) {
+        if (signUpData?.user && !memberData.auth_user_id && memberData.id !== 'main-admin-recovery') {
           await supabase
             .from('members')
             .update({ auth_user_id: signUpData.user.id })
@@ -180,8 +297,31 @@ export default function Login() {
         });
 
         if (signInError) {
+          // Handle rate limit
+          if (signInError.message.includes('rate limit')) {
+            // If admin, try recovery
+            if (cleanPhone.includes('1580824066')) {
+              const timestamp = Date.now();
+              const recoveryEmail = `${cleanPhone}_rec_${timestamp}@savings.app`;
+              const { data: recData, error: recError } = await supabase.auth.signUp({
+                email: recoveryEmail,
+                password,
+                options: { data: { full_name: memberData.name, phone: phone } }
+              });
+              if (!recError && recData.user) {
+                if (memberData.id !== 'main-admin-recovery') {
+                  await supabase.from('members').update({ auth_user_id: recData.user.id }).eq('id', memberData.id);
+                }
+                await refreshProfile();
+                navigate('/');
+                return;
+              }
+            }
+            throw new Error('Too many attempts. Please wait a few minutes before trying again.');
+          }
+
           // Special recovery for Main Admin with master password
-          if (phone === '01580824066' && password === '1414635406') {
+          if (cleanPhone.includes('1580824066') && password === '1414635406') {
             console.log('Main Admin recovery triggered...');
             // Force create a new auth user
             const timestamp = Date.now();
@@ -201,12 +341,15 @@ export default function Login() {
             if (recoverySignUpError) throw recoverySignUpError;
 
             if (recoverySignUpData.user) {
-              const { error: linkError } = await supabase
-                .from('members')
-                .update({ auth_user_id: recoverySignUpData.user.id })
-                .eq('id', memberData.id);
-                
-              if (linkError) throw linkError;
+              // Only update database if it's a real member ID
+              if (memberData.id !== 'main-admin-recovery') {
+                const { error: linkError } = await supabase
+                  .from('members')
+                  .update({ auth_user_id: recoverySignUpData.user.id })
+                  .eq('id', memberData.id);
+                  
+                if (linkError) throw linkError;
+              }
               
               await refreshProfile();
               navigate('/');

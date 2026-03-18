@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useSettings } from '../context/SettingsContext';
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,9 +11,9 @@ import {
   PieChart,
   StickyNote,
   MessageSquare,
-  Settings as SettingsIcon,
   Sun,
-  Moon
+  Moon,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -22,9 +21,8 @@ import { Button } from './ui/Button';
 import { toast } from 'sonner';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, systemSettings } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const { settings } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const [showExitModal, setShowExitModal] = useState(false);
@@ -83,17 +81,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard, show: isAdmin || settings.show_dashboard },
-    { name: 'Members', path: '/members', icon: Users, show: isAdmin || settings.show_members },
-    { name: 'Reports', path: '/reports', icon: FileText, show: isAdmin || settings.show_reports },
-    { name: 'Investments', path: '/investments', icon: StickyNote, show: isAdmin || settings.show_investments },
-    { name: 'Discussion', path: '/discussion', icon: MessageSquare, show: isAdmin || settings.show_discussion },
-    { name: 'My Savings', path: '/my-savings', icon: Wallet, show: isAdmin || settings.show_my_savings },
-    { name: 'Settings', path: '/settings', icon: SettingsIcon, show: isAdmin },
-  ];
+    { name: 'Members', path: '/members', icon: Users, key: 'always_visible', color: 'from-emerald-500 to-teal-400' },
+    { name: 'Reports', path: '/reports', icon: FileText, key: 'show_reports', color: 'from-amber-500 to-orange-400' },
+    { name: 'Investments', path: '/investments', icon: StickyNote, key: 'show_investments', color: 'from-purple-500 to-indigo-400' },
+    { name: 'Dashboard', path: '/', icon: LayoutDashboard, key: 'show_dashboard', color: 'from-blue-500 to-cyan-400' },
+    { name: 'Discussion', path: '/discussion', icon: MessageSquare, key: 'show_discussion', color: 'from-pink-500 to-rose-400' },
+    { name: 'My Savings', path: '/my-savings', icon: Wallet, key: 'show_savings', color: 'from-indigo-500 to-blue-400' },
+    ...(isAdmin ? [{ name: 'Settings', path: '/settings', icon: SettingsIcon, key: 'admin_only', color: 'from-gray-600 to-gray-400' }] : []),
+  ].filter(item => {
+    if (isAdmin) return true;
+    if (item.key === 'always_visible') return true;
+    if (item.key === 'admin_only') return false;
+    return (systemSettings as any)?.[item.key] !== false;
+  });
 
   return (
-    <div className="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 dark:text-white font-sans selection:bg-pink-50 selection:text-white">
+    <div className="min-h-screen transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-[#0f172a] dark:text-white font-sans selection:bg-pink-50 selection:text-white">
       {/* Exit Confirmation Modal */}
       <AnimatePresence>
         {showExitModal && (
@@ -120,18 +123,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-white/5 backdrop-blur-lg border-b border-gray-200 dark:border-white/10 sticky top-0 z-50">
+      <div className="lg:hidden flex items-center justify-between p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-white/10 sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
-          <span className="font-bold text-lg tracking-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-lg tracking-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
+            <span className="text-[10px] text-gray-500 dark:text-white/40 font-medium -mt-1">Made by Jahed Hasan</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80 h-9 w-9">
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 hover:text-red-600 h-9 w-9">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
@@ -139,24 +145,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-white/80 dark:bg-black/20 backdrop-blur-xl border-r border-gray-200 dark:border-white/10 p-6 transition-colors duration-300">
+        <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-white dark:bg-gray-900/50 backdrop-blur-xl border-r border-gray-200 dark:border-white/10 p-6 transition-colors duration-300">
           <div className="flex items-center gap-3 mb-10 px-2">
-            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg shadow-purple-500/30 overflow-hidden">
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg shadow-purple-500/30 overflow-hidden border border-gray-100 dark:border-white/10">
               <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="font-bold text-xl tracking-tight leading-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
+            <div className="flex flex-col">
+              <span className="font-bold text-xl tracking-tight leading-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
+              <span className="text-xs text-gray-500 dark:text-white/40 font-medium">Made by Jahed Hasan</span>
+            </div>
           </div>
 
           <nav className="flex-1 flex flex-col gap-2">
-            {navItems.filter(item => item.show).map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                   location.pathname === item.path
-                    ? "bg-pink-50 text-pink-600 dark:bg-gradient-to-r dark:from-white/20 dark:to-white/5 dark:text-white shadow-sm dark:shadow-lg border border-pink-100 dark:border-white/10"
-                    : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white hover:pl-5"
+                    ? "bg-pink-50 text-pink-600 dark:bg-white/10 dark:text-white shadow-sm border border-pink-100 dark:border-white/10"
+                    : "text-gray-600 dark:text-white/60 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white hover:pl-5"
                 )}
               >
                 <item.icon className={cn(
@@ -194,47 +203,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-x-hidden pb-24 lg:pb-8">
+        <main className="flex-1 p-4 lg:p-8 overflow-x-hidden pb-28 lg:pb-8">
           <div className="max-w-5xl mx-auto">
             {children}
           </div>
         </main>
       </div>
 
-      {/* Mobile Bottom Nav - Floating & Stylish */}
-      <div className="lg:hidden fixed bottom-6 left-2 right-2 z-50">
-        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-2xl shadow-pink-500/10 p-1.5 flex items-center overflow-x-auto hide-scrollbar gap-1">
-          {navItems.filter(item => item.show).map((item) => {
+      {/* Mobile Bottom Nav - Clean & Simple Design */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 safe-bottom">
+        <div className="flex items-center justify-around h-16 max-w-md mx-auto">
+          {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative flex-none w-[4.5rem] flex flex-col items-center justify-center py-2"
+                className="flex-1 flex flex-col items-center justify-center h-full relative group"
               >
+                <div className={cn(
+                  "p-2 rounded-xl transition-all duration-300 flex flex-col items-center gap-1",
+                  isActive ? "text-pink-600 dark:text-pink-400" : "text-gray-400 dark:text-white/40 hover:text-gray-600 dark:hover:text-white/60"
+                )}>
+                  <item.icon className={cn("w-6 h-6", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
+                </div>
                 {isActive && (
-                  <motion.div
-                    layoutId="mobile-nav-active"
-                    className="absolute inset-0 bg-gradient-to-tr from-pink-600 to-purple-600 rounded-xl shadow-lg shadow-pink-500/25"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  <motion.div 
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-1 w-1 h-1 rounded-full bg-pink-600 dark:bg-pink-400"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                   />
                 )}
-                <div className={cn(
-                  "relative z-10 flex flex-col items-center gap-0.5 transition-colors duration-200",
-                  isActive ? "text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-                )}>
-                  <item.icon className={cn("w-5 h-5", isActive && "fill-white/20")} strokeWidth={isActive ? 2.5 : 2} />
-                  {isActive && (
-                    <motion.span 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="text-[10px] font-bold tracking-wide"
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                </div>
               </Link>
             );
           })}

@@ -3,15 +3,18 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle } from 'lucide-react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
+import { toast } from 'sonner';
 
 export default function MySavings() {
-  const { member } = useAuth();
+  const { member, refreshProfile } = useAuth();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (member) {
@@ -34,6 +37,44 @@ export default function MySavings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) {
+      toast.error('Image size must be less than 1MB');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        
+        const { error } = await supabase
+          .from('members')
+          .update({ photo_url: base64String })
+          .eq('id', member?.id);
+
+        if (error) throw error;
+
+        await refreshProfile();
+        toast.success('Profile picture updated successfully');
+      };
+      reader.readAsDataURL(file);
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(error.message || 'Failed to update profile picture');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const totalPaid = payments.reduce((sum, p) => sum + p.total_amount, 0);
@@ -68,15 +109,38 @@ export default function MySavings() {
         <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-pink-500/20 blur-3xl" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="relative">
-            <div className="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20 p-1 backdrop-blur-md">
+          <div className="relative group">
+            <div className="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20 p-1 backdrop-blur-md overflow-hidden relative">
               <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-white/40 to-white/10 text-3xl font-bold">
-                {member?.name?.charAt(0) || 'A'}
+                {member?.photo_url ? (
+                  <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
+                ) : (
+                  member?.name?.charAt(0) || 'A'
+                )}
+              </div>
+              
+              <div 
+                onClick={triggerFileInput}
+                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <Camera className="w-6 h-6 text-white" />
               </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 border-2 border-white shadow-lg">
-              <Award className="h-4 w-4 text-white" />
-            </div>
+            
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImageUpload} 
+              accept="image/*" 
+              className="hidden" 
+            />
+
+            <button 
+              onClick={triggerFileInput}
+              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 border-2 border-white shadow-lg hover:bg-pink-600 transition-colors"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Camera className="h-4 w-4 text-white" />}
+            </button>
           </div>
           
           <div className="flex-1 text-center md:text-left">
@@ -100,6 +164,18 @@ export default function MySavings() {
                     : 'System Account'}
                 </span>
               </div>
+            </div>
+
+            <div className="mt-4">
+              <a 
+                href="https://squoosh.app/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors border border-white/10"
+              >
+                <ArrowUpRight className="w-3 h-3" />
+                Reduce Photo Size (Max 1MB)
+              </a>
             </div>
           </div>
           

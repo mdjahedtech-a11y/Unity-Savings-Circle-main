@@ -39,3 +39,13 @@ export interface MonthlyReport {
   pending_count: number;
   details: Payment[];
 }
+
+export interface SystemSettings {
+  id: string;
+  show_dashboard: boolean;
+  show_reports: boolean;
+  show_investments: boolean;
+  show_discussion: boolean;
+  show_savings: boolean;
+  updated_at?: string;
+}

@@ -8,7 +8,6 @@ import { Plus, Trash2, Calendar, DollarSign, FileText, StickyNote, AlertCircle }
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
-import { sendPushNotification } from '../lib/notifications';
 
 type Note = {
   id: string;
@@ -83,13 +82,6 @@ export default function Investments() {
       if (error) throw error;
 
       toast.success('Note added successfully');
-
-      // Send push notification
-      sendPushNotification(
-        'New Investment Note',
-        `New investment: ${title}${amount ? ` (৳${parseFloat(amount).toLocaleString()})` : ''}`,
-        '/investments'
-      );
 
       setIsAddModalOpen(false);
       resetForm();

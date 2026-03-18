@@ -2,21 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { StatsCard } from '../components/StatsCard';
-import { MonthlySavingsChart, DistributionChart, GrowthChart } from '../components/Charts';
+import { MonthlySavingsChart, DistributionChart, GrowthChart, RecentPaymentsChart } from '../components/Charts';
 import { CountdownTimer } from '../components/CountdownTimer';
 import { Users, Wallet, TrendingUp, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 
 import { useNavigate } from 'react-router-dom';
-import { subscribeToPush } from '../lib/notifications';
-import { Bell } from 'lucide-react';
-import { toast } from 'sonner';
+
+import { LoadingScreen } from '../components/LoadingScreen';
 
 export default function Dashboard() {
-  const { member, isAdmin } = useAuth();
+  const { member, isAdmin, dashboardLoaded, setDashboardLoaded } = useAuth();
   const navigate = useNavigate();
-  const [isSubscribing, setIsSubscribing] = useState(false);
   const [stats, setStats] = useState({
     totalMembers: 0,
     totalShares: 0,
@@ -34,29 +32,6 @@ export default function Dashboard() {
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-    if (isAdmin) {
-      fetchRecentPayments();
-    }
-
-    // Real-time subscription for payments
-    const subscription = supabase
-      .channel('public:payments')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
-        console.log('Payment change received!', payload);
-        fetchDashboardData();
-        if (isAdmin) {
-          fetchRecentPayments();
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [isAdmin]);
-
   const fetchRecentPayments = async () => {
     setLoadingPayments(true);
     try {
@@ -64,7 +39,7 @@ export default function Dashboard() {
         .from('payments')
         .select(`
           *,
-          members (name)
+          members (name, photo_url)
         `)
         .order('payment_date', { ascending: false })
         .limit(5);
@@ -85,47 +60,96 @@ export default function Dashboard() {
         .from('members')
         .select('*', { count: 'exact', head: true });
       
-      if (membersError) throw membersError;
+      if (membersError) {
+        if (membersError.code === 'PGRST205' || membersError.code === '42P01') {
+          console.warn('Members table not found.');
+        } else {
+          throw membersError;
+        }
+      }
       
       // Fetch Total Shares
       const { data: members, error: sharesError } = await supabase
         .from('members')
         .select('share_count');
       
-      if (sharesError) throw sharesError;
+      if (sharesError) {
+        if (sharesError.code === 'PGRST205' || sharesError.code === '42P01') {
+          console.warn('Members table not found.');
+        } else {
+          throw sharesError;
+        }
+      }
+      
+      const totalShares = members?.reduce((sum, m) => sum + (m.share_count || 0), 0) || 0;
 
-      const totalShares = members?.reduce((sum, m) => sum + m.share_count, 0) || 0;
-
-      // Fetch Payments
+      // Fetch Total Savings
       const { data: payments, error: paymentsError } = await supabase
         .from('payments')
-        .select('total_amount, payment_status, month, year');
+        .select('total_amount')
+        .eq('payment_status', 'paid');
       
-      if (paymentsError) throw paymentsError;
+      if (paymentsError) {
+        if (paymentsError.code === 'PGRST205' || paymentsError.code === '42P01') {
+          console.warn('Payments table not found.');
+        } else {
+          throw paymentsError;
+        }
+      }
+      
+      const totalSavings = payments?.reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
 
-      const totalSavings = payments?.filter(p => p.payment_status === 'paid').reduce((sum, p) => sum + p.total_amount, 0) || 0;
-      
+      // Fetch Monthly Collection (current month)
       const currentMonth = new Date().toLocaleString('default', { month: 'long' });
       const currentYear = new Date().getFullYear();
+      
+      const { data: monthlyPayments, error: monthlyError } = await supabase
+        .from('payments')
+        .select('total_amount')
+        .eq('month', currentMonth)
+        .eq('year', currentYear)
+        .eq('payment_status', 'paid');
+      
+      if (monthlyError) {
+        if (monthlyError.code === 'PGRST205' || monthlyError.code === '42P01') {
+          console.warn('Payments table not found.');
+        } else {
+          throw monthlyError;
+        }
+      }
+      
+      const monthlyCollection = monthlyPayments?.reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
 
-      const monthlyCollection = payments
-        ?.filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'paid')
-        .reduce((sum, p) => sum + p.total_amount, 0) || 0;
-
-      const pendingCount = payments
-        ?.filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'pending')
-        .length || 0;
+      // Fetch Pending Count
+      const { count: pendingCount, error: pendingError } = await supabase
+        .from('payments')
+        .select('*', { count: 'exact', head: true })
+        .eq('month', currentMonth)
+        .eq('year', currentYear)
+        .eq('payment_status', 'pending');
 
       setStats({
         totalMembers: membersCount || 0,
-        totalShares: totalShares || 0,
-        totalSavings: totalSavings || 0,
-        monthlyCollection: monthlyCollection || 0,
-        pendingCount: pendingCount || 0
+        totalShares,
+        totalSavings,
+        monthlyCollection,
+        pendingCount: pendingCount || 0,
       });
 
+      // Fetch all payments for chart processing
+      const { data: allPayments, error: allPaymentsError } = await supabase
+        .from('payments')
+        .select('total_amount, month, year, payment_status');
+      
+      if (allPaymentsError) {
+        if (allPaymentsError.code === 'PGRST205' || allPaymentsError.code === '42P01') {
+          console.warn('Payments table not found.');
+        } else {
+          throw allPaymentsError;
+        }
+      }
+
       // Process Chart Data
-      // 1. Monthly Savings (Last 6 months)
       const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
       const currentMonthIndex = new Date().getMonth();
       
@@ -142,13 +166,13 @@ export default function Dashboard() {
       }
 
       const monthlyData = last6Months.map(m => {
-        const amount = payments
+        const amount = allPayments
           ?.filter(p => p.month === m.month && p.year === m.year && p.payment_status === 'paid')
-          .reduce((sum, p) => sum + p.total_amount, 0) || 0;
+          .reduce((sum, p) => sum + (p.total_amount || 0), 0) || 0;
         return { name: m.name, amount };
       });
 
-      // 2. Share Distribution
+      // Share Distribution (using members data from above)
       const shareDistribution = members?.reduce((acc: any, curr) => {
         const key = `${curr.share_count} Share${curr.share_count > 1 ? 's' : ''}`;
         acc[key] = (acc[key] || 0) + 1;
@@ -160,7 +184,7 @@ export default function Dashboard() {
         value
       }));
 
-      // 3. Growth Chart (Cumulative)
+      // Growth Chart (Cumulative Savings)
       let cumulative = 0;
       const growthData = monthlyData.map(m => {
         cumulative += m.amount;
@@ -177,21 +201,36 @@ export default function Dashboard() {
       console.error('Error fetching dashboard data:', error);
     } finally {
       setLoading(false);
+      setDashboardLoaded(true);
     }
   };
 
-  const handleSubscribe = async () => {
-    setIsSubscribing(true);
-    try {
-      await subscribeToPush();
-      toast.success('Notifications enabled successfully!');
-    } catch (error) {
-      console.error('Subscription error:', error);
-      toast.error('Failed to enable notifications. Please check browser permissions.');
-    } finally {
-      setIsSubscribing(false);
+  useEffect(() => {
+    fetchDashboardData();
+    if (isAdmin) {
+      fetchRecentPayments();
     }
-  };
+
+    // Real-time subscription for payments
+    const subscription = supabase
+      .channel('public:dashboard_payments')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
+        console.log('Payment change received!', payload);
+        fetchDashboardData();
+        if (isAdmin) {
+          fetchRecentPayments();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [isAdmin]);
+
+  if (loading && !dashboardLoaded) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="space-y-8">
@@ -201,16 +240,8 @@ export default function Dashboard() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
             <p className="text-gray-500 dark:text-white/60 mt-1">Welcome back, {member?.name || 'User'}</p>
           </div>
-          <div className="flex-1 sm:flex-none flex items-center gap-3">
+          <div className="flex-1 sm:flex-none">
             <CountdownTimer />
-            <button
-              onClick={handleSubscribe}
-              disabled={isSubscribing}
-              className="p-2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl text-gray-600 dark:text-white/70 hover:text-pink-500 dark:hover:text-pink-400 transition-all shadow-sm disabled:opacity-50"
-              title="Enable Push Notifications"
-            >
-              <Bell className={`w-5 h-5 ${isSubscribing ? 'animate-pulse' : ''}`} />
-            </button>
           </div>
         </div>
         <div className="bg-white dark:bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-sm font-mono text-pink-600 dark:text-pink-300 shadow-sm dark:shadow-none">
@@ -313,8 +344,12 @@ export default function Dashboard() {
                 recentPayments.map((p, i) => (
                   <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center text-xs font-bold text-pink-600 dark:text-pink-400">
-                        {p.members?.name?.charAt(0)}
+                      <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center text-xs font-bold text-pink-600 dark:text-pink-400 overflow-hidden">
+                        {p.members?.photo_url ? (
+                          <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" />
+                        ) : (
+                          p.members?.name?.charAt(0)
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">{p.members?.name}</p>
@@ -334,6 +369,10 @@ export default function Dashboard() {
                 <p className="text-center text-gray-400 dark:text-white/40 text-sm py-8">No payments recorded yet.</p>
               )}
             </div>
+            
+            {!loadingPayments && recentPayments.length > 0 && (
+              <RecentPaymentsChart data={recentPayments} />
+            )}
           </div>
         )}
       </div>

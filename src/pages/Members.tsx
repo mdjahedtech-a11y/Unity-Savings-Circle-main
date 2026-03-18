@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../components/ui/Skeleton';
-import { sendPushNotification } from '../lib/notifications';
 
 export default function Members() {
   const { isAdmin, isMainAdmin } = useAuth();
@@ -58,10 +57,6 @@ export default function Members() {
   // Revoke Payment Modal State
   const [isRevokePaymentModalOpen, setIsRevokePaymentModalOpen] = useState(false);
   const [memberToRevokePayment, setMemberToRevokePayment] = useState<Member | null>(null);
-
-  useEffect(() => {
-    fetchMembers();
-  }, [selectedMonth, selectedYear]);
 
   const fetchMembers = async () => {
     try {
@@ -111,6 +106,10 @@ export default function Members() {
     }
   };
 
+  useEffect(() => {
+    fetchMembers();
+  }, [selectedMonth, selectedYear]);
+
   const handleViewMember = (member: Member) => {
     setMemberToView(member);
     setIsViewMemberModalOpen(true);
@@ -147,9 +146,10 @@ export default function Members() {
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const cleanPhone = newMemberPhone.trim().replace(/[^0-9]/g, '');
       const { error } = await supabase.from('members').insert({
         name: newMemberName,
-        phone: newMemberPhone,
+        phone: cleanPhone,
         share_count: parseInt(newMemberShares),
         role: 'user'
       });
@@ -157,13 +157,6 @@ export default function Members() {
       if (error) throw error;
       
       toast.success('Member added successfully');
-
-      // Send push notification
-      sendPushNotification(
-        'New Member Joined',
-        `${newMemberName} has joined our savings group!`,
-        '/members'
-      );
 
       setIsAddMemberModalOpen(false);
       resetForm();
@@ -179,11 +172,12 @@ export default function Members() {
     if (!selectedMember) return;
 
     try {
+      const cleanPhone = newMemberPhone.trim().replace(/[^0-9]/g, '');
       const { error } = await supabase
         .from('members')
         .update({
           name: newMemberName,
-          phone: newMemberPhone,
+          phone: cleanPhone,
           share_count: parseInt(newMemberShares)
         })
         .eq('id', selectedMember.id);
@@ -293,13 +287,6 @@ export default function Members() {
       if (error) throw error;
       
       toast.success('Payment recorded successfully');
-      
-      // Send push notification to all users
-      sendPushNotification(
-        'New Payment Added',
-        `${selectedMember.name} paid ৳${(parseInt(paymentAmount) + parseInt(penaltyAmount)).toLocaleString()} for ${paymentMonth} ${paymentYear}.`,
-        '/my-savings'
-      );
 
       setIsPaymentModalOpen(false);
       fetchMembers();
@@ -438,8 +425,12 @@ export default function Members() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-lg font-bold text-white shadow-lg relative">
-                      {member.name.charAt(0)}
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-lg font-bold text-white shadow-lg relative overflow-hidden">
+                      {member.photo_url ? (
+                        <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
+                      ) : (
+                        member.name.charAt(0)
+                      )}
                       {member.role === 'admin' && (
                         <div className="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1 border border-white dark:border-black">
                           <Shield className="w-3 h-3 text-black fill-current" />

@@ -135,3 +135,39 @@ export function GrowthChart({ data }: { data: any[] }) {
     </Card>
   );
 }
+
+export function RecentPaymentsChart({ data }: { data: any[] }) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  // Format data for chart: reverse to show chronological order (left to right)
+  const chartData = [...data].reverse().map(p => ({
+    name: p.members?.name?.split(' ')[0] || 'User',
+    amount: p.total_amount,
+    date: new Date(p.payment_date).toLocaleDateString()
+  }));
+
+  return (
+    <div className="h-[200px] mt-6 pt-6 border-t border-gray-100 dark:border-white/5">
+      <p className="text-xs font-medium text-gray-500 dark:text-white/40 mb-4 uppercase tracking-wider">Payment Trends</p>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} vertical={false} />
+          <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"} fontSize={10} tickLine={false} axisLine={false} />
+          <YAxis hide />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: isDark ? '#1f2937' : '#fff', 
+              border: isDark ? 'none' : '1px solid #e5e7eb', 
+              borderRadius: '8px', 
+              fontSize: '12px',
+              color: isDark ? '#fff' : '#111827'
+            }}
+            formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Amount']}
+          />
+          <Bar dataKey="amount" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
