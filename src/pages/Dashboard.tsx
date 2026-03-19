@@ -17,22 +17,88 @@ import { LoadingScreen } from '../components/LoadingScreen';
 export default function Dashboard() {
   const { member, isAdmin, dashboardLoaded, setDashboardLoaded } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({
-    totalMembers: 0,
-    totalShares: 0,
-    totalSavings: 0,
-    monthlyCollection: 0,
-    pendingCount: 0,
-  });
-  const [chartData, setChartData] = useState<any>({
-    monthly: [],
-    distribution: [],
-    growth: []
-  });
-
+  const [members, setMembers] = useState<any[]>([]);
+  const [allPayments, setAllPayments] = useState<any[]>([]);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const { stats, chartData } = React.useMemo(() => {
+    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    const currentYear = new Date().getFullYear();
+
+    // Calculate Stats
+    const totalMembers = members.length;
+    const totalShares = members.reduce((sum, m) => sum + (m.share_count || 0), 0);
+    
+    const paidPayments = allPayments.filter(p => p.payment_status === 'paid');
+    const totalSavings = paidPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+    
+    const monthlyCollection = paidPayments
+      .filter(p => p.month === currentMonth && p.year === currentYear)
+      .reduce((sum, p) => sum + (p.total_amount || 0), 0);
+    
+    const pendingCount = allPayments
+      .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'pending')
+      .length;
+
+    // Process Chart Data
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const currentMonthIndex = new Date().getMonth();
+    
+    // Get last 6 months
+    const last6Months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(currentMonthIndex - i);
+      last6Months.push({
+        month: months[d.getMonth()],
+        year: d.getFullYear(),
+        name: months[d.getMonth()].substring(0, 3)
+      });
+    }
+
+    const monthlyData = last6Months.map(m => {
+      const amount = paidPayments
+        .filter(p => p.month === m.month && p.year === m.year)
+        .reduce((sum, p) => sum + (p.total_amount || 0), 0);
+      return { name: m.name, amount };
+    });
+
+    // Share Distribution
+    const shareDistribution = members.reduce((acc: any, curr) => {
+      const key = `${curr.share_count} Share${curr.share_count > 1 ? 's' : ''}`;
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const distributionData = Object.entries(shareDistribution).map(([name, value]) => ({
+      name,
+      value
+    }));
+
+    // Growth Chart (Cumulative Savings)
+    let cumulative = 0;
+    const growthData = monthlyData.map(m => {
+      cumulative += m.amount;
+      return { name: m.name, value: cumulative };
+    });
+
+    return {
+      stats: {
+        totalMembers,
+        totalShares,
+        totalSavings,
+        monthlyCollection,
+        pendingCount,
+      },
+      chartData: {
+        monthly: monthlyData,
+        distribution: distributionData,
+        growth: growthData
+      }
+    };
+  }, [members, allPayments]);
 
   const fetchRecentPayments = async () => {
     setLoadingPayments(true);
@@ -70,80 +136,11 @@ export default function Dashboard() {
       if (membersRes.error) throw membersRes.error;
       if (paymentsRes.error) throw paymentsRes.error;
 
-      const members = membersRes.data || [];
-      const allPayments = paymentsRes.data || [];
+      const membersData = membersRes.data || [];
+      const allPaymentsData = paymentsRes.data || [];
 
-      // Calculate Stats
-      const totalMembers = members.length;
-      const totalShares = members.reduce((sum, m) => sum + (m.share_count || 0), 0);
-      
-      const paidPayments = allPayments.filter(p => p.payment_status === 'paid');
-      const totalSavings = paidPayments.reduce((sum, p) => sum + (p.total_amount || 0), 0);
-      
-      const monthlyCollection = paidPayments
-        .filter(p => p.month === currentMonth && p.year === currentYear)
-        .reduce((sum, p) => sum + (p.total_amount || 0), 0);
-      
-      const pendingCount = allPayments
-        .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'pending')
-        .length;
-
-      setStats({
-        totalMembers,
-        totalShares,
-        totalSavings,
-        monthlyCollection,
-        pendingCount,
-      });
-
-      // Process Chart Data
-      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-      const currentMonthIndex = new Date().getMonth();
-      
-      // Get last 6 months
-      const last6Months = [];
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date();
-        d.setMonth(currentMonthIndex - i);
-        last6Months.push({
-          month: months[d.getMonth()],
-          year: d.getFullYear(),
-          name: months[d.getMonth()].substring(0, 3)
-        });
-      }
-
-      const monthlyData = last6Months.map(m => {
-        const amount = paidPayments
-          .filter(p => p.month === m.month && p.year === m.year)
-          .reduce((sum, p) => sum + (p.total_amount || 0), 0);
-        return { name: m.name, amount };
-      });
-
-      // Share Distribution
-      const shareDistribution = members.reduce((acc: any, curr) => {
-        const key = `${curr.share_count} Share${curr.share_count > 1 ? 's' : ''}`;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {});
-
-      const distributionData = Object.entries(shareDistribution).map(([name, value]) => ({
-        name,
-        value
-      }));
-
-      // Growth Chart (Cumulative Savings)
-      let cumulative = 0;
-      const growthData = monthlyData.map(m => {
-        cumulative += m.amount;
-        return { name: m.name, value: cumulative };
-      });
-
-      setChartData({
-        monthly: monthlyData,
-        distribution: distributionData,
-        growth: growthData
-      });
-
+      setMembers(membersData);
+      setAllPayments(allPaymentsData);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -309,7 +306,7 @@ export default function Dashboard() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 flex items-center justify-center text-sm font-bold text-indigo-600 dark:text-indigo-400 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
                         {p.members?.photo_url ? (
-                          <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" />
+                          <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         ) : (
                           p.members?.name?.charAt(0)
                         )}

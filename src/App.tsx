@@ -1,24 +1,24 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Toaster } from 'sonner';
 import Layout from './components/Layout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Members from './pages/Members';
-import Reports from './pages/Reports';
-import MySavings from './pages/MySavings';
-import Settings from './pages/Settings';
-import SetupGuide from './components/SetupGuide';
-import Discussion from './pages/Discussion';
+import { LoadingScreen } from './components/LoadingScreen';
 
-import Investments from './pages/Investments';
+// Lazy load pages
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Members = lazy(() => import('./pages/Members'));
+const Reports = lazy(() => import('./pages/Reports'));
+const MySavings = lazy(() => import('./pages/MySavings'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Discussion = lazy(() => import('./pages/Discussion'));
+const Investments = lazy(() => import('./pages/Investments'));
+const SetupGuide = lazy(() => import('./components/SetupGuide'));
 
 // Check for Supabase keys
 const hasSupabaseKeys = true; // Keys are now hardcoded as fallbacks in supabase.ts
-
-import { LoadingScreen } from './components/LoadingScreen';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, moduleKey }: { children: React.ReactNode, moduleKey?: string }) => {
@@ -43,59 +43,61 @@ const AppContent = () => {
   const { theme } = useTheme();
   return (
     <>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        
-        <Route path="/" element={
-          <ProtectedRoute moduleKey="show_dashboard">
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/members" element={
-          <ProtectedRoute>
-            <Members />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/reports" element={
-          <ProtectedRoute moduleKey="show_reports">
-            <Reports />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/my-savings" element={
-          <ProtectedRoute moduleKey="show_savings">
-            <MySavings />
-          </ProtectedRoute>
-        } />
+      <Suspense fallback={<LoadingScreen />}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route path="/" element={
+            <ProtectedRoute moduleKey="show_dashboard">
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/members" element={
+            <ProtectedRoute>
+              <Members />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/reports" element={
+            <ProtectedRoute moduleKey="show_reports">
+              <Reports />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/my-savings" element={
+            <ProtectedRoute moduleKey="show_savings">
+              <MySavings />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/investments" element={
-          <ProtectedRoute moduleKey="show_investments">
-            <Investments />
-          </ProtectedRoute>
-        } />
+          <Route path="/investments" element={
+            <ProtectedRoute moduleKey="show_investments">
+              <Investments />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/discussion" element={
-          <ProtectedRoute moduleKey="show_discussion">
-            <Discussion />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/setup" element={
-          <ProtectedRoute>
-            <SetupGuide />
-          </ProtectedRoute>
-        } />
+          <Route path="/discussion" element={
+            <ProtectedRoute moduleKey="show_discussion">
+              <Discussion />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/setup" element={
+            <ProtectedRoute>
+              <SetupGuide />
+            </ProtectedRoute>
+          } />
 
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Suspense>
       <Toaster position="top-right" theme={theme} />
     </>
   );

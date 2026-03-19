@@ -23,19 +23,19 @@ export function StatsCard({ title, value, icon: Icon, trend, color = "text-indig
       className={cn(onClick && "cursor-pointer")}
     >
       <Card className="hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 group hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1">
-        <CardContent className="p-8">
+        <CardContent className="p-4 sm:p-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">{title}</p>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-3 tracking-tight">{value}</h3>
+              <p className="text-[10px] sm:text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">{title}</p>
+              <h3 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-1 sm:mt-3 tracking-tight">{value}</h3>
               {trend && (
-                <p className="text-xs text-emerald-500 font-bold mt-2 flex items-center gap-1">
+                <p className="text-[10px] sm:text-xs text-emerald-500 font-bold mt-1 sm:mt-2 flex items-center gap-1">
                   <span className="bg-emerald-500/10 p-0.5 rounded-full">↑</span> {trend}
                 </p>
               )}
             </div>
-            <div className={cn("p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 group-hover:scale-110 transition-transform duration-300", color)}>
-              <Icon className="w-7 h-7" />
+            <div className={cn("p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 group-hover:scale-110 transition-transform duration-300", color)}>
+              <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
             </div>
           </div>
         </CardContent>

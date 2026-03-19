@@ -215,7 +215,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav - Floating Design from Image */}
-      <div className="lg:hidden fixed bottom-6 left-6 right-6 h-20 bg-white/90 dark:bg-gray-900/95 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-2">
+      <div className="lg:hidden fixed bottom-3 left-3 right-3 h-14 bg-white/90 dark:bg-gray-900/95 backdrop-blur-2xl rounded-[1.75rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           
@@ -224,10 +224,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative -top-10"
+                className="relative -top-6"
               >
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-500/40 flex items-center justify-center border-4 border-white dark:border-gray-900 rotate-45 group transition-transform active:scale-90">
-                  <item.icon className="w-8 h-8 text-white -rotate-45 stroke-[3px]" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-500/40 flex items-center justify-center border-4 border-white dark:border-gray-900 rotate-45 group transition-transform active:scale-90">
+                  <item.icon className="w-5 h-5 text-white -rotate-45 stroke-[3px]" />
                 </div>
               </Link>
             );
@@ -240,15 +240,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               className="flex-1 flex flex-col items-center justify-center h-full relative"
             >
               <div className={cn(
-                "p-2 transition-all duration-300",
+                "p-1 transition-all duration-300",
                 isActive ? "text-indigo-600 dark:text-indigo-400 scale-110" : "text-gray-400 dark:text-white/30"
               )}>
-                <item.icon className={cn("w-7 h-7", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
+                <item.icon className={cn("w-[18px] h-[18px]", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
               </div>
               {isActive && (
                 <motion.div 
                   layoutId="activeTabIndicator"
-                  className="absolute bottom-3 w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(79,70,229,0.6)]"
+                  className="absolute bottom-1.5 w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(79,70,229,0.6)]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}

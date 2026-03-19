@@ -12,7 +12,7 @@ const Card = React.forwardRef<
     transition={{ duration: 0.15 }}
     ref={ref}
     className={cn(
-      'rounded-[2.5rem] border border-white/40 dark:border-white/10 bg-white/70 dark:bg-gray-900/80 backdrop-blur-2xl shadow-2xl shadow-indigo-500/5 text-gray-900 dark:text-white overflow-hidden transition-all duration-300',
+      'rounded-[1.5rem] sm:rounded-[2.5rem] border border-white/40 dark:border-white/10 bg-white/70 dark:bg-gray-900/80 backdrop-blur-2xl shadow-2xl shadow-indigo-500/5 text-gray-900 dark:text-white overflow-hidden transition-all duration-300',
       className
     )}
     {...props}
