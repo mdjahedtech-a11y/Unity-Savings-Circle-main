@@ -21,7 +21,7 @@ type Note = {
 };
 
 const COLORS = [
-  { name: 'Rose', bg: 'bg-rose-50 dark:bg-rose-900/20', border: 'border-rose-200 dark:border-rose-700/50', text: 'text-rose-900 dark:text-rose-100', icon: 'text-rose-500' },
+  { name: 'Indigo', bg: 'bg-indigo-50 dark:bg-indigo-900/20', border: 'border-indigo-200 dark:border-indigo-700/50', text: 'text-indigo-900 dark:text-indigo-100', icon: 'text-indigo-500' },
   { name: 'Blue', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-700/50', text: 'text-blue-900 dark:text-blue-100', icon: 'text-blue-500' },
   { name: 'Green', bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-700/50', text: 'text-emerald-900 dark:text-emerald-100', icon: 'text-emerald-500' },
   { name: 'Amber', bg: 'bg-amber-50 dark:bg-amber-900/20', border: 'border-amber-200 dark:border-amber-700/50', text: 'text-amber-900 dark:text-amber-100', icon: 'text-amber-500' },
@@ -128,8 +128,8 @@ export default function Investments() {
   if (tableError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6">
-        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+        <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Database Setup Required</h2>
         <p className="text-gray-600 dark:text-gray-400 max-w-md mb-6">
@@ -155,7 +155,7 @@ export default function Investments() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <StickyNote className="w-8 h-8 text-pink-500" />
+            <StickyNote className="w-8 h-8 text-indigo-500" />
             Investments & Notes
             <button
               onClick={() => fetchNotes(true)}
@@ -175,7 +175,7 @@ export default function Investments() {
         </div>
         
         {isAdmin && (
-          <Button onClick={() => setIsAddModalOpen(true)} className="bg-pink-600 hover:bg-pink-700 text-white shadow-lg shadow-pink-500/25">
+          <Button onClick={() => setIsAddModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25">
             <Plus className="w-4 h-4 mr-2" />
             Add New Note
           </Button>
@@ -278,7 +278,7 @@ export default function Investments() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50"
               placeholder="e.g. Land Purchase in Savar"
               required
             />
@@ -289,7 +289,7 @@ export default function Investments() {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50 min-h-[120px]"
+              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 min-h-[120px]"
               placeholder="Details about the investment..."
               required
             />
@@ -304,7 +304,7 @@ export default function Investments() {
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50"
                   placeholder="0.00"
                 />
               </div>
@@ -315,7 +315,7 @@ export default function Investments() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+                className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50"
                 required
               />
             </div>
@@ -340,7 +340,7 @@ export default function Investments() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white mt-4">
+          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4">
             Save Note
           </Button>
         </form>

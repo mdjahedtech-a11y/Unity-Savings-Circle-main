@@ -309,12 +309,12 @@ export default function Members() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Members</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Members</h1>
           <button 
             onClick={() => fetchMembers(true)}
             disabled={loading}
             className={cn(
-              "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all",
+              "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all active:scale-90",
               loading && "animate-spin opacity-50"
             )}
             title="Refresh Members"
@@ -327,7 +327,7 @@ export default function Members() {
             <select 
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="flex-1 sm:flex-none px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+              className="flex-1 sm:flex-none px-3 py-1.5 bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-sm"
             >
               {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                 <option key={m} value={m}>{m}</option>
@@ -336,7 +336,7 @@ export default function Members() {
             <select 
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="flex-1 sm:flex-none px-3 py-1.5 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500/50"
+              className="flex-1 sm:flex-none px-3 py-1.5 bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 backdrop-blur-sm"
             >
               {[2024, 2025, 2026].map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -344,12 +344,12 @@ export default function Members() {
             </select>
           </div>
 
-          <div className="flex bg-white dark:bg-white/5 p-1 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none w-full sm:w-auto">
+          <div className="flex bg-white/80 dark:bg-white/5 p-1 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none w-full sm:w-auto backdrop-blur-sm">
             <button
               onClick={() => setFilter('all')}
-              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 filter === 'all' 
-                  ? 'bg-pink-500 text-white shadow-lg' 
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' 
                   : 'text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -357,9 +357,9 @@ export default function Members() {
             </button>
             <button
               onClick={() => setFilter('admin')}
-              className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 filter === 'admin' 
-                  ? 'bg-pink-500 text-white shadow-lg' 
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/25' 
                   : 'text-gray-500 dark:text-white/60 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
@@ -374,12 +374,12 @@ export default function Members() {
               placeholder="Search members..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
+              className="w-full pl-10 pr-4 py-2 bg-white/80 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:shadow-none backdrop-blur-sm"
             />
           </div>
           {isAdmin && (
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button onClick={() => setIsAddMemberModalOpen(true)} className="flex-1 sm:flex-none bg-pink-600 hover:bg-pink-700 text-white shrink-0 shadow-md justify-center">
+              <Button onClick={() => setIsAddMemberModalOpen(true)} className="flex-1 sm:flex-none bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 shadow-lg shadow-indigo-500/20 justify-center rounded-2xl">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Member
               </Button>
@@ -391,24 +391,24 @@ export default function Members() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           [...Array(6)].map((_, i) => (
-            <Card key={i} className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+            <Card key={i} className="bg-white/80 dark:bg-gray-900/80 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none rounded-[2rem]">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
+                    <Skeleton className="w-14 h-14 rounded-2xl" />
                     <div className="space-y-2">
-                      <Skeleton className="h-5 w-32" />
-                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-32 rounded-lg" />
+                      <Skeleton className="h-4 w-24 rounded-lg" />
                     </div>
                   </div>
                   <Skeleton className="h-6 w-16 rounded-full" />
                 </div>
                 <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-5 w-32 rounded-lg" />
                   <div className="flex gap-2">
-                    <Skeleton className="h-8 w-8 rounded-md" />
-                    <Skeleton className="h-8 w-8 rounded-md" />
-                    <Skeleton className="h-8 w-16 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <Skeleton className="h-8 w-16 rounded-lg" />
                   </div>
                 </div>
               </CardContent>
@@ -423,7 +423,7 @@ export default function Members() {
             transition={{ duration: 0.15, delay: Math.min(index * 0.02, 0.2) }}
           >
             <Card 
-              className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-all group shadow-sm dark:shadow-none cursor-pointer relative overflow-hidden"
+              className="hover:bg-white/90 dark:hover:bg-gray-800/90 transition-all group cursor-pointer relative overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1"
               onClick={(e) => {
                 if ((e.target as HTMLElement).closest('button')) return;
                 handleViewMember(member);
@@ -432,31 +432,31 @@ export default function Members() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-lg font-bold text-white shadow-lg relative overflow-hidden">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-bold text-white shadow-lg relative overflow-hidden ring-2 ring-white/20">
                       {member.photo_url ? (
                         <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
                       ) : (
                         member.name.charAt(0)
                       )}
                       {member.role === 'admin' && (
-                        <div className="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1 border border-white dark:border-black">
-                          <Shield className="w-3 h-3 text-black fill-current" />
+                        <div className="absolute -bottom-1 -right-1 bg-amber-500 rounded-lg p-1 border border-white dark:border-gray-900 shadow-sm">
+                          <Shield className="w-3 h-3 text-white fill-current" />
                         </div>
                       )}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg">{member.name}</h3>
-                      <p className="text-gray-500 dark:text-white/50 text-sm">{member.phone}</p>
+                      <h3 className="font-bold text-gray-900 dark:text-white text-lg tracking-tight">{member.name}</h3>
+                      <p className="text-gray-500 dark:text-white/50 text-sm font-medium">{member.phone}</p>
                     </div>
                   </div>
-                  <div className="bg-pink-50 dark:bg-white/10 px-3 py-1 rounded-full text-xs font-medium text-pink-600 dark:text-pink-300 border border-pink-100 dark:border-transparent">
+                  <div className="bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1 rounded-xl text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 uppercase tracking-wider">
                     {member.share_count} Share{member.share_count > 1 ? 's' : ''}
                   </div>
                 </div>
                 
                 <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="text-sm text-gray-500 dark:text-white/60">
-                    Monthly: <span className="text-gray-900 dark:text-white font-medium">৳{(member.share_count * 1000).toLocaleString()}</span>
+                  <div className="text-sm text-gray-500 dark:text-white/60 font-medium">
+                    Monthly: <span className="text-gray-900 dark:text-white font-bold">৳{(member.share_count * 1000).toLocaleString()}</span>
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
@@ -464,7 +464,7 @@ export default function Members() {
                       <Button 
                         size="sm" 
                         variant="ghost"
-                        className="text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-300"
+                        className="text-indigo-500 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-300 rounded-xl"
                         onClick={() => openEditModal(member)}
                       >
                         <Edit2 className="w-4 h-4" />
@@ -478,8 +478,8 @@ export default function Members() {
                         className={`${
                           member.role === 'admin'
                             ? 'text-purple-500 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 hover:text-purple-600 dark:hover:text-purple-300'
-                            : 'text-yellow-500 dark:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 hover:text-yellow-600 dark:hover:text-yellow-300'
-                        }`}
+                            : 'text-amber-500 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-300'
+                        } rounded-xl`}
                         title={member.role === 'admin' ? "Demote to Member" : "Promote to Admin"}
                         onClick={() => handleToggleAdmin(member)}
                       >
@@ -491,7 +491,7 @@ export default function Members() {
                       <Button 
                         size="sm" 
                         variant="ghost"
-                        className="text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300"
+                        className="text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 rounded-xl"
                         title="Delete Member"
                         onClick={() => handleDeleteClick(member)}
                       >
@@ -503,7 +503,7 @@ export default function Members() {
                       <Button 
                         size="sm" 
                         variant="ghost"
-                        className="text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-500/10 hover:text-gray-600 dark:hover:text-gray-300"
+                        className="text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-500/10 hover:text-gray-600 dark:hover:text-gray-300 rounded-xl"
                         title="View Password"
                         onClick={() => handleViewPassword(member)}
                       >
@@ -515,7 +515,7 @@ export default function Members() {
                       isAdmin ? (
                         <button
                           onClick={() => confirmRevokePayment(member)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all group/paid relative overflow-hidden"
+                          className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400 text-sm font-bold hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all group/paid relative overflow-hidden shadow-sm"
                           title="Click to mark as Unpaid"
                         >
                           <div className="flex items-center gap-1.5 group-hover/paid:translate-y-[-150%] transition-transform duration-300 absolute inset-0 justify-center w-full h-full">
@@ -533,7 +533,7 @@ export default function Members() {
                           </div>
                         </button>
                       ) : (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg text-emerald-600 dark:text-emerald-400 text-sm font-medium">
+                        <div className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400 text-sm font-bold shadow-sm">
                           <CheckCircle className="w-4 h-4" />
                           <span>Paid</span>
                         </div>
@@ -542,14 +542,14 @@ export default function Members() {
                       isAdmin ? (
                         <Button 
                           size="sm" 
-                          className="bg-pink-50 dark:bg-pink-500/20 hover:bg-pink-100 dark:hover:bg-pink-500/30 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/30"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 rounded-xl px-4"
                           onClick={() => openPaymentModal(member)}
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Pay
                         </Button>
                       ) : (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-red-600 dark:text-red-400 text-sm font-medium">
+                        <div className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl text-indigo-600 dark:text-indigo-400 text-sm font-bold shadow-sm">
                           <XCircle className="w-4 h-4" />
                           <span>Unpaid</span>
                         </div>
@@ -559,7 +559,7 @@ export default function Members() {
                 </div>
                 
                 {!member.auth_user_id && isAdmin && (
-                  <div className="mt-3 text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-1 rounded border border-orange-200 dark:border-orange-500/20 text-center">
+                  <div className="mt-3 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20 text-center font-medium">
                     Not Activated Yet
                   </div>
                 )}
@@ -577,24 +577,24 @@ export default function Members() {
       >
         <form onSubmit={handleAddMember} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Full Name</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Full Name</label>
             <input
               type="text"
               value={newMemberName}
               onChange={(e) => setNewMemberName(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               placeholder="e.g. Rahim Uddin"
               required
             />
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Phone Number</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Phone Number</label>
             <input
               type="tel"
               value={newMemberPhone}
               onChange={(e) => setNewMemberPhone(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               placeholder="e.g. 017..."
               required
             />
@@ -602,18 +602,18 @@ export default function Members() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Number of Shares</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Number of Shares</label>
             <input
               type="number"
               min="1"
               value={newMemberShares}
               onChange={(e) => setNewMemberShares(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               required
             />
           </div>
 
-          <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white mt-4">
+          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4 py-6 rounded-2xl shadow-lg shadow-indigo-500/20">
             Add Member
           </Button>
         </form>
@@ -627,40 +627,40 @@ export default function Members() {
       >
         <form onSubmit={handleEditMember} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Full Name</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Full Name</label>
             <input
               type="text"
               value={newMemberName}
               onChange={(e) => setNewMemberName(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               required
             />
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Phone Number</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Phone Number</label>
             <input
               type="tel"
               value={newMemberPhone}
               onChange={(e) => setNewMemberPhone(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Number of Shares</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Number of Shares</label>
             <input
               type="number"
               min="1"
               value={newMemberShares}
               onChange={(e) => setNewMemberShares(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               required
             />
           </div>
 
-          <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white mt-4">
+          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4 py-6 rounded-2xl shadow-lg shadow-indigo-500/20">
             Update Member
           </Button>
         </form>
@@ -675,11 +675,11 @@ export default function Members() {
         <form onSubmit={handlePaymentSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-gray-600 dark:text-white/70">Month</label>
+              <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Month</label>
               <select 
                 value={paymentMonth}
                 onChange={(e) => setPaymentMonth(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white"
+                className="w-full px-3 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               >
                 {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                   <option key={m} value={m}>{m}</option>
@@ -687,49 +687,49 @@ export default function Members() {
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-gray-600 dark:text-white/70">Year</label>
+              <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Year</label>
               <input
                 type="number"
                 value={paymentYear}
                 onChange={(e) => setPaymentYear(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white"
+                className="w-full px-3 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Share Amount (৳)</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Share Amount (৳)</label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-white/50" />
               <input
                 type="number"
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Penalty (৳)</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Penalty (৳)</label>
             <div className="relative">
-              <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-500/50" />
+              <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/50" />
               <input
                 type="number"
                 value={penaltyAmount}
                 onChange={(e) => setPenaltyAmount(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-red-200 dark:border-red-500/20 rounded-lg text-gray-900 dark:text-white focus:ring-red-500/50"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-black/20 border border-amber-200 dark:border-amber-500/20 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-amber-500/50 transition-all"
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-white/40">Add ৳100 if unpaid for 2 months</p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-600 dark:text-white/70">Payment Method</label>
+            <label className="text-sm font-bold text-gray-600 dark:text-white/70 uppercase tracking-wider">Payment Method</label>
             <select 
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-lg text-gray-900 dark:text-white"
+              className="w-full px-3 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 transition-all"
             >
               {['bKash', 'Nagad', 'Bank', 'Cash'].map(m => (
                 <option key={m} value={m}>{m}</option>
@@ -738,13 +738,13 @@ export default function Members() {
           </div>
 
           <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between items-center">
-            <div className="text-sm text-gray-600 dark:text-white/60">Total:</div>
-            <div className="text-xl font-bold text-gray-900 dark:text-white">
+            <div className="text-sm font-bold text-gray-600 dark:text-white/60 uppercase tracking-wider">Total:</div>
+            <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
               ৳{(parseInt(paymentAmount || '0') + parseInt(penaltyAmount || '0')).toLocaleString()}
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700 text-white mt-4">
+          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4 py-6 rounded-2xl shadow-lg shadow-indigo-500/20">
             Confirm Payment
           </Button>
         </form>
@@ -795,24 +795,25 @@ export default function Members() {
       >
         <div className="space-y-6">
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 bg-pink-100 dark:bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Key className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+            <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Key className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
               Password for {passwordToShow?.name}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-white/50">
+            <p className="text-sm text-gray-500 dark:text-white/50 font-medium">
               Share this password with the member so they can log in.
             </p>
           </div>
 
-          <div className="p-4 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-between">
-            <code className="text-xl font-mono font-bold text-gray-900 dark:text-white tracking-wider">
+          <div className="p-5 bg-gray-50 dark:bg-black/20 rounded-2xl border border-gray-200 dark:border-white/10 flex items-center justify-between shadow-inner">
+            <code className="text-2xl font-mono font-bold text-indigo-600 dark:text-indigo-400 tracking-widest">
               {passwordToShow?.password}
             </code>
             <Button
               size="sm"
               variant="ghost"
+              className="hover:bg-indigo-50 dark:hover:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl"
               onClick={() => {
                 if (passwordToShow?.password) {
                   navigator.clipboard.writeText(passwordToShow.password);
@@ -821,13 +822,13 @@ export default function Members() {
               }}
               title="Copy to clipboard"
             >
-              <Database className="w-4 h-4" /> {/* Reusing icon for copy since Copy icon not imported, or just use text */}
-              <span className="ml-2">Copy</span>
+              <Database className="w-4 h-4" />
+              <span className="ml-2 font-bold uppercase text-xs tracking-wider">Copy</span>
             </Button>
           </div>
 
           <Button 
-            className="w-full bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800"
+            className="w-full bg-gray-900 dark:bg-white dark:text-gray-900 hover:bg-gray-800 py-6 rounded-2xl font-bold uppercase tracking-widest text-xs"
             onClick={() => setIsPasswordModalOpen(false)}
           >
             Close
@@ -844,102 +845,102 @@ export default function Members() {
         {memberToView && (
           <div className="space-y-6">
             {/* Header Section with Gradient */}
-            <div className="relative -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 p-6 sm:p-8 text-center text-white mb-12 sm:mb-10">
-              <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-gray-900 p-1 shadow-xl">
-                  <div className="w-full h-full rounded-full bg-gradient-to-br from-pink-100 to-purple-100 dark:from-pink-900/50 dark:to-purple-900/50 flex items-center justify-center text-3xl sm:text-4xl font-bold text-pink-600 dark:text-pink-400">
+            <div className="relative -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 p-8 sm:p-10 text-center text-white mb-14 sm:mb-12 rounded-b-[2.5rem] shadow-lg">
+              <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[2rem] bg-white dark:bg-gray-900 p-1.5 shadow-2xl ring-4 ring-white/10">
+                  <div className="w-full h-full rounded-[1.75rem] bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center text-4xl sm:text-5xl font-black text-indigo-600 dark:text-indigo-400 shadow-inner">
                     {memberToView.name.charAt(0)}
                   </div>
                 </div>
               </div>
-              <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                <div className={`px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border ${
+              <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+                <div className={`px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] border shadow-sm ${
                   memberToView.role === 'admin' 
-                    ? 'bg-yellow-400 text-yellow-900 border-yellow-500' 
-                    : 'bg-white/20 text-white border-white/30'
+                    ? 'bg-amber-400 text-amber-950 border-amber-500' 
+                    : 'bg-white/20 text-white border-white/30 backdrop-blur-md'
                 }`}>
                   {memberToView.role}
                 </div>
               </div>
             </div>
 
-            <div className="text-center pt-2 sm:pt-4 space-y-1">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{memberToView.name}</h3>
-              <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${memberToView.auth_user_id ? 'bg-emerald-500' : 'bg-orange-500'}`} />
+            <div className="text-center pt-4 sm:pt-6 space-y-1.5">
+              <h3 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">{memberToView.name}</h3>
+              <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2 font-medium">
+                <span className={`w-2.5 h-2.5 rounded-full shadow-sm ${memberToView.auth_user_id ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
                 {memberToView.auth_user_id ? 'Active Member' : 'Pending Activation'}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="p-3 sm:p-4 rounded-2xl bg-pink-50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-500/20 space-y-2">
-                <div className="flex items-center gap-2 text-pink-600 dark:text-pink-400 mb-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="p-4 sm:p-5 rounded-[2rem] bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-500/20 space-y-2 shadow-sm">
+                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-1">
                   <DollarSign className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Total Savings</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Total Savings</span>
                 </div>
-                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
                   ৳{(memberToView.total_savings || 0).toLocaleString()}
                 </p>
               </div>
 
-              <div className="p-3 sm:p-4 rounded-2xl bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-500/20 space-y-2">
+              <div className="p-4 sm:p-5 rounded-[2rem] bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-500/20 space-y-2 shadow-sm">
                 <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-1">
                   <Award className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Shares</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Shares</span>
                 </div>
-                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  {memberToView.share_count} <span className="text-sm font-normal opacity-70">({memberToView.share_count * 1000}/mo)</span>
+                <p className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                  {memberToView.share_count} <span className="text-sm font-bold opacity-50">({memberToView.share_count * 1000}/mo)</span>
                 </p>
               </div>
 
-              <div className="p-3 sm:p-4 rounded-2xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-500/20 space-y-2 sm:col-span-2">
+              <div className="p-4 sm:p-5 rounded-[2rem] bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-500/20 space-y-2 sm:col-span-2 shadow-sm">
                 <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-1">
                   <Phone className="w-4 h-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Contact Info</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Contact Info</span>
                 </div>
-                <p className="text-base sm:text-lg font-medium text-gray-900 dark:text-white font-mono">
+                <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white font-mono tracking-tight">
                   {memberToView.phone}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-3 pt-2">
-              <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Member Stats</h4>
+            <div className="space-y-4 pt-2">
+              <h4 className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.3em] ml-2">Member Stats</h4>
               
-              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                    <Calendar className="w-4 h-4" />
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-sm">
+                    <Calendar className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">Joined</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {memberToView.created_at ? new Date(memberToView.created_at).toLocaleDateString() : 'N/A'}
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">Joined Date</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      {memberToView.created_at ? new Date(memberToView.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : 'N/A'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
-                    <TrendingUp className="w-4 h-4" />
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 shadow-sm">
+                    <TrendingUp className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">Status</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {memberToView.auth_user_id ? 'Account Verified' : 'Account Not Verified'}
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">Account Status</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      {memberToView.auth_user_id ? 'Verified & Active' : 'Waiting for Activation'}
                     </p>
                   </div>
                 </div>
                 {memberToView.auth_user_id && (
-                  <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                  <ShieldCheck className="w-6 h-6 text-emerald-500 drop-shadow-sm" />
                 )}
               </div>
             </div>
             
-            <div className="pt-4">
-              <Button className="w-full" onClick={() => setIsViewMemberModalOpen(false)}>
+            <div className="pt-6">
+              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-indigo-500/20" onClick={() => setIsViewMemberModalOpen(false)}>
                 Close Profile
               </Button>
             </div>

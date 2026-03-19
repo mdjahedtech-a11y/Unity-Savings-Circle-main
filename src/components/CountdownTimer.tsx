@@ -54,7 +54,7 @@ export const CountdownTimer = () => {
   );
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-xl border border-white/30">
+    <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-2xl shadow-xl border border-white/30">
       <div className="hidden sm:flex items-center justify-center w-8 h-8 bg-white/20 rounded-full shrink-0">
         <Clock className="w-4 h-4 text-white animate-pulse" />
       </div>

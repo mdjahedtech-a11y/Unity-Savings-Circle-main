@@ -13,7 +13,7 @@ interface StatsCardProps {
   onClick?: () => void;
 }
 
-export function StatsCard({ title, value, icon: Icon, trend, color = "text-white", delay = 0, onClick }: StatsCardProps) {
+export function StatsCard({ title, value, icon: Icon, trend, color = "text-indigo-600", delay = 0, onClick }: StatsCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -22,20 +22,20 @@ export function StatsCard({ title, value, icon: Icon, trend, color = "text-white
       onClick={onClick}
       className={cn(onClick && "cursor-pointer")}
     >
-      <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors group shadow-sm dark:shadow-none">
-        <CardContent className="p-6">
+      <Card className="hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 group hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1">
+        <CardContent className="p-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-white/60">{title}</p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight">{value}</h3>
+              <p className="text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">{title}</p>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-3 tracking-tight">{value}</h3>
               {trend && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
-                  <span>↑</span> {trend}
+                <p className="text-xs text-emerald-500 font-bold mt-2 flex items-center gap-1">
+                  <span className="bg-emerald-500/10 p-0.5 rounded-full">↑</span> {trend}
                 </p>
               )}
             </div>
-            <div className={cn("p-3 rounded-xl bg-gray-100 dark:bg-white/5 group-hover:scale-110 transition-transform", color)}>
-              <Icon className="w-6 h-6" />
+            <div className={cn("p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 group-hover:scale-110 transition-transform duration-300", color)}>
+              <Icon className="w-7 h-7" />
             </div>
           </div>
         </CardContent>

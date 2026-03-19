@@ -228,8 +228,8 @@ export default function Discussion() {
   if (tableError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-6">
-        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
+        <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Database Setup Required</h2>
         <p className="text-gray-600 dark:text-gray-400 max-w-md mb-6">
@@ -259,7 +259,7 @@ create table post_likes (
   unique(post_id, member_id)
 );`}</pre>
         </div>
-        <Button onClick={() => window.location.reload()} className="mt-6 bg-pink-600 hover:bg-pink-700 text-white">
+        <Button onClick={() => window.location.reload()} className="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white">
           I've run the SQL, Refresh
         </Button>
       </div>
@@ -271,7 +271,7 @@ create table post_likes (
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <MessageSquare className="w-8 h-8 text-pink-500" />
+            <MessageSquare className="w-8 h-8 text-indigo-500" />
             Discussion Board
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -285,7 +285,7 @@ create table post_likes (
         <CardContent className="p-4 sm:p-6">
           <form onSubmit={handleCreatePost} className="space-y-4">
             <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-violet-500 flex items-center justify-center text-white font-bold shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold shrink-0">
                 {member?.name?.charAt(0) || 'U'}
               </div>
               <div className="flex-1 space-y-3">
@@ -293,14 +293,14 @@ create table post_likes (
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   placeholder={isAdmin ? "Post an announcement or update..." : "Share something with the circle..."}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50 min-h-[100px] resize-none"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 min-h-[100px] resize-none"
                   required
                 />
                 <div className="flex justify-end">
                   <Button 
                     type="submit" 
                     disabled={submittingPost || !newPostContent.trim()}
-                    className="bg-pink-600 hover:bg-pink-700 text-white shadow-md px-6"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md px-6"
                   >
                     {submittingPost ? 'Posting...' : 'Post'}
                   </Button>
@@ -350,7 +350,7 @@ create table post_likes (
               >
                 <Card className={`overflow-hidden transition-all duration-300 shadow-sm hover:shadow-md ${
                   isAuthorAdmin 
-                    ? 'border-pink-200 dark:border-pink-500/30 bg-white dark:bg-pink-500/5' 
+                    ? 'border-indigo-200 dark:border-indigo-500/30 bg-white dark:bg-indigo-500/5' 
                     : 'border-gray-200 dark:border-white/10 bg-white dark:bg-white/5'
                 }`}>
                   <CardContent className="p-0">
@@ -359,7 +359,7 @@ create table post_likes (
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-sm ${
-                            isAuthorAdmin ? 'bg-gradient-to-br from-pink-500 to-rose-500' : 'bg-gradient-to-br from-blue-500 to-indigo-500'
+                            isAuthorAdmin ? 'bg-gradient-to-br from-indigo-500 to-purple-500' : 'bg-gradient-to-br from-blue-500 to-indigo-500'
                           }`}>
                             {post.members?.name?.charAt(0) || 'U'}
                           </div>
@@ -369,7 +369,7 @@ create table post_likes (
                                 {post.members?.name || 'Unknown User'}
                               </h3>
                               {isAuthorAdmin && (
-                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-pink-100 text-pink-700 dark:bg-pink-500/20 dark:text-pink-300 uppercase tracking-wider">
+                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 uppercase tracking-wider">
                                   <Shield className="w-3 h-3" /> Admin
                                 </span>
                               )}
@@ -403,8 +403,8 @@ create table post_likes (
                           onClick={() => handleToggleLike(post.id)}
                           className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                             isLikedByMe 
-                              ? 'text-pink-600 dark:text-pink-400' 
-                              : 'text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400'
+                              ? 'text-indigo-600 dark:text-indigo-400' 
+                              : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                           }`}
                         >
                           <Heart className={`w-5 h-5 ${isLikedByMe ? 'fill-current' : ''}`} />
@@ -468,13 +468,13 @@ create table post_likes (
                                 value={commentContents[post.id] || ''}
                                 onChange={(e) => setCommentContents(prev => ({ ...prev, [post.id]: e.target.value }))}
                                 placeholder="Write a comment..."
-                                className="flex-1 px-4 py-2 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-full text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500/50 focus:outline-none"
+                                className="flex-1 px-4 py-2 bg-white dark:bg-black/40 border border-gray-200 dark:border-white/10 rounded-full text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/50 focus:outline-none"
                               />
                               <Button 
                                 type="submit" 
                                 size="icon"
                                 disabled={submittingComment === post.id || !commentContents[post.id]?.trim()}
-                                className="bg-pink-600 hover:bg-pink-700 text-white rounded-full shrink-0"
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shrink-0"
                               >
                                 <Send className="w-4 h-4" />
                               </Button>

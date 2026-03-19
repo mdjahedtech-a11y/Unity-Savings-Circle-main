@@ -16,14 +16,14 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 
-const COLORS = ['#ec4899', '#8b5cf6', '#3b82f6', '#10b981'];
+const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef'];
 
 export function MonthlySavingsChart({ data }: { data: any[] }) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
   return (
-    <Card className="col-span-1 lg:col-span-2 bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+    <Card className="col-span-1 lg:col-span-2 bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-gray-900 dark:text-white">Monthly Savings</CardTitle>
       </CardHeader>
@@ -43,7 +43,7 @@ export function MonthlySavingsChart({ data }: { data: any[] }) {
               }}
               cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
             />
-            <Bar dataKey="amount" fill="#ec4899" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
@@ -56,7 +56,7 @@ export function DistributionChart({ data }: { data: any[] }) {
   const isDark = theme === 'dark';
 
   return (
-    <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+    <Card className="bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-gray-900 dark:text-white">Share Distribution</CardTitle>
       </CardHeader>
@@ -105,7 +105,7 @@ export function GrowthChart({ data }: { data: any[] }) {
   const isDark = theme === 'dark';
 
   return (
-    <Card className="col-span-1 lg:col-span-3 bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
+    <Card className="col-span-1 lg:col-span-3 bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-gray-900 dark:text-white">Total Savings Growth</CardTitle>
       </CardHeader>
@@ -114,8 +114,8 @@ export function GrowthChart({ data }: { data: any[] }) {
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} vertical={false} />
@@ -128,7 +128,7 @@ export function GrowthChart({ data }: { data: any[] }) {
               color: isDark ? '#fff' : '#111827',
               boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
             }} />
-            <Area type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
+            <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>
@@ -165,7 +165,7 @@ export function RecentPaymentsChart({ data }: { data: any[] }) {
             }}
             formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Amount']}
           />
-          <Bar dataKey="amount" fill="#10b981" radius={[4, 4, 0, 0]} barSize={30} />
+          <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
         </BarChart>
       </ResponsiveContainer>
     </div>

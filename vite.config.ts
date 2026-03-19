@@ -15,9 +15,9 @@ export default defineConfig(({mode}) => {
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'Unity Savings Circle',
-          short_name: 'Unity Savings',
+          short_name: 'Unity Savings Circle',
           description: 'Manage your savings circle efficiently',
-          theme_color: '#db2777', // Pink-600
+          theme_color: '#4f46e5', // Indigo-600
           background_color: '#ffffff',
           display: 'standalone',
           scope: '/',

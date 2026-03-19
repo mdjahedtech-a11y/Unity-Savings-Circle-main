@@ -375,7 +375,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 p-4 transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-blue-900 p-4 transition-colors duration-300">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -383,7 +383,7 @@ export default function Login() {
         className="w-full max-w-md"
       >
         <div className="flex justify-center mb-8">
-          <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-2xl shadow-pink-500/20 overflow-hidden">
+          <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center shadow-2xl shadow-indigo-500/20 overflow-hidden">
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
         </div>
@@ -420,7 +420,7 @@ export default function Login() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all"
                       placeholder="017..."
                       required
                       autoFocus
@@ -435,7 +435,7 @@ export default function Login() {
                       <button 
                         type="button" 
                         onClick={() => setStep('phone')} 
-                        className="text-xs text-pink-600 dark:text-pink-400 hover:underline"
+                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
                       >
                         Change Number
                       </button>
@@ -447,7 +447,7 @@ export default function Login() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all"
+                      className="w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all"
                       placeholder="Enter your password"
                       required
                       autoFocus
@@ -470,7 +470,7 @@ export default function Login() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-pink-600 to-violet-600 hover:from-pink-500 hover:to-violet-500 text-white border-0 h-12 text-lg shadow-lg shadow-pink-500/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-0 h-12 text-lg shadow-lg shadow-indigo-500/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : step === 'phone' ? 'Continue' : step === 'create-password' ? 'Set Password & Login' : 'Login'}

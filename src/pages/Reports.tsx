@@ -97,7 +97,7 @@ export default function Reports() {
             <select 
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
+              className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:shadow-none"
             >
               {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
                 <option key={m} value={m}>{m}</option>
@@ -106,7 +106,7 @@ export default function Reports() {
             <select 
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500/50 shadow-sm dark:shadow-none"
+              className="flex-1 sm:flex-none px-4 py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm dark:shadow-none"
             >
               {[2024, 2025, 2026].map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -146,14 +146,14 @@ export default function Reports() {
                 </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-500/20 dark:to-rose-500/20 border-pink-100 dark:border-white/10 shadow-sm dark:shadow-none">
+            <Card className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-500/20 dark:to-blue-500/20 border-indigo-100 dark:border-white/10 shadow-sm dark:shadow-none">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
                   <p className="text-gray-500 dark:text-white/60 text-sm">Pending Members</p>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalPending}</h3>
                 </div>
                 <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
-                  <AlertTriangle className="w-6 h-6 text-pink-500 dark:text-pink-400" />
+                  <AlertTriangle className="w-6 h-6 text-indigo-500 dark:text-indigo-400" />
                 </div>
               </CardContent>
             </Card>
@@ -222,7 +222,7 @@ export default function Reports() {
                       <td className="p-4 text-center text-gray-500 dark:text-white/60 text-sm">
                         {row.paymentMethod || '-'}
                       </td>
-                      <td className="p-4 text-center text-red-500 dark:text-red-400">
+                      <td className="p-4 text-center text-indigo-500 dark:text-indigo-400">
                         {row.penalty > 0 ? `৳${row.penalty}` : '-'}
                       </td>
                       <td className="p-4 text-center">
@@ -230,7 +230,7 @@ export default function Reports() {
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                             row.paymentStatus === 'paid' 
                               ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20' 
-                              : 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/20'
+                              : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20'
                           }`}>
                             {row.paymentStatus === 'paid' ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                             {row.paymentStatus.toUpperCase()}

@@ -114,11 +114,11 @@ export default function MySavings() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 p-8 text-white shadow-2xl shadow-purple-500/20"
+        className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 p-8 text-white shadow-2xl shadow-indigo-500/20"
       >
         {/* Decorative Circles */}
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-pink-500/20 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
           <div className="relative group">
@@ -149,7 +149,7 @@ export default function MySavings() {
 
             <button 
               onClick={triggerFileInput}
-              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-pink-500 border-2 border-white shadow-lg hover:bg-pink-600 transition-colors"
+              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 border-2 border-white shadow-lg hover:bg-indigo-600 transition-colors"
             >
               {uploading ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Camera className="h-4 w-4 text-white" />}
             </button>
@@ -251,12 +251,12 @@ export default function MySavings() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-xl shadow-rose-500/20">
+              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-xl shadow-purple-500/20">
                 <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-rose-100 text-xs font-bold uppercase tracking-widest mb-1">Total Penalties</p>
+                      <p className="text-purple-100 text-xs font-bold uppercase tracking-widest mb-1">Total Penalties</p>
                       <h3 className="text-3xl font-black">৳{totalPenalty.toLocaleString()}</h3>
                     </div>
                     <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
@@ -295,7 +295,7 @@ export default function MySavings() {
         <CardHeader className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 px-8 py-6">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Payment History</CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500/10 text-pink-500">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-500">
               <ArrowUpRight className="h-4 w-4" />
             </div>
           </div>
@@ -351,7 +351,7 @@ export default function MySavings() {
                           {payment.payment_method && (
                             <>
                               <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
-                              <span className="text-xs font-black text-pink-500 uppercase tracking-widest">via {payment.payment_method}</span>
+                              <span className="text-xs font-black text-indigo-500 uppercase tracking-widest">via {payment.payment_method}</span>
                             </>
                           )}
                         </div>
@@ -360,7 +360,7 @@ export default function MySavings() {
                     <div className="text-left sm:text-right w-full sm:w-auto pl-20 sm:pl-0">
                       <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">৳{payment.total_amount.toLocaleString()}</p>
                       {payment.penalty > 0 && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-rose-500 uppercase tracking-widest mt-1">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">
                           <AlertTriangle className="h-3 w-3" />
                           +৳{payment.penalty} Penalty
                         </span>

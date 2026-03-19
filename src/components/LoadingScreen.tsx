@@ -7,7 +7,7 @@ export function LoadingScreen() {
       <div className="relative">
         {/* Outer glowing rings */}
         <motion.div
-          className="absolute inset-0 rounded-full border-2 border-pink-500/20 dark:border-pink-500/10"
+          className="absolute inset-0 rounded-full border-2 border-indigo-500/20 dark:border-indigo-500/10"
           animate={{
             scale: [1, 1.5, 1],
             opacity: [0.3, 0.1, 0.3],
@@ -48,7 +48,7 @@ export function LoadingScreen() {
           
           {/* Scanning effect */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-pink-500/20 to-transparent h-1/2 w-full"
+            className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent h-1/2 w-full"
             animate={{
               top: ['-50%', '100%'],
             }}
@@ -74,7 +74,7 @@ export function LoadingScreen() {
         {/* Loading Bar */}
         <div className="mt-4 w-48 h-1 bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500"
+            className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500"
             animate={{
               x: ['-100%', '100%'],
             }}

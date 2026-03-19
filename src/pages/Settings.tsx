@@ -51,7 +51,7 @@ export default function Settings() {
           <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Shield className="w-5 h-5 text-pink-500" />
+                <Shield className="w-5 h-5 text-indigo-500" />
                 Module Visibility (For Members)
               </CardTitle>
             </CardHeader>
@@ -76,7 +76,7 @@ export default function Settings() {
                       disabled={loading}
                       onClick={() => toggleModule(module.id, (systemSettings as any)?.[module.id])}
                       className={`h-6 w-11 rounded-full relative transition-colors ${
-                        (systemSettings as any)?.[module.id] ? 'bg-pink-600' : 'bg-gray-300 dark:bg-white/20'
+                        (systemSettings as any)?.[module.id] ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-white/20'
                       }`}
                     >
                       <div className={`absolute top-1 h-4 w-4 bg-white rounded-full shadow-sm transition-all ${
@@ -108,7 +108,7 @@ export default function Settings() {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">Member Registration</p>
                   <p className="text-xs text-gray-500 dark:text-white/40">Allow new members to register themselves.</p>
                 </div>
-                <div className="h-6 w-11 bg-pink-600 rounded-full relative cursor-pointer">
+                <div className="h-6 w-11 bg-indigo-600 rounded-full relative cursor-pointer">
                   <div className="absolute right-1 top-1 h-4 w-4 bg-white rounded-full shadow-sm" />
                 </div>
               </div>

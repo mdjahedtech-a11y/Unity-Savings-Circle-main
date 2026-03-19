@@ -6,6 +6,7 @@ import { MonthlySavingsChart, DistributionChart, GrowthChart, RecentPaymentsChar
 import { CountdownTimer } from '../components/CountdownTimer';
 import { Users, Wallet, TrendingUp, AlertCircle, RefreshCcw } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
 
@@ -180,11 +181,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 w-full lg:w-auto">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10 w-full lg:w-auto">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
               <button 
                 onClick={() => {
                   fetchDashboardData(true);
@@ -192,35 +193,35 @@ export default function Dashboard() {
                 }}
                 disabled={loading}
                 className={cn(
-                  "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-all",
+                  "p-3 rounded-2xl bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all",
                   loading && "animate-spin opacity-50"
                 )}
                 title="Refresh Data"
               >
-                <RefreshCcw className="w-5 h-5 text-gray-500 dark:text-white/60" />
+                <RefreshCcw className="w-5 h-5 text-indigo-500" />
               </button>
             </div>
-            <p className="text-gray-500 dark:text-white/60 mt-1">Welcome back, {member?.name || 'User'}</p>
+            <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-widest text-xs mt-2">Welcome back, {member?.name || 'User'}</p>
           </div>
           <div className="flex-1 sm:flex-none">
             <CountdownTimer />
           </div>
         </div>
-        <div className="bg-white dark:bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-gray-200 dark:border-white/10 text-sm font-mono text-pink-600 dark:text-pink-300 shadow-sm dark:shadow-none">
+        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 dark:border-white/10 text-sm font-bold text-indigo-600 dark:text-indigo-400 shadow-xl shadow-indigo-500/5 uppercase tracking-widest">
           {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {loading ? (
           [...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6">
+            <div key={i} className="bg-white/50 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-[2rem] p-8">
               <div className="flex items-center justify-between">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-8 w-32" />
+                  <Skeleton className="h-10 w-32" />
                 </div>
-                <Skeleton className="h-12 w-12 rounded-xl" />
+                <Skeleton className="h-14 w-14 rounded-2xl" />
               </div>
             </div>
           ))
@@ -230,21 +231,21 @@ export default function Dashboard() {
               title="Total Savings" 
               value={`৳${stats.totalSavings.toLocaleString()}`} 
               icon={Wallet} 
-              color="text-emerald-500 dark:text-emerald-400"
+              color="text-emerald-500"
               delay={0.1}
             />
             <StatsCard 
               title="Monthly Collection" 
               value={`৳${stats.monthlyCollection.toLocaleString()}`} 
               icon={TrendingUp} 
-              color="text-blue-500 dark:text-blue-400"
+              color="text-indigo-500"
               delay={0.2}
             />
             <StatsCard 
               title="Total Members" 
               value={stats.totalMembers} 
               icon={Users} 
-              color="text-purple-500 dark:text-purple-400"
+              color="text-purple-500"
               delay={0.3}
               onClick={() => navigate('/members')}
             />
@@ -252,18 +253,18 @@ export default function Dashboard() {
               title="Pending Payments" 
               value={stats.pendingCount} 
               icon={AlertCircle} 
-              color="text-pink-500 dark:text-pink-400"
+              color="text-amber-500"
               delay={0.4}
             />
           </>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {loading ? (
           <>
-            <Skeleton className="h-[380px] rounded-2xl col-span-1 lg:col-span-2" />
-            <Skeleton className="h-[380px] rounded-2xl" />
+            <Skeleton className="h-[420px] rounded-[2rem] col-span-1 lg:col-span-2" />
+            <Skeleton className="h-[420px] rounded-[2rem]" />
           </>
         ) : (
           <>
@@ -273,23 +274,23 @@ export default function Dashboard() {
         )}
         
         {isAdmin && (
-          <div className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-sm dark:shadow-none">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Recent Payments</h3>
+          <Card className="p-8 bg-white/70 dark:bg-gray-900/80 backdrop-blur-2xl border-white/40 dark:border-white/10 shadow-2xl shadow-indigo-500/10">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Recent Activity</h3>
               <button 
                 onClick={() => navigate('/members')}
-                className="text-xs text-pink-500 dark:text-pink-400 hover:underline"
+                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest hover:underline"
               >
                 View All
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {loadingPayments ? (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="w-8 h-8 rounded-full" />
+                    <div key={i} className="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-white/20">
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="w-10 h-10 rounded-full" />
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-24" />
                           <Skeleton className="h-3 w-16" />
@@ -304,9 +305,9 @@ export default function Dashboard() {
                 </div>
               ) : recentPayments.length > 0 ? (
                 recentPayments.map((p, i) => (
-                  <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-pink-100 dark:bg-pink-500/20 flex items-center justify-center text-xs font-bold text-pink-600 dark:text-pink-400 overflow-hidden">
+                  <div key={p.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-white/20 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 flex items-center justify-center text-sm font-bold text-indigo-600 dark:text-indigo-400 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
                         {p.members?.photo_url ? (
                           <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" />
                         ) : (
@@ -314,28 +315,29 @@ export default function Dashboard() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{p.members?.name}</p>
-                        <p className="text-[10px] text-gray-500 dark:text-white/40">{p.month} {p.year}</p>
+                        <p className="text-base font-bold text-gray-900 dark:text-white">{p.members?.name}</p>
+                        <p className="text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">{p.month} {p.year}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">৳{p.total_amount.toLocaleString()}</p>
-                      <p className="text-[10px] text-gray-400 dark:text-white/40">
+                      <p className="text-base font-bold text-indigo-600 dark:text-indigo-400">৳{p.total_amount.toLocaleString()}</p>
+                      <p className="text-[10px] font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">
                         {new Date(p.payment_date).toLocaleDateString()}
-                        {p.payment_method && ` • ${p.payment_method}`}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-center text-gray-400 dark:text-white/40 text-sm py-8">No payments recorded yet.</p>
+                <p className="text-center text-gray-400 dark:text-white/40 text-sm py-12">No payments recorded yet.</p>
               )}
             </div>
             
             {!loadingPayments && recentPayments.length > 0 && (
-              <RecentPaymentsChart data={recentPayments} />
+              <div className="mt-8">
+                <RecentPaymentsChart data={recentPayments} />
+              </div>
             )}
-          </div>
+          </Card>
         )}
       </div>
 

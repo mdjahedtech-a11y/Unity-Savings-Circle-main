@@ -241,7 +241,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const phoneFromEmail = user?.email?.split('@')[0]?.split('_')[0];
-  const isMainAdmin = member?.phone?.includes('1580824066') || phoneFromEmail?.includes('1580824066');
+  const isMainAdmin = member?.phone?.includes('1580824066') || 
+                     phoneFromEmail?.includes('1580824066') ||
+                     user?.email === 'mdjahedtech@gmail.com';
   const isAdmin = member?.role === 'admin' || isMainAdmin;
 
   return (

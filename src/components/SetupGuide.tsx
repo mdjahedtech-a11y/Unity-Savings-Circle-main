@@ -96,10 +96,10 @@ on conflict (phone) do update set name = 'Jahed', role = 'admin', password = '14
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 p-8 flex items-center justify-center transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-indigo-900 dark:via-purple-900 dark:to-blue-900 p-8 flex items-center justify-center transition-colors duration-300">
       <Card className="max-w-3xl w-full bg-white dark:bg-black/30 border-gray-200 dark:border-white/10 backdrop-blur-xl shadow-xl dark:shadow-2xl">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-center text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-pink-400 dark:to-violet-400">
+          <CardTitle className="text-3xl font-bold text-center text-gray-900 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-indigo-400 dark:to-violet-400">
             Database Update Required
           </CardTitle>
           <p className="text-center text-gray-500 dark:text-white/60 mt-2">
@@ -113,11 +113,11 @@ on conflict (phone) do update set name = 'Jahed', role = 'admin', password = '14
 
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-              <div className="w-8 h-8 rounded-full bg-pink-600 dark:bg-pink-500 flex items-center justify-center font-bold text-white">1</div>
-              <p>Go to <a href="https://supabase.com" target="_blank" className="text-pink-600 dark:text-pink-400 hover:underline">Supabase SQL Editor</a></p>
+              <div className="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white">1</div>
+              <p>Go to <a href="https://supabase.com" target="_blank" className="text-indigo-600 dark:text-indigo-400 hover:underline">Supabase SQL Editor</a></p>
             </div>
             <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-              <div className="w-8 h-8 rounded-full bg-pink-600 dark:bg-pink-500 flex items-center justify-center font-bold text-white">2</div>
+              <div className="w-8 h-8 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center font-bold text-white">2</div>
               <p>Run the following SQL script:</p>
             </div>
           </div>
