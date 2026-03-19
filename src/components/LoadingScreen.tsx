@@ -65,7 +65,7 @@ export function LoadingScreen() {
       {/* Text Animation */}
       <div className="mt-8 flex flex-col items-center">
         <motion.h2 
-          className="text-xl font-bold text-gray-900 dark:text-white tracking-tight"
+          className="text-xl font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
         >

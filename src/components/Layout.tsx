@@ -135,9 +135,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/10 border border-white/20">
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
-            <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest -mt-1">Made by Jahed Hasan</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-bold text-lg sm:text-xl tracking-tight text-gray-900 dark:text-white whitespace-nowrap">Unity Savings Circle</span>
+            <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest -mt-1 whitespace-nowrap">Made by Jahed Hasan</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -157,9 +157,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <div className="w-14 h-14 rounded-[1.25rem] bg-white flex items-center justify-center shadow-xl shadow-indigo-500/20 overflow-hidden border border-white/20">
               <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-2xl tracking-tight leading-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
-              <span className="text-xs text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest">Made by Jahed Hasan</span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-xl xl:text-2xl tracking-tight leading-tight text-gray-900 dark:text-white whitespace-nowrap">Unity Savings Circle</span>
+              <span className="text-xs text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest whitespace-nowrap">Made by Jahed Hasan</span>
             </div>
           </div>
 
