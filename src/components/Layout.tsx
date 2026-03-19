@@ -130,22 +130,22 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between p-6 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl sticky top-0 z-50">
+      <div className="lg:hidden flex items-center justify-between py-3 px-4 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/10 border border-white/20">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/10 border border-white/20">
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="font-bold text-lg sm:text-xl tracking-tight text-gray-900 dark:text-white whitespace-nowrap">Unity Savings Circle</span>
-            <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest -mt-1 whitespace-nowrap">Made by Jahed Hasan</span>
+            <span className="font-bold text-base sm:text-lg tracking-tight text-gray-900 dark:text-white whitespace-nowrap">Unity Savings Circle</span>
+            <span className="text-[8px] text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest -mt-1 whitespace-nowrap">Made by Jahed Hasan</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80 h-10 w-10 bg-white/50 dark:bg-white/5 rounded-xl">
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80 h-9 w-9 bg-white/50 dark:bg-white/5 rounded-xl">
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 dark:text-red-400 h-10 w-10 bg-white/50 dark:bg-white/5 rounded-xl">
-            <LogOut className="w-5 h-5" />
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 dark:text-red-400 h-9 w-9 bg-white/50 dark:bg-white/5 rounded-xl">
+            <LogOut className="w-4 h-4" />
           </Button>
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <div className="flex flex-col min-w-0">
               <span className="font-bold text-xl xl:text-2xl tracking-tight leading-tight text-gray-900 dark:text-white whitespace-nowrap">Unity Savings Circle</span>
-              <span className="text-xs text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest whitespace-nowrap">Made by Jahed Hasan</span>
+              <span className="text-[10px] text-indigo-500 dark:text-indigo-400 font-bold uppercase tracking-widest whitespace-nowrap">Made by Jahed Hasan</span>
             </div>
           </div>
 
