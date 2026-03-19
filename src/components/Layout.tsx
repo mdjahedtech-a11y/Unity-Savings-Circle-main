@@ -144,6 +144,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80 h-10 w-10 bg-white/50 dark:bg-white/5 rounded-xl">
             {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </Button>
+          <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-red-500 dark:text-red-400 h-10 w-10 bg-white/50 dark:bg-white/5 rounded-xl">
+            <LogOut className="w-5 h-5" />
+          </Button>
         </div>
       </div>
 
@@ -152,7 +155,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <aside className="hidden lg:flex flex-col w-72 h-screen sticky top-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 p-8 transition-colors duration-300">
           <div className="flex items-center gap-4 mb-12 px-2">
             <div className="w-14 h-14 rounded-[1.25rem] bg-white flex items-center justify-center shadow-xl shadow-indigo-500/20 overflow-hidden border border-white/20">
-              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
+              <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-2xl tracking-tight leading-tight text-gray-900 dark:text-white">Unity Savings Circle</span>
@@ -215,7 +218,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Mobile Bottom Nav - Floating Design from Image */}
-      <div className="lg:hidden fixed bottom-3 left-3 right-3 h-14 bg-white/90 dark:bg-gray-900/95 backdrop-blur-2xl rounded-[1.75rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-1">
+      <div className="lg:hidden fixed bottom-3 left-3 right-3 h-12 bg-white/90 dark:bg-gray-900/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           
@@ -224,10 +227,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative -top-6"
+                className="relative -top-5"
               >
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-500/40 flex items-center justify-center border-4 border-white dark:border-gray-900 rotate-45 group transition-transform active:scale-90">
-                  <item.icon className="w-5 h-5 text-white -rotate-45 stroke-[3px]" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-500/40 flex items-center justify-center border-[3px] border-white dark:border-gray-900 rotate-45 group transition-transform active:scale-90">
+                  <item.icon className="w-4 h-4 text-white -rotate-45 stroke-[3px]" />
                 </div>
               </Link>
             );
@@ -243,12 +246,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 "p-1 transition-all duration-300",
                 isActive ? "text-indigo-600 dark:text-indigo-400 scale-110" : "text-gray-400 dark:text-white/30"
               )}>
-                <item.icon className={cn("w-[18px] h-[18px]", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
+                <item.icon className={cn("w-4 h-4", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
               </div>
               {isActive && (
                 <motion.div 
                   layoutId="activeTabIndicator"
-                  className="absolute bottom-1.5 w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(79,70,229,0.6)]"
+                  className="absolute bottom-1 w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(79,70,229,0.6)]"
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
               )}
