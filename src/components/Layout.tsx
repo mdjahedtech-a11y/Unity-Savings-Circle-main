@@ -78,11 +78,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: 'Dashboard', path: '/', icon: Home, key: 'show_dashboard', isCenter: true },
     { name: 'Discussion', path: '/discussion', icon: Bell, key: 'show_discussion' },
     { name: 'My Savings', path: '/my-savings', icon: User, key: 'show_savings' },
-    ...(isAdmin ? [{ name: 'Settings', path: '/settings', icon: SettingsIcon, key: 'admin_only' }] : []),
   ].filter(item => {
-    if (isAdmin) return true;
     if (item.key === 'always_visible') return true;
-    if (item.key === 'admin_only') return false;
     return (systemSettings as any)?.[item.key] !== false;
   });
 
@@ -141,6 +138,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="text-gray-600 dark:text-white/80 h-9 w-9 bg-white/50 dark:bg-white/5 rounded-xl">
+              <SettingsIcon className="w-4 h-4" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-white/80 h-9 w-9 bg-white/50 dark:bg-white/5 rounded-xl">
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
@@ -217,47 +219,57 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Mobile Bottom Nav - Floating Design from Image */}
-      <div className="lg:hidden fixed bottom-3 left-3 right-3 h-12 bg-white/90 dark:bg-gray-900/95 backdrop-blur-2xl rounded-[1.5rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-1">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          
-          if (item.isCenter) {
+      {/* Mobile Bottom Nav - Example Style */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-white/5 z-50 px-2 pb-safe pt-1 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="flex items-end justify-around h-14 relative">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            
+            if (item.isCenter) {
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className="relative -top-6 flex flex-col items-center group"
+                >
+                  <div className={cn(
+                    "w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 active:scale-90",
+                    "bg-indigo-600 text-white shadow-indigo-500/40 border-4 border-white dark:border-gray-900"
+                  )}>
+                    <item.icon className="w-7 h-7" />
+                  </div>
+                  <span className={cn(
+                    "text-[10px] font-bold mt-1 transition-colors",
+                    isActive ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-white/30"
+                  )}>
+                    {item.name}
+                  </span>
+                </Link>
+              );
+            }
+
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className="relative -top-5"
+                className="flex-1 flex flex-col items-center justify-center h-full group"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 shadow-xl shadow-indigo-500/40 flex items-center justify-center border-[3px] border-white dark:border-gray-900 rotate-45 group transition-transform active:scale-90">
-                  <item.icon className="w-4 h-4 text-white -rotate-45 stroke-[3px]" />
+                <div className={cn(
+                  "p-1 transition-all duration-300",
+                  isActive ? "text-indigo-600 dark:text-indigo-400 scale-110" : "text-gray-400 dark:text-white/30"
+                )}>
+                  <item.icon className={cn("w-5 h-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
                 </div>
+                <span className={cn(
+                  "text-[10px] font-medium mt-0.5 transition-colors text-center leading-tight px-1",
+                  isActive ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-gray-400 dark:text-white/30"
+                )}>
+                  {item.name}
+                </span>
               </Link>
             );
-          }
-
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className="flex-1 flex flex-col items-center justify-center h-full relative"
-            >
-              <div className={cn(
-                "p-1 transition-all duration-300",
-                isActive ? "text-indigo-600 dark:text-indigo-400 scale-110" : "text-gray-400 dark:text-white/30"
-              )}>
-                <item.icon className={cn("w-4 h-4", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
-              </div>
-              {isActive && (
-                <motion.div 
-                  layoutId="activeTabIndicator"
-                  className="absolute bottom-1 w-1 h-1 rounded-full bg-indigo-600 dark:bg-indigo-400 shadow-[0_0_8px_rgba(79,70,229,0.6)]"
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-            </Link>
-          );
-        })}
+          })}
+        </div>
       </div>
     </div>
   );
