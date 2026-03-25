@@ -96,7 +96,10 @@ export default function Members() {
       console.error('Error fetching members:', error);
       toast.error('Failed to fetch members');
     } finally {
-      setLoading(false);
+      // Add a small delay for smoother transition
+      setTimeout(() => {
+        setLoading(false);
+      }, 800);
     }
   };
 

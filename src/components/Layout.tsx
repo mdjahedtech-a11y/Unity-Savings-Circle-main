@@ -72,7 +72,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     setShowExitModal(false);
   };
 
-  const navItems = [
+  const navItems = React.useMemo(() => [
     { name: 'Reports', path: '/reports', icon: Calendar, key: 'show_reports' },
     { name: 'Members', path: '/members', icon: Users, key: 'always_visible' },
     { name: 'Dashboard', path: '/', icon: Home, key: 'show_dashboard', isCenter: true },
@@ -81,10 +81,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ].filter(item => {
     if (item.key === 'always_visible') return true;
     return (systemSettings as any)?.[item.key] !== false;
-  });
+  }), [systemSettings]);
 
   // Desktop sidebar items (more comprehensive)
-  const desktopNavItems = [
+  const desktopNavItems = React.useMemo(() => [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard, key: 'show_dashboard' },
     { name: 'Members', path: '/members', icon: Users, key: 'always_visible' },
     { name: 'Reports', path: '/reports', icon: FileText, key: 'show_reports' },
@@ -97,7 +97,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     if (item.key === 'always_visible') return true;
     if (item.key === 'admin_only') return false;
     return (systemSettings as any)?.[item.key] !== false;
-  });
+  }), [isAdmin, systemSettings]);
 
   return (
     <div className="min-h-screen transition-colors duration-300 text-gray-900 dark:text-white font-sans selection:bg-indigo-100 selection:text-indigo-900">
@@ -127,7 +127,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Mobile Header */}
-      <div className="lg:hidden flex items-center justify-between py-3 px-4 bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl sticky top-0 z-50">
+      <div className="lg:hidden flex items-center justify-between py-3 px-4 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/10 border border-white/20">
             <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" />
@@ -154,7 +154,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex flex-col w-72 h-screen sticky top-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-2xl border-r border-white/20 dark:border-white/10 p-8 transition-colors duration-300">
+        <aside className="hidden lg:flex flex-col w-72 h-screen sticky top-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-lg border-r border-white/20 dark:border-white/10 p-8 transition-colors duration-300">
           <div className="flex items-center gap-4 mb-12 px-2">
             <div className="w-14 h-14 rounded-[1.25rem] bg-white flex items-center justify-center shadow-xl shadow-indigo-500/20 overflow-hidden border border-white/20">
               <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" alt="Logo" className="w-full h-full object-cover" referrerPolicy="no-referrer" />

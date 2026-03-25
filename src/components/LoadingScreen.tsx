@@ -7,29 +7,29 @@ export function LoadingScreen() {
       <div className="relative">
         {/* Outer glowing rings */}
         <motion.div
-          className="absolute inset-0 rounded-full border-2 border-indigo-500/20 dark:border-indigo-500/10"
+          className="absolute inset-0 rounded-full border-2 border-indigo-500/20 dark:border-indigo-500/10 will-change-transform"
           animate={{
             scale: [1, 1.5, 1],
             opacity: [0.3, 0.1, 0.3],
           }}
           transition={{
-            duration: 3,
+            duration: 1.5,
             repeat: Infinity,
             ease: "easeInOut"
           }}
           style={{ width: '120px', height: '120px', margin: '-10px' }}
         />
         <motion.div
-          className="absolute inset-0 rounded-full border-2 border-purple-500/20 dark:border-purple-500/10"
+          className="absolute inset-0 rounded-full border-2 border-purple-500/20 dark:border-purple-500/10 will-change-transform"
           animate={{
             scale: [1.2, 1.8, 1.2],
             opacity: [0.2, 0.05, 0.2],
           }}
           transition={{
-            duration: 4,
+            duration: 2,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 0.5
+            delay: 0.2
           }}
           style={{ width: '120px', height: '120px', margin: '-10px' }}
         />
@@ -49,12 +49,12 @@ export function LoadingScreen() {
           
           {/* Scanning effect */}
           <motion.div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent h-1/2 w-full"
+            className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/20 to-transparent h-1/2 w-full will-change-[top]"
             animate={{
               top: ['-50%', '100%'],
             }}
             transition={{
-              duration: 2,
+              duration: 1,
               repeat: Infinity,
               ease: "linear"
             }}
@@ -67,7 +67,7 @@ export function LoadingScreen() {
         <motion.h2 
           className="text-xl font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap"
           animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 1, repeat: Infinity }}
         >
           Unity Savings Circle
         </motion.h2>
@@ -80,7 +80,7 @@ export function LoadingScreen() {
               x: ['-100%', '100%'],
             }}
             transition={{
-              duration: 1.5,
+              duration: 0.8,
               repeat: Infinity,
               ease: "easeInOut"
             }}

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Member, Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Download, FileText, CheckCircle, XCircle, AlertTriangle, RefreshCcw } from 'lucide-react';
+import { Download, FileText, CheckCircle, XCircle, AlertTriangle, RefreshCcw, Image as ImageIcon, FileSpreadsheet, ChevronDown, DollarSign, Target } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
+import { toJpeg } from 'html-to-image';
 
 export default function Reports() {
   const { isAdmin } = useAuth();
@@ -16,6 +17,20 @@ export default function Reports() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [reportData, setReportData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const exportButtonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (exportButtonRef.current && !exportButtonRef.current.contains(event.target as Node)) {
+        setShowExportOptions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     generateReport();
@@ -54,7 +69,10 @@ export default function Reports() {
       console.error('Error generating report:', error);
       toast.error('Failed to generate report');
     } finally {
-      setLoading(false);
+      // Add a small delay for smoother transition
+      setTimeout(() => {
+        setLoading(false);
+      }, 800);
     }
   };
 
@@ -70,10 +88,44 @@ export default function Reports() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setShowExportOptions(false);
+  };
+
+  const exportAsImage = async () => {
+    if (!reportRef.current) return;
+    
+    const toastId = toast.loading('Generating report image...');
+    setShowExportOptions(false);
+    
+    try {
+      // Small delay to ensure any UI states are settled
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const dataUrl = await toJpeg(reportRef.current, {
+        quality: 0.95,
+        backgroundColor: '#f8fafc', // Matches bg-slate-50 or similar
+        style: {
+          padding: '20px',
+          borderRadius: '20px'
+        }
+      });
+      
+      const link = document.createElement('a');
+      link.download = `savings_report_${selectedMonth}_${selectedYear}.jpeg`;
+      link.href = dataUrl;
+      link.click();
+      
+      toast.success('Report image downloaded!', { id: toastId });
+    } catch (err) {
+      console.error('Error generating image:', err);
+      toast.error('Failed to generate report image', { id: toastId });
+    }
   };
 
   const totalCollection = reportData.reduce((sum, item) => sum + item.amountPaid, 0);
   const totalPending = reportData.filter(item => item.paymentStatus !== 'paid').length;
+  const collectionGoal = 41 * 1000;
+  const collectionProgress = (totalCollection / collectionGoal) * 100;
 
   return (
     <div className="space-y-6">
@@ -113,16 +165,51 @@ export default function Reports() {
               ))}
             </select>
           </div>
-          <Button onClick={exportReport} className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-white gap-2 shadow-sm justify-center">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </Button>
+          <div className="relative" ref={exportButtonRef}>
+            <Button 
+              onClick={() => setShowExportOptions(!showExportOptions)} 
+              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-500/20 justify-center rounded-xl px-6"
+            >
+              <Download className="w-4 h-4" />
+              Export Report
+              <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showExportOptions && "rotate-180")} />
+            </Button>
+
+            <AnimatePresence>
+              {showExportOptions && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-[60] overflow-hidden"
+                >
+                  <div className="p-2 space-y-1">
+                    <button
+                      onClick={exportReport}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white/80 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
+                    >
+                      <FileSpreadsheet className="w-4 h-4" />
+                      Export as CSV
+                    </button>
+                    <button
+                      onClick={exportAsImage}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white/80 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
+                    >
+                      <ImageIcon className="w-4 h-4" />
+                      Export as JPEG
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div ref={reportRef} className="space-y-6 p-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {loading ? (
-          [...Array(3)].map((_, i) => (
+          [...Array(4)].map((_, i) => (
             <div key={i} className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-3">
@@ -143,6 +230,31 @@ export default function Reports() {
                 </div>
                 <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
                   <DollarSign className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-500/20 dark:to-orange-500/20 border-amber-100 dark:border-white/10 shadow-sm dark:shadow-none">
+              <CardContent className="p-6 flex flex-col justify-between h-full">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-gray-500 dark:text-white/60 text-sm">Collection Goal</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">৳{collectionGoal.toLocaleString()}</h3>
+                  </div>
+                  <div className="p-3 bg-white dark:bg-white/10 rounded-xl shadow-sm dark:shadow-none">
+                    <Target className="w-6 h-6 text-amber-500 dark:text-amber-400" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                    <span className="text-gray-400 dark:text-white/40">Progress</span>
+                    <span className="text-amber-600 dark:text-amber-400">{Math.min(100, Math.round(collectionProgress))}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                    <div 
+                      style={{ width: `${Math.min(100, collectionProgress)}%` }}
+                      className="h-full bg-amber-500 rounded-full transition-all duration-1000"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -245,27 +357,7 @@ export default function Reports() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
-  );
-}
-
-// Helper component for icon
-function DollarSign({ className }: { className?: string }) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <line x1="12" x2="12" y1="2" y2="22" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-    </svg>
   );
 }

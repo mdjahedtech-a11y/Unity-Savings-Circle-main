@@ -43,10 +43,10 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-[2rem] shadow-xl shadow-indigo-500/5;
+    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-white/10 rounded-[2rem] shadow-xl shadow-indigo-500/5;
   }
   
   .bottom-nav-floating {
-    @apply fixed bottom-6 left-6 right-6 h-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-4;
+    @apply fixed bottom-6 left-6 right-6 h-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-[2.5rem] shadow-2xl shadow-indigo-500/20 border border-white/20 dark:border-white/10 z-50 flex items-center justify-around px-4;
   }
 }

@@ -24,6 +24,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const { stats, chartData } = React.useMemo(() => {
+    if (!members.length && !allPayments.length) {
+      return {
+        stats: { totalMembers: 0, totalShares: 0, totalSavings: 0, monthlyCollection: 0, pendingCount: 0 },
+        chartData: { monthly: [], distribution: [], growth: [] }
+      };
+    }
     const currentMonth = new Date().toLocaleString('default', { month: 'long' });
     const currentYear = new Date().getFullYear();
 
@@ -38,6 +44,9 @@ export default function Dashboard() {
       .filter(p => p.month === currentMonth && p.year === currentYear)
       .reduce((sum, p) => sum + (p.total_amount || 0), 0);
     
+    const collectionGoal = 41 * 1000; // 41 shares * 1000 taka
+    const collectionProgress = (monthlyCollection / collectionGoal) * 100;
+
     const pendingCount = allPayments
       .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'pending')
       .length;
@@ -90,6 +99,8 @@ export default function Dashboard() {
         totalShares,
         totalSavings,
         monthlyCollection,
+        collectionGoal,
+        collectionProgress,
         pendingCount,
       },
       chartData: {
@@ -122,7 +133,7 @@ export default function Dashboard() {
   };
 
   const fetchDashboardData = async (isRefresh = false) => {
-    if (isRefresh) setLoading(true);
+    setLoading(true);
     try {
       const currentMonth = new Date().toLocaleString('default', { month: 'long' });
       const currentYear = new Date().getFullYear();
@@ -144,8 +155,11 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
-      setLoading(false);
-      setDashboardLoaded(true);
+      // Add a small delay to ensure the UI doesn't flicker
+      setTimeout(() => {
+        setLoading(false);
+        setDashboardLoaded(true);
+      }, 800);
     }
   };
 
@@ -209,9 +223,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <motion.div 
+        layout
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8"
+      >
         {loading ? (
-          [...Array(4)].map((_, i) => (
+          [...Array(5)].map((_, i) => (
             <div key={i} className="bg-white/50 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-[2rem] p-8">
               <div className="flex items-center justify-between">
                 <div className="space-y-4">
@@ -238,6 +255,31 @@ export default function Dashboard() {
               color="text-indigo-500"
               delay={0.2}
             />
+            <div className="bg-white/50 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-[2rem] p-8 flex flex-col justify-between shadow-xl shadow-indigo-500/5">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">Collection Goal</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">৳{stats.collectionGoal.toLocaleString()}</h3>
+                </div>
+                <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-500">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold uppercase tracking-widest">
+                  <span className="text-gray-400 dark:text-white/30">Progress</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">{Math.min(100, Math.round(stats.collectionProgress))}%</span>
+                </div>
+                <div className="h-2 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, stats.collectionProgress)}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-indigo-500 rounded-full"
+                  />
+                </div>
+              </div>
+            </div>
             <StatsCard 
               title="Total Members" 
               value={stats.totalMembers} 
@@ -255,7 +297,7 @@ export default function Dashboard() {
             />
           </>
         )}
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {loading ? (

@@ -42,87 +42,156 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [dashboardLoaded, setDashboardLoaded] = useState(false);
 
   useEffect(() => {
-    fetchSystemSettings();
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchMemberProfile(session.user.id, session.user.email);
-      } else {
+    // Safety timeout to ensure the app opens even if initialization hangs
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+
+    const initializeAuth = async () => {
+      const startTime = Date.now();
+      const MIN_LOADING_TIME = 2500; // 2.5 seconds
+      
+      console.log('Auth initialization started...');
+
+      try {
+        // Start fetching settings and session in parallel with a timeout
+        const sessionPromise = Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 5000))
+        ]) as Promise<{ data: { session: Session | null } }>;
+
+        const settingsPromise = Promise.race([
+          fetchSystemSettings(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Settings timeout')), 5000))
+        ]);
+
+        const sessionResult = await sessionPromise.catch(err => {
+          console.warn('Session fetch failed or timed out:', err);
+          return { data: { session: null } };
+        });
+        
+        const initialSession = sessionResult.data.session;
+        console.log('Initial session fetched:', !!initialSession);
+        
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+
+        if (initialSession?.user) {
+          console.log('Fetching member profile for user:', initialSession.user.id);
+          await fetchMemberProfile(initialSession.user.id, initialSession.user.email).catch(err => {
+            console.error('Profile fetch failed:', err);
+          });
+        }
+
+        // Wait for settings to finish too, but don't let it block forever
+        await settingsPromise.catch(err => {
+          console.warn('Settings fetch failed or timed out:', err);
+        });
+
+        console.log('Auth initialization data fetching complete.');
+
+        // Ensure minimum loading time
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime < MIN_LOADING_TIME) {
+          await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
+        }
+      } catch (error) {
+        console.error('Auth initialization unexpected error:', error);
+      } finally {
+        console.log('Auth initialization finished, setting loading to false.');
+        clearTimeout(safetyTimer);
         setLoading(false);
       }
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchMemberProfile(session.user.id, session.user.email);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      if (currentSession?.user) {
+        await fetchMemberProfile(currentSession.user.id, currentSession.user.email);
       } else {
         setMember(null);
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchMemberProfile = async (userId: string, userEmail?: string) => {
+    // Add a timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+    );
+
     try {
-      // 1. Try to find by auth_user_id
-      let { data, error } = await supabase
-        .from('members')
-        .select('*')
-        .eq('auth_user_id', userId)
-        .maybeSingle();
+      console.log('Fetching profile for:', userId);
+      
+      const fetchPromise = (async () => {
+        // 1. Try to find by auth_user_id
+        let { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .eq('auth_user_id', userId)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching member profile by ID:', error);
-      }
+        if (error) {
+          console.error('Error fetching member profile by ID:', error);
+        }
 
-      // 2. If not found by ID, try to find by phone extracted from email
-      if (!data && userEmail) {
-        const phoneFromEmail = userEmail.split('@')[0]?.split('_')[0];
-        if (phoneFromEmail && phoneFromEmail.length >= 10) {
-          // Try multiple variations
-          const variations = [
-            phoneFromEmail,
-            phoneFromEmail.startsWith('0') ? phoneFromEmail.substring(1) : '0' + phoneFromEmail,
-            phoneFromEmail.startsWith('88') ? phoneFromEmail.substring(2) : '88' + phoneFromEmail,
-            phoneFromEmail.startsWith('880') ? phoneFromEmail.substring(3) : null,
-          ].filter(Boolean) as string[];
+        // 2. If not found by ID, try to find by phone extracted from email
+        if (!data && userEmail) {
+          const phoneFromEmail = userEmail.split('@')[0]?.split('_')[0];
+          if (phoneFromEmail && phoneFromEmail.length >= 10) {
+            // Try multiple variations
+            const variations = [
+              phoneFromEmail,
+              phoneFromEmail.startsWith('0') ? phoneFromEmail.substring(1) : '0' + phoneFromEmail,
+              phoneFromEmail.startsWith('88') ? phoneFromEmail.substring(2) : '88' + phoneFromEmail,
+              phoneFromEmail.startsWith('880') ? phoneFromEmail.substring(3) : null,
+            ].filter(Boolean) as string[];
 
-          for (const variant of variations) {
-            const { data: phoneData, error: phoneError } = await supabase
-              .from('members')
-              .select('*')
-              .eq('phone', variant)
-              .maybeSingle();
-            
-            if (!phoneError && phoneData) {
-              data = phoneData;
-              // Link the auth_user_id if it's not set
-              if (!data.auth_user_id) {
-                await supabase
-                  .from('members')
-                  .update({ auth_user_id: userId })
-                  .eq('id', data.id);
+            for (const variant of variations) {
+              const { data: phoneData, error: phoneError } = await supabase
+                .from('members')
+                .select('*')
+                .eq('phone', variant)
+                .maybeSingle();
+              
+              if (!phoneError && phoneData) {
+                data = phoneData;
+                // Link the auth_user_id if it's not set
+                if (!data.auth_user_id) {
+                  await supabase
+                    .from('members')
+                    .update({ auth_user_id: userId })
+                    .eq('id', data.id);
+                }
+                break;
               }
-              break;
             }
           }
         }
-      }
+        return data;
+      })();
+
+      const data = await Promise.race([fetchPromise, timeoutPromise]) as any;
 
       if (data) {
+        console.log('Profile found:', data.name);
         setMember(data);
       } else {
+        console.log('No profile found for user.');
         setMember(null);
       }
     } catch (err) {
-      console.error('Unexpected error:', err);
+      console.error('Unexpected error in fetchMemberProfile:', err);
     } finally {
       setLoading(false);
     }

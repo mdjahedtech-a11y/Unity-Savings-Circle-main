@@ -69,8 +69,11 @@ export default function Investments() {
       console.error('Error fetching notes:', error);
       if (isRefresh) toast.error('Failed to refresh data');
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      // Add a small delay for smoother transition
+      setTimeout(() => {
+        setLoading(false);
+        setRefreshing(false);
+      }, 800);
     }
   };
 
