@@ -18,7 +18,14 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [memberData, setMemberData] = useState<any>(null);
   const navigate = useNavigate();
-  const { refreshProfile } = useAuth();
+  const { refreshProfile, session } = useAuth();
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (session) {
+      navigate('/');
+    }
+  }, [session, navigate]);
 
   if (loading) {
     return <LoadingScreen />;

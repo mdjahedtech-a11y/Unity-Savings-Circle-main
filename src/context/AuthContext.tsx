@@ -54,23 +54,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Auth initialization started...');
 
       try {
-        // Start fetching settings and session in parallel with a timeout
-        const sessionPromise = Promise.race([
-          supabase.auth.getSession(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Session timeout')), 5000))
-        ]) as Promise<{ data: { session: Session | null } }>;
-
-        const settingsPromise = Promise.race([
-          fetchSystemSettings(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Settings timeout')), 5000))
-        ]);
-
-        const sessionResult = await sessionPromise.catch(err => {
-          console.warn('Session fetch failed or timed out:', err);
-          return { data: { session: null } };
+        // 1. Fetch system settings first
+        await fetchSystemSettings().catch(err => {
+          console.warn('Settings fetch failed or timed out:', err);
         });
+
+        // 2. Get current session
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         
-        const initialSession = sessionResult.data.session;
+        if (sessionError) {
+          console.error('Error getting initial session:', sessionError);
+        }
+
         console.log('Initial session fetched:', !!initialSession);
         
         setSession(initialSession);
@@ -82,11 +77,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Profile fetch failed:', err);
           });
         }
-
-        // Wait for settings to finish too, but don't let it block forever
-        await settingsPromise.catch(err => {
-          console.warn('Settings fetch failed or timed out:', err);
-        });
 
         console.log('Auth initialization data fetching complete.');
 
@@ -107,14 +97,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     initializeAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('Auth state change event:', event);
+      
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+
       if (currentSession?.user) {
+        // If we have a user but no member profile, or if the user changed, fetch profile
         await fetchMemberProfile(currentSession.user.id, currentSession.user.email);
       } else {
         setMember(null);
-        setLoading(false);
+        // Only set loading to false if we're not initializing
+        // (initializeAuth handles the initial loading state)
+        if (event === 'SIGNED_OUT') {
+          setLoading(false);
+        }
       }
     });
 
@@ -127,7 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchMemberProfile = async (userId: string, userEmail?: string) => {
     // Add a timeout to prevent hanging
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      setTimeout(() => reject(new Error('Profile fetch timeout')), 10000)
     );
 
     try {
@@ -157,23 +155,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               phoneFromEmail.startsWith('880') ? phoneFromEmail.substring(3) : null,
             ].filter(Boolean) as string[];
 
-            for (const variant of variations) {
-              const { data: phoneData, error: phoneError } = await supabase
-                .from('members')
-                .select('*')
-                .eq('phone', variant)
-                .maybeSingle();
-              
-              if (!phoneError && phoneData) {
-                data = phoneData;
-                // Link the auth_user_id if it's not set
-                if (!data.auth_user_id) {
-                  await supabase
-                    .from('members')
-                    .update({ auth_user_id: userId })
-                    .eq('id', data.id);
-                }
-                break;
+            const { data: phoneData, error: phoneError } = await supabase
+              .from('members')
+              .select('*')
+              .in('phone', variations)
+              .limit(1)
+              .maybeSingle();
+            
+            if (!phoneError && phoneData) {
+              data = phoneData;
+              // Link the auth_user_id if it's not set
+              if (!data.auth_user_id) {
+                await supabase
+                  .from('members')
+                  .update({ auth_user_id: userId })
+                  .eq('id', data.id);
               }
             }
           }
@@ -192,8 +188,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.error('Unexpected error in fetchMemberProfile:', err);
-    } finally {
-      setLoading(false);
     }
   };
 
