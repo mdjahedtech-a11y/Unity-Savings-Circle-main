@@ -209,7 +209,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await Promise.race([
         fetchPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 5000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 7000))
       ]) as any;
 
       if (error) {
@@ -252,6 +252,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.error('Unexpected error fetching settings:', err);
+      // Fallback to defaults on any unexpected error or timeout
+      setSystemSettings({
+        id: 'default',
+        show_dashboard: true,
+        show_reports: true,
+        show_investments: true,
+        show_discussion: true,
+        show_savings: true
+      });
     }
   };
 
