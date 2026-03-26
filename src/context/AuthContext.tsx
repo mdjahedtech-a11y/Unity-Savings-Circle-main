@@ -46,59 +46,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Safety timeout to ensure the app opens even if initialization hangs
     const safetyTimer = setTimeout(() => {
       setLoading(false);
-    }, 15000);
+    }, 10000);
 
     const initializeAuth = async () => {
       const startTime = Date.now();
-      const MIN_LOADING_TIME = 2500; // 2.5 seconds
+      const MIN_LOADING_TIME = 800; // Reduced for faster feel
       
       console.log('Auth initialization started...');
 
-      try {
-        // 1. Fetch system settings first
-        await fetchSystemSettings().catch(err => {
-          console.warn('Settings fetch failed or timed out:', err);
-        });
-
-        // 2. Get current session
-        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('Error getting initial session:', sessionError);
-        }
-
-        console.log('Initial session fetched:', !!initialSession);
-        
-        setSession(initialSession);
-        setUser(initialSession?.user ?? null);
-
-        if (initialSession?.user) {
-          console.log('Fetching member profile for user:', initialSession.user.id);
-          await fetchMemberProfile(initialSession.user.id, initialSession.user.email).catch(err => {
-            console.error('Profile fetch failed:', err);
-          });
-        }
-
-        console.log('Auth initialization data fetching complete.');
-
-        // Ensure minimum loading time
+      const finish = () => {
         const elapsedTime = Date.now() - startTime;
-        if (elapsedTime < MIN_LOADING_TIME) {
-          await new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME - elapsedTime));
-        }
+        const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime);
+        
+        setTimeout(() => {
+          console.log('Auth initialization finished, setting loading to false.');
+          clearTimeout(safetyTimer);
+          setLoading(false);
+        }, remainingTime);
+      };
+
+      try {
+        // Use a race for the entire initialization process
+        await Promise.race([
+          (async () => {
+            // 1. Fetch system settings (non-blocking)
+            fetchSystemSettings().catch(err => console.warn('Settings fetch failed:', err));
+
+            // 2. Get current session with internal timeout
+            const sessionPromise = supabase.auth.getSession();
+            const sessionResult = await Promise.race([
+              sessionPromise,
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Session fetch timeout')), 5000))
+            ]) as any;
+
+            const initialSession = sessionResult?.data?.session;
+            console.log('Initial session fetched:', !!initialSession);
+            
+            setSession(initialSession || null);
+            setUser(initialSession?.user ?? null);
+
+            if (initialSession?.user) {
+              console.log('Fetching member profile for user:', initialSession.user.id);
+              await fetchMemberProfile(initialSession.user.id, initialSession.user.email).catch(err => {
+                console.error('Profile fetch failed:', err);
+              });
+            }
+          })(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Global init timeout')), 8000))
+        ]).catch(err => {
+          console.warn('Auth initialization timed out or partially failed:', err.message);
+        });
       } catch (error) {
         console.error('Auth initialization unexpected error:', error);
       } finally {
-        console.log('Auth initialization finished, setting loading to false.');
-        clearTimeout(safetyTimer);
-        setLoading(false);
+        finish();
       }
     };
 
     initializeAuth();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
       console.log('Auth state change event:', event);
       
       setSession(currentSession);
@@ -108,7 +116,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // If we have a user but no member profile, or if the user changed, fetch profile
         // Only fetch if not already fetching for this user
         if (fetchingProfileFor.current !== currentSession.user.id) {
-          await fetchMemberProfile(currentSession.user.id, currentSession.user.email);
+          fetchMemberProfile(currentSession.user.id, currentSession.user.email).catch(err => {
+            console.error('Profile fetch failed in auth change:', err);
+          });
         }
       } else {
         setMember(null);
@@ -192,10 +202,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchSystemSettings = async () => {
     try {
-      const { data, error } = await supabase
+      const fetchPromise = supabase
         .from('app_settings')
         .select('*')
         .maybeSingle();
+
+      const { data, error } = await Promise.race([
+        fetchPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 5000))
+      ]) as any;
 
       if (error) {
         console.error('Error fetching system settings:', error);
