@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Settings as SettingsIcon, Shield, Bell, Save, AlertTriangle, LayoutDashboard, FileText, StickyNote, MessageSquare, Wallet } from 'lucide-react';
+import { Settings as SettingsIcon, Shield, Bell, Save, AlertTriangle, LayoutDashboard, FileText, StickyNote, MessageSquare, Wallet, Megaphone } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
+import { MarqueeManager } from '../components/MarqueeManager';
 
 export default function Settings() {
   const { isAdmin, isMainAdmin, systemSettings, updateSettings } = useAuth();
@@ -46,6 +47,15 @@ export default function Settings() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="md:col-span-2"
+        >
+          <MarqueeManager />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="md:col-span-2"
         >
           <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">

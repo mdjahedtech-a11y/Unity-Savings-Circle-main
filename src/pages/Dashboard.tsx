@@ -13,6 +13,7 @@ import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 import { LoadingScreen } from '../components/LoadingScreen';
+import { Marquee } from '../components/Marquee';
 
 export default function Dashboard() {
   const { member, isAdmin, dashboardLoaded, setDashboardLoaded } = useAuth();
@@ -192,6 +193,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
+      <div className="-mt-8 -mx-4 sm:-mx-8">
+        <Marquee />
+      </div>
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10 w-full lg:w-auto">
           <div>

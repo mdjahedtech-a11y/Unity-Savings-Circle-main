@@ -49,3 +49,10 @@ export interface SystemSettings {
   show_savings: boolean;
   updated_at?: string;
 }
+
+export interface MarqueeText {
+  id: string;
+  text: string;
+  is_active: boolean;
+  created_at?: string;
+}
