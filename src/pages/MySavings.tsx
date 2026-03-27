@@ -3,9 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw } from 'lucide-react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
+import { Modal } from '../components/ui/Modal';
+import { AgreementForm } from '../components/AgreementForm';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 
@@ -15,6 +17,7 @@ export default function MySavings() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -200,6 +203,15 @@ export default function MySavings() {
                 <ArrowUpRight className="w-3 h-3" />
                 Reduce Photo Size (Max 1MB)
               </a>
+              {member?.agreement_accepted && (
+                <button 
+                  onClick={() => setShowAgreementModal(true)}
+                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors border border-white/10"
+                >
+                  <FileText className="w-3 h-3" />
+                  View Agreement
+                </button>
+              )}
             </div>
           </div>
           
@@ -373,6 +385,17 @@ export default function MySavings() {
           </div>
         </CardContent>
       </Card>
+
+      <Modal
+        isOpen={showAgreementModal}
+        onClose={() => setShowAgreementModal(false)}
+        title="Membership Agreement"
+        className="max-w-5xl"
+      >
+        <div className="bg-gray-50 dark:bg-gray-900/50 p-2 sm:p-4 rounded-xl">
+          <AgreementForm documentOnly={true} />
+        </div>
+      </Modal>
     </div>
   );
 }

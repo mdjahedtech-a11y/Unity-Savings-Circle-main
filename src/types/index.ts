@@ -11,6 +11,11 @@ export interface Member {
   role: Role;
   created_at?: string;
   total_savings?: number;
+  father_mother_name?: string;
+  agreement_accepted?: boolean;
+  agreement_date?: string;
+  signature_data?: string;
+  passport_photo_url?: string;
 }
 
 export type PaymentStatus = 'paid' | 'pending' | 'unpaid';

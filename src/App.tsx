@@ -5,6 +5,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Toaster } from 'sonner';
 import Layout from './components/Layout';
 import { LoadingScreen } from './components/LoadingScreen';
+import { AgreementForm } from './components/AgreementForm';
 
 // Lazy load pages
 const Login = lazy(() => import('./pages/Login'));
@@ -22,7 +23,7 @@ const hasSupabaseKeys = true; // Keys are now hardcoded as fallbacks in supabase
 
 // Protected Route Component
 const ProtectedRoute = ({ children, moduleKey }: { children: React.ReactNode, moduleKey?: string }) => {
-  const { session, loading, isAdmin, systemSettings } = useAuth();
+  const { session, loading, isAdmin, systemSettings, member } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;

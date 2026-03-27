@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { LoadingScreen } from '../components/LoadingScreen';
 import { Marquee } from '../components/Marquee';
+import { Modal } from '../components/ui/Modal';
+import { AgreementForm } from '../components/AgreementForm';
 
 export default function Dashboard() {
   const { member, isAdmin, dashboardLoaded, setDashboardLoaded } = useAuth();
@@ -23,6 +25,13 @@ export default function Dashboard() {
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showAgreementPopup, setShowAgreementPopup] = useState(false);
+
+  useEffect(() => {
+    if (member && !member.agreement_accepted) {
+      setShowAgreementPopup(true);
+    }
+  }, [member?.agreement_accepted]);
 
   const { stats, chartData } = React.useMemo(() => {
     if (!members.length && !allPayments.length) {
@@ -391,6 +400,23 @@ export default function Dashboard() {
           <GrowthChart data={chartData.growth} />
         )}
       </div>
+
+      {/* Agreement Popup for existing users */}
+      <Modal
+        isOpen={showAgreementPopup}
+        onClose={() => setShowAgreementPopup(false)}
+        title="Membership Agreement"
+        className="max-w-4xl"
+        closable={!!member?.agreement_accepted}
+      >
+        <div className="text-sm text-gray-500 dark:text-white/50 mb-6">
+          {!member?.agreement_accepted 
+            ? "Please review and accept our membership agreement to continue using the application."
+            : "Your agreement has been successfully completed. You can download it below or view it later in your profile."
+          }
+        </div>
+        <AgreementForm />
+      </Modal>
     </div>
   );
 }
