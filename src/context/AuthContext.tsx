@@ -48,13 +48,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }, 10000);
 
-      // 1. Fetch system settings (non-blocking)
-      fetchSystemSettings().catch(err => console.warn('Settings fetch failed:', err));
-
-      const initializeAuth = async () => {
-        const startTime = Date.now();
-        
-        console.log('Auth initialization started...');
+    const initializeAuth = async () => {
+      const startTime = Date.now();
+      
+      console.log('Auth initialization started...');
 
       const finish = () => {
         const elapsedTime = Date.now() - startTime;
@@ -78,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const sessionPromise = supabase.auth.getSession();
             const sessionResult = await Promise.race([
               sessionPromise,
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Session fetch timeout')), 5000))
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Session fetch timeout')), 10000))
             ]) as any;
 
             const initialSession = sessionResult?.data?.session;
@@ -94,7 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               });
             }
           })(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Global init timeout')), 8000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Global init timeout')), 15000))
         ]).catch(err => {
           console.warn('Auth initialization timed out or partially failed:', err.message);
         });
@@ -202,7 +199,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const fetchSystemSettings = async () => {
+  const fetchSystemSettings = async (retryCount = 0) => {
     try {
       const fetchPromise = supabase
         .from('app_settings')
@@ -211,10 +208,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await Promise.race([
         fetchPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 7000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 12000))
       ]) as any;
 
       if (error) {
+        if (retryCount < 2) {
+          console.warn(`Settings fetch failed (attempt ${retryCount + 1}), retrying...`);
+          return fetchSystemSettings(retryCount + 1);
+        }
         console.error('Error fetching system settings:', error);
         // Fallback to defaults if table doesn't exist or error
         setSystemSettings({
@@ -253,6 +254,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     } catch (err) {
+      if (retryCount < 2) {
+        console.warn(`Unexpected error fetching settings (attempt ${retryCount + 1}), retrying...`, err);
+        return fetchSystemSettings(retryCount + 1);
+      }
       console.error('Unexpected error fetching settings:', err);
       // Fallback to defaults on any unexpected error or timeout
       setSystemSettings({
