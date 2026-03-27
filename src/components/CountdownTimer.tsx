@@ -39,7 +39,7 @@ export const CountdownTimer = () => {
 
   if (!isMounted) return null;
 
-  const TimeUnit = ({ value, label, color }: { value: number, label: string, color: string }) => (
+  const TimeUnit = React.memo(({ value, label, color }: { value: number, label: string, color: string }) => (
     <div className="flex flex-col items-center px-2 sm:px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 min-w-[50px] sm:min-w-[60px]">
       <motion.span 
         key={value}
@@ -51,7 +51,7 @@ export const CountdownTimer = () => {
       </motion.span>
       <span className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/60 font-medium">{label}</span>
     </div>
-  );
+  ));
 
   return (
     <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-2xl shadow-xl border border-white/30">

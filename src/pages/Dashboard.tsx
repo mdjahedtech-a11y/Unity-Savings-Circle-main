@@ -165,11 +165,8 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
-      // Add a small delay to ensure the UI doesn't flicker
-      setTimeout(() => {
-        setLoading(false);
-        setDashboardLoaded(true);
-      }, 800);
+      setLoading(false);
+      setDashboardLoaded(true);
     }
   };
 

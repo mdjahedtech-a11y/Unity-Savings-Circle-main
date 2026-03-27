@@ -35,7 +35,26 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
   const [passportPhoto, setPassportPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
+  const [viewMode, setViewMode] = useState<'fit' | 'full'>('fit');
+  const [scale, setScale] = useState(1);
   const documentRef = useRef<HTMLDivElement>(null);
+
+  // Handle dynamic scaling for mobile view
+  React.useEffect(() => {
+    const updateScale = () => {
+      if (viewMode === 'fit') {
+        const containerWidth = window.innerWidth - 32; // 16px padding on each side
+        const newScale = Math.min(1, containerWidth / 800);
+        setScale(newScale);
+      } else {
+        setScale(1);
+      }
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, [viewMode, showDocument, member?.agreement_accepted, documentOnly]);
 
   const handleCheck = (index: number) => {
     const newChecked = [...checkedPoints];
@@ -100,33 +119,35 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
     try {
       const element = documentRef.current;
       
-      // Capture the document at its natural size (800px) regardless of mobile scaling
+      // Force a temporary style to ensure standard colors during capture
+      const originalStyle = element.getAttribute('style') || '';
+      element.style.transform = 'none';
+      element.style.scale = '1';
+      
       const canvas = await html2canvas(element, {
-        scale: 2, // Good balance between quality and file size
+        scale: 3, // Higher scale for better quality
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: 800, // Force 800px width for capture
-        windowWidth: 800, // Force window width to 800px during capture to prevent squashing
+        width: 800,
+        windowWidth: 800,
         onclone: (clonedDoc) => {
-          // Find the document in the clone and ensure it's not scaled
           const clonedElement = clonedDoc.querySelector('[data-agreement-document]');
           if (clonedElement instanceof HTMLElement) {
             clonedElement.style.transform = 'none';
             clonedElement.style.scale = '1';
             clonedElement.style.width = '800px';
             clonedElement.style.margin = '0';
-          }
-          // Also reset the parent scaling wrapper in the clone
-          const wrapper = clonedDoc.querySelector('.origin-top');
-          if (wrapper instanceof HTMLElement) {
-            wrapper.style.transform = 'none';
-            wrapper.style.scale = '1';
-            wrapper.style.width = '800px';
+            clonedElement.style.padding = '40px';
+            clonedElement.style.boxShadow = 'none';
+            clonedElement.style.border = '16px double #15803d';
           }
         }
       });
+      
+      // Restore original style
+      element.setAttribute('style', originalStyle);
       
       const link = document.createElement('a');
       link.download = `Unity_Agreement_${member?.name || 'Member'}.png`;
@@ -143,26 +164,48 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
 
   if (showDocument || member?.agreement_accepted || documentOnly) {
     return (
-      <div className="max-w-4xl mx-auto py-4 sm:py-8 space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">সদস্যপদ এগ্রিমেন্ট ডকুমেন্ট</h2>
-          <Button onClick={downloadDocument} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20">
-            <Download className="w-4 h-4" />
-            ডাউনলোড (PNG)
-          </Button>
+      <div className="max-w-4xl mx-auto py-4 sm:py-8 space-y-6 px-2 sm:px-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 dark:bg-gray-900/50 p-4 rounded-2xl backdrop-blur-sm border border-white/20 dark:border-white/10">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">সদস্যপদ এগ্রিমেন্ট ডকুমেন্ট</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">আপনার এগ্রিমেন্টটি এখান থেকে দেখে নিন বা ডাউনলোড করুন</p>
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button 
+              variant="outline"
+              onClick={() => setViewMode(viewMode === 'fit' ? 'full' : 'fit')}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 h-11"
+            >
+              <FileText className="w-4 h-4" />
+              {viewMode === 'fit' ? 'Zoom In' : 'Zoom Out'}
+            </Button>
+            <Button onClick={downloadDocument} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 h-11">
+              <Download className="w-4 h-4" />
+              ডাউনলোড
+            </Button>
+          </div>
         </div>
 
-        {/* Document Container with Scaling for Mobile */}
-        <div className="overflow-x-auto pb-8 px-2 sm:px-0 flex justify-center">
-          <div className="origin-top scale-[0.45] sm:scale-[0.7] md:scale-100 transition-transform duration-300">
+        {/* Document Container with Dynamic Scaling */}
+        <div className={`w-full ${viewMode === 'full' ? 'overflow-x-auto' : 'overflow-hidden'} pb-20 flex justify-center`}>
+          <div 
+            style={{ 
+              transform: `scale(${scale})`, 
+              transformOrigin: 'top center',
+              width: '800px',
+              height: `${1250 * scale}px`, // Increased height to prevent cutoff
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
             <div 
               ref={documentRef}
               data-agreement-document
-              className="bg-white p-8 sm:p-12 shadow-2xl border-[16px] border-double rounded-sm font-serif relative"
+              className="bg-white shadow-2xl rounded-sm font-serif relative"
               style={{ 
                 width: '800px', 
-                minHeight: '1150px', 
-                borderColor: '#15803d',
+                minHeight: '1200px', 
+                padding: '40px',
+                border: '16px double #15803d',
                 color: '#111827',
                 backgroundColor: '#ffffff',
                 display: 'flex',
@@ -204,10 +247,10 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
                       src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" 
                       alt="Logo" 
                       className="w-20 h-20 object-contain rounded-full shadow-lg border-2 mb-3" 
-                      style={{ borderColor: '#f0fdf4' }}
+                      style={{ borderColor: '#f0fdf4', borderStyle: 'solid' }}
                       referrerPolicy="no-referrer"
                     />
-                    <h1 className="text-4xl font-black tracking-tighter drop-shadow-sm whitespace-nowrap" style={{ color: '#15803d' }}>Unity Savings Circle</h1>
+                    <h1 className="text-4xl font-black tracking-tighter drop-shadow-sm" style={{ color: '#15803d', whiteSpace: 'nowrap' }}>Unity Savings Circle</h1>
                   </div>
 
                   {/* Empty space to balance photo */}
@@ -226,27 +269,27 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
               {/* Points Grid */}
               <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-10 text-[13px] leading-relaxed text-justify relative z-10 px-4 flex-grow">
                 {AGREEMENT_POINTS.map((point, idx) => (
-                  <div key={idx} className="flex gap-2 p-2 rounded-lg border" style={{ backgroundColor: 'rgba(240, 253, 244, 0.3)', borderColor: 'rgba(220, 252, 231, 0.5)' }}>
+                  <div key={idx} className="flex gap-2 p-2 rounded-lg border" style={{ backgroundColor: 'rgba(240, 253, 244, 0.3)', borderColor: 'rgba(220, 252, 231, 0.5)', borderStyle: 'solid' }}>
                     <span className="font-black min-w-[20px] text-base" style={{ color: '#15803d' }}>{idx + 1}.</span>
                     <p className="font-medium" style={{ color: '#1f2937' }}>{point}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Footer Info - Fixed Overlapping */}
-              <div className="mt-12 pt-8 border-t-4 grid grid-cols-2 gap-10 relative z-10 px-4" style={{ borderTopColor: '#15803d' }}>
+              {/* Footer Info - Fixed Overlapping and Visibility */}
+              <div className="mt-12 pt-8 border-t-4 grid grid-cols-2 gap-10 relative z-10 px-4" style={{ borderTopColor: '#15803d', borderTopStyle: 'solid' }}>
                 <div className="space-y-8">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest block" style={{ color: '#15803d' }}>আবেদনকারীর নাম</span>
-                    <div className="border-b-2 pb-1" style={{ borderBottomColor: '#e5e7eb' }}>
-                      <span className="text-xl font-bold" style={{ color: '#111827' }}>{member?.name}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#15803d' }}>আবেদনকারীর নাম</span>
+                    <div style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '4px' }}>
+                      <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#111827', display: 'block' }}>{member?.name}</span>
                     </div>
                   </div>
                   
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-widest block" style={{ color: '#15803d' }}>পিতা/মাতার নাম</span>
-                    <div className="border-b-2 pb-1" style={{ borderBottomColor: '#e5e7eb' }}>
-                      <span className="text-xl font-bold" style={{ color: '#111827' }}>{member?.father_mother_name || fatherMotherName}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#15803d' }}>পিতা/মাতার নাম</span>
+                    <div style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '4px' }}>
+                      <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#111827', display: 'block' }}>{member?.father_mother_name || fatherMotherName}</span>
                     </div>
                   </div>
 
@@ -255,23 +298,34 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
                       <Hash className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest block" style={{ color: '#9ca3af' }}>শেয়ার সংখ্যা</span>
-                      <span className="text-2xl font-black" style={{ color: '#15803d' }}>{member?.share_count} টি</span>
+                      <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#9ca3af' }}>শেয়ার সংখ্যা</span>
+                      <span style={{ fontSize: '24px', fontWeight: '900', color: '#15803d' }}>{member?.share_count} টি</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex flex-col items-end justify-between py-2">
                   <div className="text-center space-y-2">
-                    <div className="font-handwriting text-3xl border-b-2 px-8 min-w-[220px] pb-1 italic" style={{ color: '#1e3a8a', borderBottomColor: '#9ca3af' }}>
+                    <div style={{ 
+                      fontFamily: '"Dancing Script", cursive', 
+                      fontSize: '32px', 
+                      borderBottom: '2px solid #9ca3af', 
+                      paddingLeft: '32px', 
+                      paddingRight: '32px', 
+                      paddingBottom: '4px', 
+                      fontStyle: 'italic', 
+                      minWidth: '220px',
+                      color: '#1e3a8a',
+                      lineHeight: '1'
+                    }}>
                       {member?.signature_data || signature}
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: '#6b7280' }}>আবেদনকারীর স্বাক্ষর</span>
+                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6b7280', display: 'block' }}>আবেদনকারীর স্বাক্ষর</span>
                   </div>
                   
-                  <div className="flex items-center gap-3 px-5 py-2 rounded-xl border shadow-inner mt-8" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
+                  <div className="flex items-center gap-3 px-5 py-2 rounded-xl border shadow-inner mt-8" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', borderStyle: 'solid' }}>
                     <Calendar className="w-4 h-4" style={{ color: '#15803d' }} />
-                    <span className="text-lg font-bold" style={{ color: '#374151' }}>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151' }}>
                       তারিখ: {member?.agreement_date ? new Date(member.agreement_date).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD')}
                     </span>
                   </div>
@@ -279,8 +333,8 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
               </div>
 
               {/* Bottom Branding */}
-              <div className="mt-10 text-center border-t pt-4" style={{ borderTopColor: '#f3f4f6' }}>
-                <p className="text-[10px] font-bold uppercase tracking-[0.4em]" style={{ color: '#9ca3af' }}>Unity Savings Circle • Official Membership Document • 2026</p>
+              <div className="mt-10 text-center border-t pt-4" style={{ borderTop: '1px solid #f3f4f6' }}>
+                <p style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.4em', color: '#9ca3af' }}>Unity Savings Circle • Official Membership Document • 2026</p>
               </div>
             </div>
           </div>

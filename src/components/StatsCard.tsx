@@ -13,7 +13,7 @@ interface StatsCardProps {
   onClick?: () => void;
 }
 
-export function StatsCard({ title, value, icon: Icon, trend, color = "text-indigo-600", delay = 0, onClick }: StatsCardProps) {
+export const StatsCard = React.memo(({ title, value, icon: Icon, trend, color = "text-indigo-600", delay = 0, onClick }: StatsCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -42,4 +42,4 @@ export function StatsCard({ title, value, icon: Icon, trend, color = "text-indig
       </Card>
     </motion.div>
   );
-}
+});

@@ -48,15 +48,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }, 10000);
 
-    const initializeAuth = async () => {
-      const startTime = Date.now();
-      const MIN_LOADING_TIME = 800; // Reduced for faster feel
-      
-      console.log('Auth initialization started...');
+      // 1. Fetch system settings (non-blocking)
+      fetchSystemSettings().catch(err => console.warn('Settings fetch failed:', err));
+
+      const initializeAuth = async () => {
+        const startTime = Date.now();
+        
+        console.log('Auth initialization started...');
 
       const finish = () => {
         const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, MIN_LOADING_TIME - elapsedTime);
+        const remainingTime = Math.max(0, 400 - elapsedTime); // Reduced from 800ms
         
         setTimeout(() => {
           console.log('Auth initialization finished, setting loading to false.');
@@ -146,7 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // 1. Try to find by auth_user_id
       let { data, error } = await supabase
         .from('members')
-        .select('*')
+        .select('id, auth_user_id, name, phone, password, photo_url, share_count, role, created_at, father_mother_name, agreement_accepted, agreement_date, signature_data, passport_photo_url')
         .eq('auth_user_id', userId)
         .maybeSingle();
 
@@ -168,7 +170,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           const { data: phoneData, error: phoneError } = await supabase
             .from('members')
-            .select('*')
+            .select('id, auth_user_id, name, phone, password, photo_url, share_count, role, created_at, father_mother_name, agreement_accepted, agreement_date, signature_data, passport_photo_url')
             .in('phone', variations)
             .limit(1)
             .maybeSingle();
@@ -204,7 +206,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const fetchPromise = supabase
         .from('app_settings')
-        .select('*')
+        .select('id, show_dashboard, show_reports, show_investments, show_discussion, show_savings')
         .maybeSingle();
 
       const { data, error } = await Promise.race([

@@ -12,7 +12,7 @@ export function Marquee() {
     try {
       const { data, error } = await supabase
         .from('marquee_texts')
-        .select('*')
+        .select('text')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 

@@ -64,7 +64,7 @@ export default function Members() {
     try {
       // Fetch all data in parallel
       const [membersRes, paymentsRes] = await Promise.all([
-        supabase.from('members').select('*').order('name'),
+        supabase.from('members').select('id, name, phone, share_count, role, photo_url, auth_user_id, password').order('name'),
         supabase.from('payments').select('member_id, total_amount, month, year, payment_status')
       ]);
       
@@ -96,10 +96,7 @@ export default function Members() {
       console.error('Error fetching members:', error);
       toast.error('Failed to fetch members');
     } finally {
-      // Add a small delay for smoother transition
-      setTimeout(() => {
-        setLoading(false);
-      }, 800);
+      setLoading(false);
     }
   };
 
