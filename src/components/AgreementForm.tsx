@@ -98,16 +98,34 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
     
     const toastId = toast.loading('ডকুমেন্ট ডাউনলোড হচ্ছে...');
     try {
-      // Create a clone for rendering to avoid scaling issues
       const element = documentRef.current;
+      
+      // Capture the document at its natural size (800px) regardless of mobile scaling
       const canvas = await html2canvas(element, {
-        scale: 3, // High quality
+        scale: 2, // Good balance between quality and file size
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: 800, // Fixed width for consistent output
-        height: element.scrollHeight
+        width: 800, // Force 800px width for capture
+        windowWidth: 800, // Force window width to 800px during capture to prevent squashing
+        onclone: (clonedDoc) => {
+          // Find the document in the clone and ensure it's not scaled
+          const clonedElement = clonedDoc.querySelector('[data-agreement-document]');
+          if (clonedElement instanceof HTMLElement) {
+            clonedElement.style.transform = 'none';
+            clonedElement.style.scale = '1';
+            clonedElement.style.width = '800px';
+            clonedElement.style.margin = '0';
+          }
+          // Also reset the parent scaling wrapper in the clone
+          const wrapper = clonedDoc.querySelector('.origin-top');
+          if (wrapper instanceof HTMLElement) {
+            wrapper.style.transform = 'none';
+            wrapper.style.scale = '1';
+            wrapper.style.width = '800px';
+          }
+        }
       });
       
       const link = document.createElement('a');
@@ -139,6 +157,7 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
           <div className="origin-top scale-[0.45] sm:scale-[0.7] md:scale-100 transition-transform duration-300">
             <div 
               ref={documentRef}
+              data-agreement-document
               className="bg-white p-8 sm:p-12 shadow-2xl border-[16px] border-double rounded-sm font-serif relative"
               style={{ 
                 width: '800px', 
