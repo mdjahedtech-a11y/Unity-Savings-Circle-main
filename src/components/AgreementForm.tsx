@@ -139,20 +139,32 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
           <div className="origin-top scale-[0.45] sm:scale-[0.7] md:scale-100 transition-transform duration-300">
             <div 
               ref={documentRef}
-              className="bg-white p-12 shadow-2xl border-[16px] border-double border-green-700 rounded-sm text-gray-900 font-serif relative"
-              style={{ width: '800px', minHeight: '1100px' }}
+              className="bg-white p-12 shadow-2xl border-[16px] border-double rounded-sm font-serif relative"
+              style={{ 
+                width: '800px', 
+                minHeight: '1100px', 
+                borderColor: '#15803d',
+                color: '#111827',
+                backgroundColor: '#ffffff'
+              }}
             >
               {/* Decorative Background Elements */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-green-50 rounded-full -mr-48 -mt-48 opacity-40 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-green-50 rounded-full -ml-48 -mb-48 opacity-40 pointer-events-none" />
+              <div 
+                className="absolute top-0 right-0 w-96 h-96 rounded-full -mr-48 -mt-48 opacity-40 pointer-events-none" 
+                style={{ backgroundColor: '#f0fdf4' }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 w-96 h-96 rounded-full -ml-48 -mb-48 opacity-40 pointer-events-none" 
+                style={{ backgroundColor: '#f0fdf4' }}
+              />
 
               {/* Header Section - Improved Layout */}
               <div className="relative z-10 flex flex-col items-center space-y-6">
-                <h3 className="text-2xl font-bold text-green-800 border-b-2 border-green-200 pb-1">বিসমিল্লাহির রাহমানির রাহিম</h3>
+                <h3 className="text-2xl font-bold border-b-2 pb-1" style={{ color: '#166534', borderBottomColor: '#bbf7d0' }}>বিসমিল্লাহির রাহমানির রাহিম</h3>
                 
                 <div className="w-full flex justify-between items-start">
                   {/* Photo on Left */}
-                  <div className="w-32 h-40 border-4 border-green-100 shadow-xl overflow-hidden bg-gray-50 rounded-lg">
+                  <div className="w-32 h-40 border-4 shadow-xl overflow-hidden rounded-lg" style={{ borderColor: '#dcfce7', backgroundColor: '#f9fafb' }}>
                     {member?.passport_photo_url || passportPhoto ? (
                       <img 
                         src={member?.passport_photo_url || passportPhoto || ''} 
@@ -161,7 +173,7 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">ছবি নেই</div>
+                      <div className="w-full h-full flex items-center justify-center text-xs" style={{ color: '#9ca3af' }}>ছবি নেই</div>
                     )}
                   </div>
 
@@ -170,21 +182,22 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
                     <img 
                       src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" 
                       alt="Logo" 
-                      className="w-24 h-24 object-contain rounded-full shadow-lg border-2 border-green-50 mb-4" 
+                      className="w-24 h-24 object-contain rounded-full shadow-lg border-2 mb-4" 
+                      style={{ borderColor: '#f0fdf4' }}
                       referrerPolicy="no-referrer"
                     />
-                    <h1 className="text-5xl font-black text-green-700 tracking-tighter drop-shadow-sm">Unity Savings Circle</h1>
+                    <h1 className="text-5xl font-black tracking-tighter drop-shadow-sm" style={{ color: '#15803d' }}>Unity Savings Circle</h1>
                   </div>
 
                   {/* Empty space to balance photo */}
                   <div className="w-32" />
                 </div>
 
-                <div className="bg-green-700 text-white py-2 px-8 rounded-full text-sm font-bold uppercase tracking-[0.2em] shadow-md">
+                <div className="py-2 px-8 rounded-full text-sm font-bold uppercase tracking-[0.2em] shadow-md" style={{ backgroundColor: '#15803d', color: '#ffffff' }}>
                   সদস্যপদ গ্রহণ ও পরিচালনা নীতিমালা (অঙ্গীকারনামা)
                 </div>
                 
-                <p className="text-base font-medium text-gray-700 max-w-2xl mx-auto leading-relaxed text-center italic">
+                <p className="text-base font-medium max-w-2xl mx-auto leading-relaxed text-center italic" style={{ color: '#374151' }}>
                   এতদ্বারা আমি নিম্নস্বাক্ষরকারী, এই সমিতির একজন সদস্য হিসেবে সমিতির স্থায়িত্ব, শৃঙ্খলা এবং আর্থিক স্বচ্ছতা বজায় রাখার স্বার্থে নিম্নলিখিত ১৬টি (সংশোধিত) নীতিমালা মানিয়া চলিতে বাধ্য থাকিব:
                 </p>
               </div>
@@ -192,46 +205,46 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
               {/* Points Grid - Better Spacing */}
               <div className="grid grid-cols-2 gap-x-10 gap-y-5 mt-12 text-[14px] leading-relaxed text-justify relative z-10 px-4">
                 {AGREEMENT_POINTS.map((point, idx) => (
-                  <div key={idx} className="flex gap-3 bg-green-50/30 p-2 rounded-lg border border-green-100/50">
-                    <span className="font-black text-green-700 min-w-[24px] text-lg">{idx + 1}.</span>
-                    <p className="text-gray-800 font-medium">{point}</p>
+                  <div key={idx} className="flex gap-3 p-2 rounded-lg border" style={{ backgroundColor: 'rgba(240, 253, 244, 0.3)', borderColor: 'rgba(220, 252, 231, 0.5)' }}>
+                    <span className="font-black min-w-[24px] text-lg" style={{ color: '#15803d' }}>{idx + 1}.</span>
+                    <p className="font-medium" style={{ color: '#1f2937' }}>{point}</p>
                   </div>
                 ))}
               </div>
 
               {/* Footer Info - Premium Styling */}
-              <div className="mt-16 pt-10 border-t-4 border-green-700 grid grid-cols-2 gap-12 relative z-10 px-4">
+              <div className="mt-16 pt-10 border-t-4 grid grid-cols-2 gap-12 relative z-10 px-4" style={{ borderTopColor: '#15803d' }}>
                 <div className="space-y-6">
-                  <div className="flex flex-col gap-1 border-b-2 border-gray-200 pb-2">
-                    <span className="text-xs font-bold text-green-700 uppercase tracking-widest">আবেদনকারীর নাম</span>
-                    <span className="text-2xl font-bold text-gray-900">{member?.name}</span>
+                  <div className="flex flex-col gap-1 border-b-2 pb-2" style={{ borderBottomColor: '#e5e7eb' }}>
+                    <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#15803d' }}>আবেদনকারীর নাম</span>
+                    <span className="text-2xl font-bold" style={{ color: '#111827' }}>{member?.name}</span>
                   </div>
-                  <div className="flex flex-col gap-1 border-b-2 border-gray-200 pb-2">
-                    <span className="text-xs font-bold text-green-700 uppercase tracking-widest">পিতা/মাতার নাম</span>
-                    <span className="text-2xl font-bold text-gray-900">{member?.father_mother_name || fatherMotherName}</span>
+                  <div className="flex flex-col gap-1 border-b-2 pb-2" style={{ borderBottomColor: '#e5e7eb' }}>
+                    <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#15803d' }}>পিতা/মাতার নাম</span>
+                    <span className="text-2xl font-bold" style={{ color: '#111827' }}>{member?.father_mother_name || fatherMotherName}</span>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="bg-green-700 text-white p-3 rounded-2xl shadow-lg">
+                    <div className="p-3 rounded-2xl shadow-lg" style={{ backgroundColor: '#15803d', color: '#ffffff' }}>
                       <Hash className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block">শেয়ার সংখ্যা</span>
-                      <span className="text-3xl font-black text-green-700">{member?.share_count} টি</span>
+                      <span className="text-xs font-bold uppercase tracking-widest block" style={{ color: '#9ca3af' }}>শেয়ার সংখ্যা</span>
+                      <span className="text-3xl font-black" style={{ color: '#15803d' }}>{member?.share_count} টি</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-8 text-right flex flex-col items-end justify-between">
                   <div className="text-center space-y-2">
-                    <div className="font-handwriting text-4xl text-blue-900 border-b-2 border-gray-400 px-10 min-w-[250px] pb-2 italic">
+                    <div className="font-handwriting text-4xl border-b-2 px-10 min-w-[250px] pb-2 italic" style={{ color: '#1e3a8a', borderBottomColor: '#9ca3af' }}>
                       {member?.signature_data || signature}
                     </div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em]">আবেদনকারীর স্বাক্ষর</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: '#6b7280' }}>আবেদনকারীর স্বাক্ষর</span>
                   </div>
                   
-                  <div className="flex items-center gap-3 bg-gray-50 px-6 py-3 rounded-2xl border border-gray-200 shadow-inner">
-                    <Calendar className="w-5 h-5 text-green-700" />
-                    <span className="text-xl font-bold text-gray-700">
+                  <div className="flex items-center gap-3 px-6 py-3 rounded-2xl border shadow-inner" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }}>
+                    <Calendar className="w-5 h-5" style={{ color: '#15803d' }} />
+                    <span className="text-xl font-bold" style={{ color: '#374151' }}>
                       তারিখ: {member?.agreement_date ? new Date(member.agreement_date).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD')}
                     </span>
                   </div>
@@ -239,8 +252,8 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
               </div>
 
               {/* Bottom Branding */}
-              <div className="mt-16 text-center border-t border-gray-100 pt-6">
-                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.5em]">Unity Savings Circle • Official Membership Document • 2026</p>
+              <div className="mt-16 text-center border-t pt-6" style={{ borderTopColor: '#f3f4f6' }}>
+                <p className="text-[11px] font-bold uppercase tracking-[0.5em]" style={{ color: '#9ca3af' }}>Unity Savings Circle • Official Membership Document • 2026</p>
               </div>
             </div>
           </div>
