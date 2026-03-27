@@ -91,119 +91,158 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
   };
 
   const downloadDocument = async () => {
-    if (!documentRef.current) return;
+    if (!documentRef.current) {
+      toast.error('ডকুমেন্ট পাওয়া যায়নি।');
+      return;
+    }
+    
+    const toastId = toast.loading('ডকুমেন্ট ডাউনলোড হচ্ছে...');
     try {
-      const canvas = await html2canvas(documentRef.current, {
-        scale: 2,
+      // Create a clone for rendering to avoid scaling issues
+      const element = documentRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 3, // High quality
         useCORS: true,
-        backgroundColor: '#ffffff'
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: 800, // Fixed width for consistent output
+        height: element.scrollHeight
       });
+      
       const link = document.createElement('a');
-      link.download = `Agreement_${member?.name}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.download = `Unity_Agreement_${member?.name || 'Member'}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      toast.success('ডাউনলোড সফল হয়েছে।', { id: toastId });
     } catch (error) {
       console.error('Error downloading document:', error);
-      toast.error('ডকুমেন্ট ডাউনলোড করতে সমস্যা হয়েছে।');
+      toast.error('ডাউনলোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।', { id: toastId });
     }
   };
 
   if (showDocument || member?.agreement_accepted || documentOnly) {
     return (
-      <div className="max-w-4xl mx-auto py-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">আপনার সদস্যপদ এগ্রিমেন্ট</h2>
-          <Button onClick={downloadDocument} className="flex items-center gap-2">
+      <div className="max-w-4xl mx-auto py-4 sm:py-8 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 px-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">সদস্যপদ এগ্রিমেন্ট ডকুমেন্ট</h2>
+          <Button onClick={downloadDocument} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20">
             <Download className="w-4 h-4" />
-            ডাউনলোড করুন
+            ডাউনলোড (PNG)
           </Button>
         </div>
 
-        {/* Document Preview */}
-        <div 
-          ref={documentRef}
-          className="bg-white p-8 sm:p-12 shadow-2xl border-[12px] border-double border-green-600 rounded-sm text-gray-900 font-serif relative overflow-hidden"
-          style={{ minHeight: '1100px' }}
-        >
-          {/* Decorative Background Elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-green-50 rounded-full -mr-32 -mt-32 opacity-50" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-50 rounded-full -ml-32 -mb-32 opacity-50" />
+        {/* Document Container with Scaling for Mobile */}
+        <div className="overflow-x-auto pb-8 px-2 sm:px-0 flex justify-center">
+          <div className="origin-top scale-[0.45] sm:scale-[0.7] md:scale-100 transition-transform duration-300">
+            <div 
+              ref={documentRef}
+              className="bg-white p-12 shadow-2xl border-[16px] border-double border-green-700 rounded-sm text-gray-900 font-serif relative"
+              style={{ width: '800px', minHeight: '1100px' }}
+            >
+              {/* Decorative Background Elements */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-green-50 rounded-full -mr-48 -mt-48 opacity-40 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-green-50 rounded-full -ml-48 -mb-48 opacity-40 pointer-events-none" />
 
-          {/* Header */}
-          <div className="text-center space-y-4 relative z-10">
-            <h3 className="text-xl font-bold text-green-800">বিসমিল্লাহির রাহমানির রাহিম</h3>
-            <div className="flex justify-center items-center gap-4">
-              <img 
-                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" 
-                alt="Logo" 
-                className="w-16 h-16 object-contain rounded-full shadow-md" 
-                referrerPolicy="no-referrer"
-              />
-              <h1 className="text-4xl font-black text-green-700 tracking-tight">Unity Savings Circle</h1>
-            </div>
-            <div className="bg-green-700 text-white py-1 px-6 inline-block rounded-full text-sm font-bold uppercase tracking-widest">
-              সদস্যপদ গ্রহণ ও পরিচালনা নীতিমালা (অঙ্গীকারনামা)
-            </div>
-            <p className="text-sm font-medium text-gray-700 max-w-2xl mx-auto leading-relaxed">
-              এতদ্বারা আমি নিম্নস্বাক্ষরকারী, এই সমিতির একজন সদস্য হিসেবে সমিতির স্থায়িত্ব, শৃঙ্খলা এবং আর্থিক স্বচ্ছতা বজায় রাখার স্বার্থে নিম্নলিখিত ১৬টি (সংশোধিত) নীতিমালা মানিয়া চলিতে বাধ্য থাকিব:
-            </p>
-          </div>
+              {/* Header Section - Improved Layout */}
+              <div className="relative z-10 flex flex-col items-center space-y-6">
+                <h3 className="text-2xl font-bold text-green-800 border-b-2 border-green-200 pb-1">বিসমিল্লাহির রাহমানির রাহিম</h3>
+                
+                <div className="w-full flex justify-between items-start">
+                  {/* Photo on Left */}
+                  <div className="w-32 h-40 border-4 border-green-100 shadow-xl overflow-hidden bg-gray-50 rounded-lg">
+                    {member?.passport_photo_url || passportPhoto ? (
+                      <img 
+                        src={member?.passport_photo_url || passportPhoto || ''} 
+                        alt="Passport" 
+                        className="w-full h-full object-cover" 
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">ছবি নেই</div>
+                    )}
+                  </div>
 
-          {/* Passport Photo */}
-          <div className="absolute top-12 left-12 border-4 border-white shadow-lg w-32 h-40 overflow-hidden bg-gray-100">
-            {member?.passport_photo_url || passportPhoto ? (
-              <img src={member?.passport_photo_url || passportPhoto || ''} alt="Passport" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">ছবি নেই</div>
-            )}
-          </div>
+                  {/* Logo and Name in Center */}
+                  <div className="flex-1 flex flex-col items-center pt-2">
+                    <img 
+                      src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" 
+                      alt="Logo" 
+                      className="w-24 h-24 object-contain rounded-full shadow-lg border-2 border-green-50 mb-4" 
+                      referrerPolicy="no-referrer"
+                    />
+                    <h1 className="text-5xl font-black text-green-700 tracking-tighter drop-shadow-sm">Unity Savings Circle</h1>
+                  </div>
 
-          {/* Points Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-12 text-[13px] leading-snug text-justify relative z-10">
-            {AGREEMENT_POINTS.map((point, idx) => (
-              <div key={idx} className="flex gap-2">
-                <span className="font-bold text-green-700 min-w-[20px]">{idx + 1}.</span>
-                <p className="text-gray-800">{point}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Footer Info */}
-          <div className="mt-16 pt-8 border-t-2 border-green-100 grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 border-b border-gray-300 pb-1">
-                <span className="font-bold text-green-800">আবেদনকারীর নাম:</span>
-                <span className="text-lg font-medium">{member?.name}</span>
-              </div>
-              <div className="flex items-center gap-2 border-b border-gray-300 pb-1">
-                <span className="font-bold text-green-800">পিতা/মাতা:</span>
-                <span className="text-lg font-medium">{member?.father_mother_name || fatherMotherName}</span>
-              </div>
-              <div className="flex items-center gap-2 border-b border-gray-300 pb-1">
-                <span className="font-bold text-green-800">শেয়ার সংখ্যা:</span>
-                <span className="text-xl font-bold text-green-700">{member?.share_count}</span>
-              </div>
-            </div>
-
-            <div className="space-y-4 text-right">
-              <div className="inline-block text-center space-y-1">
-                <div className="font-handwriting text-2xl text-blue-800 border-b border-gray-400 px-8 min-w-[200px]">
-                  {member?.signature_data || signature}
+                  {/* Empty space to balance photo */}
+                  <div className="w-32" />
                 </div>
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-tighter">আবেদনকারীর স্বাক্ষর</span>
+
+                <div className="bg-green-700 text-white py-2 px-8 rounded-full text-sm font-bold uppercase tracking-[0.2em] shadow-md">
+                  সদস্যপদ গ্রহণ ও পরিচালনা নীতিমালা (অঙ্গীকারনামা)
+                </div>
+                
+                <p className="text-base font-medium text-gray-700 max-w-2xl mx-auto leading-relaxed text-center italic">
+                  এতদ্বারা আমি নিম্নস্বাক্ষরকারী, এই সমিতির একজন সদস্য হিসেবে সমিতির স্থায়িত্ব, শৃঙ্খলা এবং আর্থিক স্বচ্ছতা বজায় রাখার স্বার্থে নিম্নলিখিত ১৬টি (সংশোধিত) নীতিমালা মানিয়া চলিতে বাধ্য থাকিব:
+                </p>
               </div>
-              <div className="flex justify-end items-center gap-2">
-                <span className="font-bold text-green-800">তারিখ:</span>
-                <span className="text-lg font-medium">
-                  {member?.agreement_date ? new Date(member.agreement_date).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD')}
-                </span>
+
+              {/* Points Grid - Better Spacing */}
+              <div className="grid grid-cols-2 gap-x-10 gap-y-5 mt-12 text-[14px] leading-relaxed text-justify relative z-10 px-4">
+                {AGREEMENT_POINTS.map((point, idx) => (
+                  <div key={idx} className="flex gap-3 bg-green-50/30 p-2 rounded-lg border border-green-100/50">
+                    <span className="font-black text-green-700 min-w-[24px] text-lg">{idx + 1}.</span>
+                    <p className="text-gray-800 font-medium">{point}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer Info - Premium Styling */}
+              <div className="mt-16 pt-10 border-t-4 border-green-700 grid grid-cols-2 gap-12 relative z-10 px-4">
+                <div className="space-y-6">
+                  <div className="flex flex-col gap-1 border-b-2 border-gray-200 pb-2">
+                    <span className="text-xs font-bold text-green-700 uppercase tracking-widest">আবেদনকারীর নাম</span>
+                    <span className="text-2xl font-bold text-gray-900">{member?.name}</span>
+                  </div>
+                  <div className="flex flex-col gap-1 border-b-2 border-gray-200 pb-2">
+                    <span className="text-xs font-bold text-green-700 uppercase tracking-widest">পিতা/মাতার নাম</span>
+                    <span className="text-2xl font-bold text-gray-900">{member?.father_mother_name || fatherMotherName}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-green-700 text-white p-3 rounded-2xl shadow-lg">
+                      <Hash className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block">শেয়ার সংখ্যা</span>
+                      <span className="text-3xl font-black text-green-700">{member?.share_count} টি</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-8 text-right flex flex-col items-end justify-between">
+                  <div className="text-center space-y-2">
+                    <div className="font-handwriting text-4xl text-blue-900 border-b-2 border-gray-400 px-10 min-w-[250px] pb-2 italic">
+                      {member?.signature_data || signature}
+                    </div>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-[0.3em]">আবেদনকারীর স্বাক্ষর</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 bg-gray-50 px-6 py-3 rounded-2xl border border-gray-200 shadow-inner">
+                    <Calendar className="w-5 h-5 text-green-700" />
+                    <span className="text-xl font-bold text-gray-700">
+                      তারিখ: {member?.agreement_date ? new Date(member.agreement_date).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Branding */}
+              <div className="mt-16 text-center border-t border-gray-100 pt-6">
+                <p className="text-[11px] text-gray-400 font-bold uppercase tracking-[0.5em]">Unity Savings Circle • Official Membership Document • 2026</p>
               </div>
             </div>
-          </div>
-
-          {/* Bottom Branding */}
-          <div className="mt-12 text-center">
-            <p className="text-[10px] text-gray-400 uppercase tracking-[0.3em]">Unity Savings Circle • Management Document • 2026</p>
           </div>
         </div>
       </div>
