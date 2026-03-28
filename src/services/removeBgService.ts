@@ -40,16 +40,17 @@ export async function removeBackground(imageFile: File): Promise<string> {
 }
 
 /**
- * Resizes an image blob to a standard passport size (600x600 square)
+ * Resizes an image blob to a standard passport size (480x600, 4:5 ratio)
  */
 async function resizeToPassportSize(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const size = 600; // Passport size in pixels (approx 2x2 inches at 300dpi)
-      canvas.width = size;
-      canvas.height = size;
+      const width = 480; // Passport width (approx 1.5 inches at 300dpi)
+      const height = 600; // Passport height (approx 2 inches at 300dpi)
+      canvas.width = width;
+      canvas.height = height;
       
       const ctx = canvas.getContext('2d');
       if (!ctx) {
@@ -57,13 +58,28 @@ async function resizeToPassportSize(blob: Blob): Promise<string> {
         return;
       }
 
-      // Calculate cropping to maintain square aspect ratio
-      const minDim = Math.min(img.width, img.height);
-      const sx = (img.width - minDim) / 2;
-      const sy = (img.height - minDim) / 2;
+      // Calculate cropping to maintain 4:5 aspect ratio
+      const targetRatio = width / height;
+      const imgRatio = img.width / img.height;
+      
+      let sw, sh, sx, sy;
+      
+      if (imgRatio > targetRatio) {
+        // Image is wider than target
+        sh = img.height;
+        sw = sh * targetRatio;
+        sx = (img.width - sw) / 2;
+        sy = 0;
+      } else {
+        // Image is taller than target
+        sw = img.width;
+        sh = sw / targetRatio;
+        sx = 0;
+        sy = (img.height - sh) / 2;
+      }
 
       // Draw and resize
-      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
       
       resolve(canvas.toDataURL('image/jpeg', 0.9));
     };
