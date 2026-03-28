@@ -91,7 +91,19 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
     try {
       const processedImageBase64 = await removeBackground(file);
       setPassportPhoto(processedImageBase64);
-      toast.success('Photo processed successfully', { id: toastId });
+      
+      // Automatically update profile picture in database if member exists
+      if (member?.id) {
+        await supabase
+          .from('members')
+          .update({ photo_url: processedImageBase64 })
+          .eq('id', member.id);
+        
+        // Refresh profile to update UI elsewhere
+        await refreshProfile();
+      }
+      
+      toast.success('Photo processed and profile updated successfully', { id: toastId });
     } catch (error: any) {
       console.error('Error processing photo:', error);
       toast.error(error.message || 'Failed to process photo', { id: toastId });
@@ -117,6 +129,7 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
         .update({
           father_mother_name: fatherMotherName,
           signature_data: signature,
+          photo_url: passportPhoto, // Automatically update profile picture
           passport_photo_url: passportPhoto,
           agreement_accepted: true,
           agreement_date: new Date().toISOString()
