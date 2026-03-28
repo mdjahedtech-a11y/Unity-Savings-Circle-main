@@ -45,8 +45,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Safety timeout to ensure the app opens even if initialization hangs
     const safetyTimer = setTimeout(() => {
+      console.warn('Auth initialization safety timer fired. Setting loading to false.');
       setLoading(false);
-    }, 10000);
+    }, 20000);
 
     const initializeAuth = async () => {
       const startTime = Date.now();
@@ -75,7 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const sessionPromise = supabase.auth.getSession();
             const sessionResult = await Promise.race([
               sessionPromise,
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Session fetch timeout')), 10000))
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Session fetch timeout')), 15000))
             ]) as any;
 
             const initialSession = sessionResult?.data?.session;
@@ -91,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               });
             }
           })(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Global init timeout')), 15000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Global init timeout')), 25000))
         ]).catch(err => {
           console.warn('Auth initialization timed out or partially failed:', err.message);
         });
@@ -208,7 +209,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await Promise.race([
         fetchPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 12000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 20000))
       ]) as any;
 
       if (error) {
@@ -255,10 +256,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       if (retryCount < 2) {
-        console.warn(`Unexpected error fetching settings (attempt ${retryCount + 1}), retrying...`, err);
+        const waitTime = (retryCount + 1) * 2000;
+        console.warn(`Unexpected error fetching settings (attempt ${retryCount + 1}), retrying in ${waitTime}ms...`, err);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
         return fetchSystemSettings(retryCount + 1);
       }
-      console.error('Unexpected error fetching settings:', err);
+      console.error('Final error fetching settings after retries:', err);
       // Fallback to defaults on any unexpected error or timeout
       setSystemSettings({
         id: 'default',

@@ -5,12 +5,13 @@ import { Member, Payment } from '../types/index';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key, Phone, Calendar, Award, TrendingUp, ShieldCheck, RefreshCcw } from 'lucide-react';
+import { Search, Plus, User as UserIcon, DollarSign, AlertTriangle, CheckCircle, XCircle, Shield, ShieldAlert, Edit2, Trash2, Database, Key, Phone, Calendar, Award, TrendingUp, ShieldCheck, RefreshCcw, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
+import { AgreementForm } from '../components/AgreementForm';
 
 export default function Members() {
   const { isAdmin, isMainAdmin } = useAuth();
@@ -24,6 +25,10 @@ export default function Members() {
   // View Member Modal State
   const [isViewMemberModalOpen, setIsViewMemberModalOpen] = useState(false);
   const [memberToView, setMemberToView] = useState<Member | null>(null);
+  
+  // Agreement Modal State
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+  const [agreementMember, setAgreementMember] = useState<Member | null>(null);
   
   // Delete Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -259,6 +264,11 @@ export default function Members() {
     } else {
       toast.info('No password set yet');
     }
+  };
+
+  const handleViewAgreement = (member: Member) => {
+    setAgreementMember(member);
+    setIsAgreementModalOpen(true);
   };
 
   const handlePaymentSubmit = async (e: React.FormEvent) => {
@@ -939,11 +949,33 @@ export default function Members() {
               </div>
             </div>
             
-            <div className="pt-6">
+            <div className="pt-6 flex flex-col gap-3">
+              <Button 
+                variant="outline"
+                className="w-full border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 py-6 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-sm"
+                onClick={() => handleViewAgreement(memberToView)}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                View Agreement
+              </Button>
               <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-6 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-indigo-500/20" onClick={() => setIsViewMemberModalOpen(false)}>
                 Close Profile
               </Button>
             </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* View Agreement Modal */}
+      <Modal
+        isOpen={isAgreementModalOpen}
+        onClose={() => setIsAgreementModalOpen(false)}
+        title={`${agreementMember?.name}'s Agreement`}
+        className="max-w-4xl"
+      >
+        {agreementMember && (
+          <div className="max-h-[85vh] overflow-y-auto custom-scrollbar -mx-4 sm:mx-0">
+            <AgreementForm documentOnly={true} memberData={agreementMember} />
           </div>
         )}
       </Modal>

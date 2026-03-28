@@ -3,13 +3,14 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText } from 'lucide-react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Modal } from '../components/ui/Modal';
 import { AgreementForm } from '../components/AgreementForm';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
+import { removeBackground } from '../services/removeBgService';
 
 export default function MySavings() {
   const { member, refreshProfile } = useAuth();
@@ -58,31 +59,32 @@ export default function MySavings() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 1024 * 1024) {
-      toast.error('Image size must be less than 1MB');
+    // Check file size (max 5MB for remove.bg, but we'll keep it reasonable)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
       return;
     }
 
     setUploading(true);
+    const toastId = toast.loading('Removing background and resizing...');
+    
     try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64String = reader.result as string;
-        
-        const { error } = await supabase
-          .from('members')
-          .update({ photo_url: base64String })
-          .eq('id', member?.id);
+      // 1. Remove background and resize to passport size
+      const processedImageBase64 = await removeBackground(file);
+      
+      // 2. Update Supabase
+      const { error } = await supabase
+        .from('members')
+        .update({ photo_url: processedImageBase64 })
+        .eq('id', member?.id);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        await refreshProfile();
-        toast.success('Profile picture updated successfully');
-      };
-      reader.readAsDataURL(file);
+      await refreshProfile();
+      toast.success('Profile picture updated successfully', { id: toastId });
     } catch (error: any) {
       console.error('Error uploading image:', error);
-      toast.error(error.message || 'Failed to update profile picture');
+      toast.error(error.message || 'Failed to update profile picture', { id: toastId });
     } finally {
       setUploading(false);
     }
@@ -124,23 +126,30 @@ export default function MySavings() {
         <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
         
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="relative group">
-            <div className="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20 p-1 backdrop-blur-md overflow-hidden relative">
-              <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-white/40 to-white/10 text-3xl font-bold">
-                {member?.photo_url ? (
-                  <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
-                ) : (
-                  member?.name?.charAt(0) || 'A'
+            <div className="relative group">
+              <div className="h-24 w-24 rounded-full border-4 border-white/30 bg-white/20 p-1 backdrop-blur-md overflow-hidden relative">
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-white/40 to-white/10 text-3xl font-bold">
+                  {member?.photo_url ? (
+                    <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
+                  ) : (
+                    member?.name?.charAt(0) || 'A'
+                  )}
+                </div>
+                
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-white mb-1" />
+                    <span className="text-[8px] font-bold text-white uppercase tracking-tighter">Processing</span>
+                  </div>
                 )}
+
+                <div 
+                  onClick={triggerFileInput}
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <Camera className="w-6 h-6 text-white" />
+                </div>
               </div>
-              
-              <div 
-                onClick={triggerFileInput}
-                className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              >
-                <Camera className="w-6 h-6 text-white" />
-              </div>
-            </div>
             
             <input 
               type="file" 

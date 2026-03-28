@@ -5,8 +5,10 @@ import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
-import { Check, Upload, FileText, Download, User, Calendar, Hash } from 'lucide-react';
+import { Check, Upload, FileText, Download, User, Calendar, Hash, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import { removeBackground } from '../services/removeBgService';
+import { cn } from '../lib/utils';
 
 const AGREEMENT_POINTS = [
   "মেয়াদকাল: সমিতির প্রাথমিক মেয়াদকাল হবে ৫ (পাঁচ) বছর। তবে পাঁচ বছর পূর্ণ হওয়ার পর সমিতি বিলুপ্ত করা হবে না, বরং কার্যক্রম অব্যাহত থাকিবে।",
@@ -27,13 +29,15 @@ const AGREEMENT_POINTS = [
   "অভিভাবক সংক্রান্ত: সমিতির অভ্যন্তরীণ কোনো বিষয়ে কোনো সদস্যের অভিভাবক (গার্জিয়ান) হস্তক্ষেপ করিতে পারিবেন না।"
 ];
 
-export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean }) {
-  const { member, refreshProfile } = useAuth();
+export function AgreementForm({ documentOnly = false, memberData }: { documentOnly?: boolean; memberData?: any }) {
+  const { member: authMember, refreshProfile } = useAuth();
+  const member = memberData || authMember;
   const [checkedPoints, setCheckedPoints] = useState<boolean[]>(new Array(AGREEMENT_POINTS.length).fill(false));
   const [fatherMotherName, setFatherMotherName] = useState('');
   const [signature, setSignature] = useState('');
   const [passportPhoto, setPassportPhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [processingPhoto, setProcessingPhoto] = useState(false);
   const [showDocument, setShowDocument] = useState(false);
   const [viewMode, setViewMode] = useState<'fit' | 'full'>('fit');
   const [scale, setScale] = useState(1);
@@ -42,18 +46,28 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
   // Handle dynamic scaling for mobile view
   React.useEffect(() => {
     const updateScale = () => {
-      if (viewMode === 'fit') {
-        const containerWidth = window.innerWidth - 32; // 16px padding on each side
-        const newScale = Math.min(1, containerWidth / 800);
-        setScale(newScale);
-      } else {
-        setScale(1);
+      const container = document.getElementById('agreement-container');
+      if (container) {
+        const containerWidth = container.offsetWidth;
+        if (viewMode === 'fit') {
+          const newScale = Math.min(1, containerWidth / 800);
+          setScale(newScale);
+        } else {
+          setScale(1);
+        }
       }
     };
 
     updateScale();
+    const observer = new ResizeObserver(updateScale);
+    const container = document.getElementById('agreement-container');
+    if (container) observer.observe(container);
+    
     window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
+    return () => {
+      window.removeEventListener('resize', updateScale);
+      observer.disconnect();
+    };
   }, [viewMode, showDocument, member?.agreement_accepted, documentOnly]);
 
   const handleCheck = (index: number) => {
@@ -62,14 +76,27 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
     setCheckedPoints(newChecked);
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPassportPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size must be less than 5MB');
+      return;
+    }
+
+    setProcessingPhoto(true);
+    const toastId = toast.loading('Removing background and resizing...');
+    
+    try {
+      const processedImageBase64 = await removeBackground(file);
+      setPassportPhoto(processedImageBase64);
+      toast.success('Photo processed successfully', { id: toastId });
+    } catch (error: any) {
+      console.error('Error processing photo:', error);
+      toast.error(error.message || 'Failed to process photo', { id: toastId });
+    } finally {
+      setProcessingPhoto(false);
     }
   };
 
@@ -109,92 +136,36 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
     }
   };
 
-  const downloadDocument = async () => {
-    if (!documentRef.current) {
-      toast.error('ডকুমেন্ট পাওয়া যায়নি।');
-      return;
-    }
-    
-    const toastId = toast.loading('ডকুমেন্ট ডাউনলোড হচ্ছে...');
-    try {
-      const element = documentRef.current;
-      
-      // Force a temporary style to ensure standard colors during capture
-      const originalStyle = element.getAttribute('style') || '';
-      element.style.transform = 'none';
-      element.style.scale = '1';
-      
-      const canvas = await html2canvas(element, {
-        scale: 3, // Higher scale for better quality
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: 800,
-        windowWidth: 800,
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.querySelector('[data-agreement-document]');
-          if (clonedElement instanceof HTMLElement) {
-            clonedElement.style.transform = 'none';
-            clonedElement.style.scale = '1';
-            clonedElement.style.width = '800px';
-            clonedElement.style.margin = '0';
-            clonedElement.style.padding = '40px';
-            clonedElement.style.boxShadow = 'none';
-            clonedElement.style.border = '16px double #15803d';
-          }
-        }
-      });
-      
-      // Restore original style
-      element.setAttribute('style', originalStyle);
-      
-      const link = document.createElement('a');
-      link.download = `Unity_Agreement_${member?.name || 'Member'}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      toast.success('ডাউনলোড সফল হয়েছে।', { id: toastId });
-    } catch (error) {
-      console.error('Error downloading document:', error);
-      toast.error('ডাউনলোড করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।', { id: toastId });
-    }
-  };
-
   if (showDocument || member?.agreement_accepted || documentOnly) {
     return (
       <div className="max-w-4xl mx-auto py-4 sm:py-8 space-y-6 px-2 sm:px-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 dark:bg-gray-900/50 p-4 rounded-2xl backdrop-blur-sm border border-white/20 dark:border-white/10">
           <div className="text-center sm:text-left">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">সদস্যপদ এগ্রিমেন্ট ডকুমেন্ট</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">আপনার এগ্রিমেন্টটি এখান থেকে দেখে নিন বা ডাউনলোড করুন</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">আপনার এগ্রিমেন্টটি এখান থেকে দেখে নিন</p>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button 
               variant="outline"
               onClick={() => setViewMode(viewMode === 'fit' ? 'full' : 'fit')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 h-11"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 h-11 px-6 font-bold shadow-sm"
             >
               <FileText className="w-4 h-4" />
               {viewMode === 'fit' ? 'Zoom In' : 'Zoom Out'}
-            </Button>
-            <Button onClick={downloadDocument} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20 h-11">
-              <Download className="w-4 h-4" />
-              ডাউনলোড
             </Button>
           </div>
         </div>
 
         {/* Document Container with Dynamic Scaling */}
-        <div className={`w-full ${viewMode === 'full' ? 'overflow-x-auto' : 'overflow-hidden'} pb-20 flex justify-center`}>
+        <div id="agreement-container" className={`w-full ${viewMode === 'full' ? 'overflow-x-auto' : 'overflow-hidden'} pb-10 flex justify-center min-h-[600px]`}>
           <div 
             style={{ 
               transform: `scale(${scale})`, 
               transformOrigin: 'top center',
               width: '800px',
-              height: `${1250 * scale}px`, // Increased height to prevent cutoff
-              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              height: `${1550 * scale}px`, // Increased height to prevent cutoff
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              marginBottom: `${-1550 * (1 - scale)}px` // Offset the scale transform for layout
             }}
           >
             <div 
@@ -203,7 +174,7 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
               className="bg-white shadow-2xl rounded-sm font-serif relative"
               style={{ 
                 width: '800px', 
-                minHeight: '1200px', 
+                minHeight: '1500px', // Increased minHeight
                 padding: '40px',
                 border: '16px double #15803d',
                 color: '#111827',
@@ -277,29 +248,29 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
               </div>
 
               {/* Footer Info - Fixed Overlapping and Visibility */}
-              <div className="mt-12 pt-8 border-t-4 grid grid-cols-2 gap-10 relative z-10 px-4" style={{ borderTopColor: '#15803d', borderTopStyle: 'solid' }}>
-                <div className="space-y-8">
+              <div className="mt-auto pt-8 border-t-4 grid grid-cols-2 gap-10 relative z-10 px-4 mb-4" style={{ borderTopColor: '#15803d', borderTopStyle: 'solid' }}>
+                <div className="space-y-6">
                   <div className="space-y-1">
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#15803d' }}>আবেদনকারীর নাম</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#15803d' }}>আবেদনকারীর নাম</span>
                     <div style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '4px' }}>
-                      <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#111827', display: 'block' }}>{member?.name}</span>
+                      <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', display: 'block' }}>{member?.name}</span>
                     </div>
                   </div>
                   
                   <div className="space-y-1">
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#15803d' }}>পিতা/মাতার নাম</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#15803d' }}>পিতা/মাতার নাম</span>
                     <div style={{ borderBottom: '2px solid #e5e7eb', paddingBottom: '4px' }}>
-                      <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#111827', display: 'block' }}>{member?.father_mother_name || fatherMotherName}</span>
+                      <span style={{ fontSize: '22px', fontWeight: 'bold', color: '#111827', display: 'block' }}>{member?.father_mother_name || fatherMotherName}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 pt-2">
-                    <div className="p-2 rounded-xl shadow-md" style={{ backgroundColor: '#15803d', color: '#ffffff' }}>
-                      <Hash className="w-5 h-5" />
+                    <div className="p-2.5 rounded-xl shadow-md" style={{ backgroundColor: '#15803d', color: '#ffffff' }}>
+                      <Hash className="w-6 h-6" />
                     </div>
                     <div>
-                      <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#9ca3af' }}>শেয়ার সংখ্যা</span>
-                      <span style={{ fontSize: '24px', fontWeight: '900', color: '#15803d' }}>{member?.share_count} টি</span>
+                      <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', color: '#9ca3af' }}>শেয়ার সংখ্যা</span>
+                      <span style={{ fontSize: '26px', fontWeight: '900', color: '#15803d' }}>{member?.share_count} টি</span>
                     </div>
                   </div>
                 </div>
@@ -308,24 +279,24 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
                   <div className="text-center space-y-2">
                     <div style={{ 
                       fontFamily: '"Dancing Script", cursive', 
-                      fontSize: '32px', 
+                      fontSize: '36px', 
                       borderBottom: '2px solid #9ca3af', 
                       paddingLeft: '32px', 
                       paddingRight: '32px', 
                       paddingBottom: '4px', 
                       fontStyle: 'italic', 
-                      minWidth: '220px',
+                      minWidth: '240px',
                       color: '#1e3a8a',
-                      lineHeight: '1'
+                      lineHeight: '1.2'
                     }}>
                       {member?.signature_data || signature}
                     </div>
-                    <span style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6b7280', display: 'block' }}>আবেদনকারীর স্বাক্ষর</span>
+                    <span style={{ fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.2em', color: '#6b7280', display: 'block' }}>আবেদনকারীর স্বাক্ষর</span>
                   </div>
                   
-                  <div className="flex items-center gap-3 px-5 py-2 rounded-xl border shadow-inner mt-8" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', borderStyle: 'solid' }}>
-                    <Calendar className="w-4 h-4" style={{ color: '#15803d' }} />
-                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#374151' }}>
+                  <div className="flex items-center gap-3 px-6 py-4 rounded-2xl border shadow-inner mt-8" style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', borderStyle: 'solid' }}>
+                    <Calendar className="w-6 h-6" style={{ color: '#15803d' }} />
+                    <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#374151' }}>
                       তারিখ: {member?.agreement_date ? new Date(member.agreement_date).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD')}
                     </span>
                   </div>
@@ -417,11 +388,17 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
             <div className="space-y-4">
               <label className="text-sm font-medium text-gray-700 dark:text-white/80">পাসপোর্ট সাইজ ছবি আপলোড করুন</label>
               <div className="flex items-center gap-6">
-                <div className="w-32 h-40 rounded-xl border-2 border-dashed border-gray-300 dark:border-white/10 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-white/5">
+                <div className="w-32 h-40 rounded-xl border-2 border-dashed border-gray-300 dark:border-white/10 flex items-center justify-center overflow-hidden bg-gray-50 dark:bg-white/5 relative">
                   {passportPhoto ? (
                     <img src={passportPhoto} alt="Preview" className="w-full h-full object-cover" />
                   ) : (
                     <User className="w-12 h-12 text-gray-300" />
+                  )}
+                  {processingPhoto && (
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10">
+                      <Loader2 className="h-8 w-8 animate-spin text-white mb-1" />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-tighter">Processing</span>
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 space-y-2">
@@ -431,15 +408,19 @@ export function AgreementForm({ documentOnly = false }: { documentOnly?: boolean
                     onChange={handlePhotoUpload}
                     className="hidden"
                     id="photo-upload"
+                    disabled={processingPhoto}
                   />
                   <label
                     htmlFor="photo-upload"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl cursor-pointer hover:bg-indigo-700 transition-colors"
+                    className={cn(
+                      "inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl cursor-pointer hover:bg-indigo-700 transition-colors",
+                      processingPhoto && "opacity-50 cursor-not-allowed"
+                    )}
                   >
-                    <Upload className="w-4 h-4" />
-                    ছবি সিলেক্ট করুন
+                    {processingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {processingPhoto ? 'প্রসেসিং হচ্ছে...' : 'ছবি সিলেক্ট করুন'}
                   </label>
-                  <p className="text-xs text-gray-500">JPG, PNG ফরম্যাট (সর্বোচ্চ ২MB)</p>
+                  <p className="text-xs text-gray-500">JPG, PNG ফরম্যাট (সর্বোচ্চ ৫MB)</p>
                 </div>
               </div>
             </div>
