@@ -98,6 +98,11 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl">
+                <p className="text-xs text-blue-800 dark:text-blue-300">
+                  <strong>Note:</strong> Administrators can see all modules regardless of these settings. Toggles only affect regular members.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

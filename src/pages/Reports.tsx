@@ -35,7 +35,7 @@ import { cn } from '../lib/utils';
 import html2canvas from 'html2canvas';
 
 export default function Reports() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, member } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [reportData, setReportData] = useState<any[]>([]);
@@ -46,10 +46,6 @@ export default function Reports() {
   const reportRef = useRef<HTMLDivElement>(null);
   const exportButtonRef = useRef<HTMLDivElement>(null);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
-
-  const totalPaidMembers = reportData.filter(item => item.paymentStatus === 'paid').length;
-  const totalUnpaidMembers = reportData.filter(item => item.paymentStatus !== 'paid').length;
-  const totalShares = reportData.reduce((sum, item) => sum + item.share_count, 0);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,13 +60,12 @@ export default function Reports() {
 
   useEffect(() => {
     generateReport();
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, isAdmin, member?.id]);
 
   const generateReport = async (isRefresh = false) => {
     setLoading(true);
     try {
-      // Fetch data in parallel
-      // Only fetch allTimeTotal on mount or explicit refresh to save bandwidth
+      // Fetch all data for everyone to see the full report
       const promises: any[] = [
         supabase.from('members').select('*').order('name'),
         supabase.from('payments').select('*').eq('month', selectedMonth).eq('year', parseInt(selectedYear))
@@ -91,19 +86,16 @@ export default function Reports() {
       const members = membersRes.data || [];
       const currentMonthPayments = paymentsRes.data || [];
       
-      // Update all-time total if it was fetched
       if (allPaymentsRes && !allPaymentsRes.error) {
         const total = (allPaymentsRes.data || []).reduce((sum: number, p: any) => sum + (p.total_amount || 0), 0);
         setAllTimeTotal(total);
       }
 
-      // Use a Map for O(1) payment lookups instead of .find() O(N)
       const paymentMap = new Map();
       currentMonthPayments.forEach(p => {
         paymentMap.set(p.member_id, p);
       });
 
-      // Combine data efficiently
       const report = members.map(member => {
         const payment = paymentMap.get(member.id);
         return {
@@ -121,7 +113,6 @@ export default function Reports() {
       console.error('Error generating report:', error);
       toast.error('Failed to generate report');
     } finally {
-      // Remove artificial delay for immediate response
       setLoading(false);
     }
   };
@@ -129,6 +120,9 @@ export default function Reports() {
   const totalCollection = reportData.reduce((sum, item) => sum + item.amountPaid, 0);
   const totalExpected = reportData.reduce((sum, item) => sum + item.expectedAmount, 0);
   const totalPenalty = reportData.reduce((sum, item) => sum + item.penalty, 0);
+  const totalPaidMembers = reportData.filter(item => item.paymentStatus === 'paid').length;
+  const totalUnpaidMembers = reportData.filter(item => item.paymentStatus !== 'paid').length;
+  const totalShares = reportData.reduce((sum, item) => sum + item.share_count, 0);
 
     const exportReport = async () => {
     const excelModule = await import('exceljs');
@@ -449,44 +443,46 @@ export default function Reports() {
               ))}
             </select>
           </div>
-          <div className="relative" ref={exportButtonRef}>
-            <Button 
-              onClick={() => setShowExportOptions(!showExportOptions)} 
-              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-500/20 justify-center rounded-xl px-6"
-            >
-              <Download className="w-4 h-4" />
-              Export Report
-              <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showExportOptions && "rotate-180")} />
-            </Button>
+          {isAdmin && (
+            <div className="relative" ref={exportButtonRef}>
+              <Button 
+                onClick={() => setShowExportOptions(!showExportOptions)} 
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white gap-2 shadow-lg shadow-indigo-500/20 justify-center rounded-xl px-6"
+              >
+                <Download className="w-4 h-4" />
+                Export Report
+                <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", showExportOptions && "rotate-180")} />
+              </Button>
 
-            <AnimatePresence>
-              {showExportOptions && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-[60] overflow-hidden"
-                >
-                  <div className="p-2 space-y-1">
-                    <button
-                      onClick={exportReport}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white/80 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
-                    >
-                      <FileSpreadsheet className="w-4 h-4" />
-                      Export as Excel
-                    </button>
-                    <button
-                      onClick={exportAsPDF}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white/80 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
-                    >
-                      <FileText className="w-4 h-4" />
-                      Export as PDF
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+              <AnimatePresence>
+                {showExportOptions && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-[60] overflow-hidden"
+                  >
+                    <div className="p-2 space-y-1">
+                      <button
+                        onClick={exportReport}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white/80 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
+                      >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        Export as Excel
+                      </button>
+                      <button
+                        onClick={exportAsPDF}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white/80 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl transition-colors"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Export as PDF
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </div>
 

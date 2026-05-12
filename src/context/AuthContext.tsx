@@ -178,9 +178,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           if (!phoneError && phoneData) {
             data = phoneData;
-            // Link the auth_user_id if it's not set
-            if (!data.auth_user_id) {
-              console.log('Linking auth_user_id for member:', data.id);
+            // Link the auth_user_id if it's not set OR if it's the admin forced link
+            if (!data.auth_user_id || (isAdminEmail && data.auth_user_id !== userId)) {
+              console.log('Linking/Re-linking auth_user_id for member:', data.id);
               const { error: linkError } = await supabase
                 .from('members')
                 .update({ auth_user_id: userId })
@@ -190,11 +190,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 console.error('Failed to link auth_user_id:', linkError);
               } else {
                 console.log('Successfully linked auth_user_id');
-                // @ts-ignore - sonner toast
-                import('sonner').then(({ toast }) => {
-                  toast.success('Your account has been securely linked to your member profile!');
-                });
-                data.auth_user_id = userId; // Update local object
+                // Only show toast if it was a change
+                if (data.auth_user_id !== userId) {
+                  // @ts-ignore - sonner toast
+                  import('sonner').then(({ toast }) => {
+                    toast.success('Admin account auto-linked successfully!');
+                  });
+                }
+                data.auth_user_id = userId;
               }
             }
           }

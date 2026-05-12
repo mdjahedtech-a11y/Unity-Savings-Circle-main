@@ -174,6 +174,12 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_method text;
 -- If you get RLS error, ensure your admin user is linked:
 -- 1. Get your Auth ID from Supabase Auth -> Users
 -- 2. Run: UPDATE members SET auth_user_id = 'YOUR_AUTH_ID' WHERE phone = 'YOUR_PHONE';
+
+-- RESTORE ALL DATA VISIBILITY (Undo Restricted Report Policy)
+-- Run this if your data disappeared after the last update
+DROP POLICY IF EXISTS "Users can only see their own payments." ON payments;
+DROP POLICY IF EXISTS "Payments are viewable by everyone." ON payments;
+CREATE POLICY "Payments are viewable by everyone." ON payments FOR SELECT USING (true);
 */
 
 -- Seed Main Admin

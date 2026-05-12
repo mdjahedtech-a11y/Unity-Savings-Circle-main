@@ -3,17 +3,19 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText, Sparkles } from 'lucide-react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText, Sparkles, Download, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Modal } from '../components/ui/Modal';
 import { AgreementForm } from '../components/AgreementForm';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 import { removeBackground } from '../services/removeBgService';
 
 export default function MySavings() {
-  const { member, refreshProfile } = useAuth();
+  const { member, refreshProfile, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -26,6 +28,17 @@ export default function MySavings() {
       fetchMyPayments();
     }
   }, [member]);
+
+  // Safety timeout for loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('MySavings loading safety timeout fired');
+        setLoading(false);
+      }
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const fetchMyPayments = async (isRefresh = false) => {
     try {
@@ -207,7 +220,7 @@ export default function MySavings() {
               </div>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
               <a 
                 href="https://squoosh.app/" 
                 target="_blank" 
@@ -220,12 +233,19 @@ export default function MySavings() {
               {member?.agreement_accepted && (
                 <button 
                   onClick={() => setShowAgreementModal(true)}
-                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors border border-white/10"
+                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/10"
                 >
                   <FileText className="w-3 h-3" />
                   View Agreement
                 </button>
               )}
+              <button 
+                onClick={() => navigate('/reports')}
+                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-full transition-colors border border-indigo-400 shadow-lg text-white"
+              >
+                <Download className="w-3 h-3" />
+                Monthly Report
+              </button>
             </div>
           </div>
           

@@ -82,7 +82,7 @@ export default function Layout({ children, showSidebar = true }: { children: Rea
   ].filter(item => {
     if (item.key === 'always_visible') return true;
     return (systemSettings as any)?.[item.key] !== false;
-  }), [systemSettings]);
+  }), [systemSettings, isAdmin]);
 
   // Desktop sidebar items (more comprehensive)
   const desktopNavItems = React.useMemo(() => [

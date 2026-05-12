@@ -22,8 +22,8 @@ const SetupGuide = lazy(() => import('./components/SetupGuide'));
 const hasSupabaseKeys = true; // Keys are now hardcoded as fallbacks in supabase.ts
 
 // Protected Route Component
-const ProtectedRoute = ({ children, moduleKey }: { children: React.ReactNode, moduleKey?: string }) => {
-  const { session, loading, isAdmin, systemSettings, member } = useAuth();
+const ProtectedRoute = ({ children, moduleKey, adminOnly }: { children: React.ReactNode, moduleKey?: string, adminOnly?: boolean }) => {
+  const { session, loading, isAdmin, systemSettings } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
@@ -31,6 +31,11 @@ const ProtectedRoute = ({ children, moduleKey }: { children: React.ReactNode, mo
 
   if (!session) {
     return <Navigate to="/login" />;
+  }
+
+  // Admin only protection
+  if (adminOnly && !isAdmin) {
+    return <Navigate to="/members" />;
   }
 
   if (moduleKey && !isAdmin && systemSettings && (systemSettings as any)[moduleKey] === false) {
