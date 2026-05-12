@@ -43,7 +43,11 @@ export const MonthlySavingsChart = React.memo(({ data }: { data: any[] }) => {
               }}
               cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
             />
-            <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
@@ -165,7 +169,11 @@ export const RecentPaymentsChart = React.memo(({ data }: { data: any[] }) => {
             }}
             formatter={(value: number) => [`৳${value.toLocaleString()}`, 'Amount']}
           />
-          <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={20} />
+          <Bar dataKey="amount" radius={[4, 4, 0, 0]} barSize={20}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>

@@ -157,34 +157,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // 2. If not found by ID, try to find by phone extracted from email
       if (!data && userEmail) {
         const phoneFromEmail = userEmail.split('@')[0]?.split('_')[0];
-        if (phoneFromEmail && phoneFromEmail.length >= 10) {
-          // Try multiple variations
-          const variations = [
-            phoneFromEmail,
-            phoneFromEmail.startsWith('0') ? phoneFromEmail.substring(1) : '0' + phoneFromEmail,
-            phoneFromEmail.startsWith('88') ? phoneFromEmail.substring(2) : '88' + phoneFromEmail,
-            phoneFromEmail.startsWith('880') ? phoneFromEmail.substring(3) : null,
-          ].filter(Boolean) as string[];
+        
+        // Special Case: Main Admin Email
+        const isAdminEmail = userEmail === 'mdjahedtech@gmail.com';
+        
+        const variations = [
+          phoneFromEmail,
+          phoneFromEmail.startsWith('0') ? phoneFromEmail.substring(1) : '0' + phoneFromEmail,
+          phoneFromEmail.startsWith('88') ? phoneFromEmail.substring(2) : '88' + phoneFromEmail,
+          phoneFromEmail.startsWith('880') ? phoneFromEmail.substring(3) : null,
+          isAdminEmail ? '01580824066' : null, // Specifically look for Jahed's phone if it's his email
+        ].filter(Boolean) as string[];
 
-          const { data: phoneData, error: phoneError } = await supabase
-            .from('members')
-            .select('id, auth_user_id, name, phone, password, photo_url, share_count, role, created_at, father_mother_name, agreement_accepted, agreement_date, signature_data, passport_photo_url')
-            .in('phone', variations)
-            .limit(1)
-            .maybeSingle();
+        const { data: phoneData, error: phoneError } = await supabase
+          .from('members')
+          .select('id, auth_user_id, name, phone, password, photo_url, share_count, role, created_at, father_mother_name, agreement_accepted, agreement_date, signature_data, passport_photo_url')
+          .in('phone', variations)
+          .limit(1)
+          .maybeSingle();
           
           if (!phoneError && phoneData) {
             data = phoneData;
             // Link the auth_user_id if it's not set
             if (!data.auth_user_id) {
-              await supabase
+              console.log('Linking auth_user_id for member:', data.id);
+              const { error: linkError } = await supabase
                 .from('members')
                 .update({ auth_user_id: userId })
                 .eq('id', data.id);
+              
+              if (linkError) {
+                console.error('Failed to link auth_user_id:', linkError);
+              } else {
+                console.log('Successfully linked auth_user_id');
+                // @ts-ignore - sonner toast
+                import('sonner').then(({ toast }) => {
+                  toast.success('Your account has been securely linked to your member profile!');
+                });
+                data.auth_user_id = userId; // Update local object
+              }
             }
           }
         }
-      }
 
       if (data) {
         console.log('Profile found:', data.name);
@@ -246,7 +260,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .from('app_settings')
           .insert(defaultSettings)
           .select()
-          .single();
+          .maybeSingle();
         
         if (!insertError && newData) {
           setSystemSettings(newData);
@@ -276,21 +290,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateSettings = async (newSettings: Partial<SystemSettings>) => {
     try {
-      if (!systemSettings) return;
+      // Optimistic update
+      if (systemSettings) {
+        setSystemSettings({ ...systemSettings, ...newSettings });
+      }
 
-      // If the current settings are just local defaults (no real DB ID), try to create them
-      if (systemSettings.id === 'default' || systemSettings.id === 'temp') {
+      if (!systemSettings || systemSettings.id === 'default' || systemSettings.id === 'temp') {
+        const baseSettings = systemSettings || {
+          show_dashboard: true,
+          show_reports: true,
+          show_investments: true,
+          show_discussion: true,
+          show_savings: true
+        };
+
+        const settingsToInsert = {
+          show_dashboard: newSettings.show_dashboard ?? baseSettings.show_dashboard,
+          show_reports: newSettings.show_reports ?? baseSettings.show_reports,
+          show_investments: newSettings.show_investments ?? baseSettings.show_investments,
+          show_discussion: newSettings.show_discussion ?? baseSettings.show_discussion,
+          show_savings: newSettings.show_savings ?? baseSettings.show_savings,
+        };
+
         const { data, error } = await supabase
           .from('app_settings')
-          .insert({
-            show_dashboard: newSettings.show_dashboard ?? systemSettings.show_dashboard,
-            show_reports: newSettings.show_reports ?? systemSettings.show_reports,
-            show_investments: newSettings.show_investments ?? systemSettings.show_investments,
-            show_discussion: newSettings.show_discussion ?? systemSettings.show_discussion,
-            show_savings: newSettings.show_savings ?? systemSettings.show_savings,
-          })
+          .insert(settingsToInsert)
           .select()
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         if (data) setSystemSettings(data);
@@ -312,15 +338,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // If the row was deleted or not found, try to recreate it
         const { data: newData, error: insertError } = await supabase
           .from('app_settings')
-          .insert(newSettings)
+          .insert({ ...systemSettings, ...newSettings })
           .select()
-          .single();
+          .maybeSingle();
         
         if (insertError) throw insertError;
         if (newData) setSystemSettings(newData);
       }
     } catch (err) {
       console.error('Error updating settings:', err);
+      // Revert optimistic update by re-fetching
+      await fetchSystemSettings();
       throw err;
     }
   };

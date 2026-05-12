@@ -69,7 +69,7 @@ export default function Members() {
     try {
       // Fetch all data in parallel
       const [membersRes, paymentsRes] = await Promise.all([
-        supabase.from('members').select('id, name, phone, share_count, role, photo_url, auth_user_id, password').order('name'),
+        supabase.from('members').select('id, name, phone, share_count, role, photo_url, auth_user_id, password, father_mother_name, agreement_accepted, agreement_date, signature_data, passport_photo_url, created_at').order('name'),
         supabase.from('payments').select('member_id, total_amount, month, year, payment_status')
       ]);
       
@@ -271,18 +271,30 @@ export default function Members() {
     setIsAgreementModalOpen(true);
   };
 
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMember) return;
+    if (!selectedMember || isSubmittingPayment) return;
 
+    setIsSubmittingPayment(true);
     try {
+      const amount = parseInt(paymentAmount || '0');
+      const penalty = parseInt(penaltyAmount || '0');
+      const year = parseInt(paymentYear || new Date().getFullYear().toString());
+
+      if (isNaN(amount) || amount <= 0) {
+        toast.error('Please enter a valid payment amount');
+        return;
+      }
+
       const { error } = await supabase.from('payments').insert({
         member_id: selectedMember.id,
         month: paymentMonth,
-        year: parseInt(paymentYear),
-        share_amount: parseInt(paymentAmount),
-        penalty: parseInt(penaltyAmount),
-        total_amount: parseInt(paymentAmount) + parseInt(penaltyAmount),
+        year: year,
+        share_amount: amount,
+        penalty: isNaN(penalty) ? 0 : penalty,
+        total_amount: (isNaN(amount) ? 0 : amount) + (isNaN(penalty) ? 0 : penalty),
         payment_status: 'paid',
         payment_method: paymentMethod,
         payment_date: new Date().toISOString(),
@@ -294,9 +306,17 @@ export default function Members() {
 
       setIsPaymentModalOpen(false);
       fetchMembers();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding payment:', error);
-      toast.error('Failed to add payment');
+      if (error.code === '42501') {
+        toast.error('Permission denied (RLS). Please ensure you are an admin and your account is properly linked in the Setup Guide.');
+      } else if (error.message?.includes('payment_method')) {
+        toast.error('Database column "payment_method" is missing. Please run the SQL in Setup Guide.');
+      } else {
+        toast.error(error.message || 'Failed to add payment');
+      }
+    } finally {
+      setIsSubmittingPayment(false);
     }
   };
 
@@ -754,8 +774,19 @@ export default function Members() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4 py-6 rounded-2xl shadow-lg shadow-indigo-500/20">
-            Confirm Payment
+          <Button 
+            type="submit" 
+            disabled={isSubmittingPayment}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white mt-4 py-6 rounded-2xl shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmittingPayment ? (
+              <div className="flex items-center gap-2">
+                <RefreshCcw className="w-4 h-4 animate-spin" />
+                <span>Processing Payment...</span>
+              </div>
+            ) : (
+              'Confirm Payment'
+            )}
           </Button>
         </form>
       </Modal>
@@ -966,16 +997,17 @@ export default function Members() {
         )}
       </Modal>
 
-      {/* View Agreement Modal */}
       <Modal
         isOpen={isAgreementModalOpen}
         onClose={() => setIsAgreementModalOpen(false)}
         title={`${agreementMember?.name}'s Agreement`}
-        className="max-w-4xl"
+        className="max-w-4xl w-[95vw]"
       >
         {agreementMember && (
-          <div className="max-h-[85vh] overflow-y-auto custom-scrollbar -mx-4 sm:mx-0">
-            <AgreementForm documentOnly={true} memberData={agreementMember} />
+          <div className="max-h-[80vh] overflow-y-auto custom-scrollbar -mx-4 sm:mx-0 pb-10">
+            <div className="flex justify-center p-2 sm:p-4">
+              <AgreementForm documentOnly={true} memberData={agreementMember} />
+            </div>
           </div>
         )}
       </Modal>

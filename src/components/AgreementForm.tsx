@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Button } from './ui/Button';
@@ -44,13 +44,14 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
   const documentRef = useRef<HTMLDivElement>(null);
 
   // Handle dynamic scaling for mobile view
-  React.useEffect(() => {
+  useEffect(() => {
     const updateScale = () => {
       const container = document.getElementById('agreement-container');
       if (container) {
         const containerWidth = container.offsetWidth;
         if (viewMode === 'fit') {
-          const newScale = Math.min(1, containerWidth / 800);
+          // Mobile responsive scaling
+          const newScale = Math.min(1, containerWidth / 820); // slightly more than 800 to account for padding
           setScale(newScale);
         } else {
           setScale(1);
@@ -58,7 +59,9 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
       }
     };
 
-    updateScale();
+    // Initial scale
+    setTimeout(updateScale, 100);
+
     const observer = new ResizeObserver(updateScale);
     const container = document.getElementById('agreement-container');
     if (container) observer.observe(container);
@@ -170,15 +173,15 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
         </div>
 
         {/* Document Container with Dynamic Scaling */}
-        <div id="agreement-container" className={`w-full ${viewMode === 'full' ? 'overflow-x-auto' : 'overflow-hidden'} pb-10 flex justify-center min-h-[600px]`}>
+        <div id="agreement-container" className={`w-full ${viewMode === 'full' ? 'overflow-x-auto' : 'overflow-hidden'} pb-24 flex justify-center`}>
           <div 
             style={{ 
               transform: `scale(${scale})`, 
               transformOrigin: 'top center',
               width: '800px',
-              height: `${1550 * scale}px`, // Increased height to prevent cutoff
+              height: '1650px', 
               transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              marginBottom: `${-1550 * (1 - scale)}px` // Offset the scale transform for layout
+              marginBottom: `${(1650 * scale) - 1650}px` 
             }}
           >
             <div 
@@ -187,7 +190,7 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
               className="bg-white shadow-2xl rounded-sm font-serif relative"
               style={{ 
                 width: '800px', 
-                minHeight: '1500px', // Increased minHeight
+                minHeight: '1600px',
                 padding: '40px',
                 border: '16px double #15803d',
                 color: '#111827',
@@ -212,16 +215,19 @@ export function AgreementForm({ documentOnly = false, memberData }: { documentOn
                 
                 <div className="w-full flex justify-between items-start">
                   {/* Photo on Left */}
-                  <div className="w-32 h-40 border-4 shadow-xl overflow-hidden rounded-lg" style={{ borderColor: '#dcfce7', backgroundColor: '#f9fafb' }}>
-                    {member?.passport_photo_url || passportPhoto ? (
+                  <div className="w-32 h-40 border-4 shadow-xl overflow-hidden rounded-lg flex items-center justify-center bg-gray-50" style={{ borderColor: '#dcfce7' }}>
+                    {member?.passport_photo_url || member?.photo_url || passportPhoto ? (
                       <img 
-                        src={member?.passport_photo_url || passportPhoto || ''} 
+                        src={member?.passport_photo_url || member?.photo_url || passportPhoto || ''} 
                         alt="Passport" 
                         className="w-full h-full object-cover" 
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs" style={{ color: '#9ca3af' }}>ছবি নেই</div>
+                      <div className="flex flex-col items-center justify-center text-center p-2">
+                        <User className="w-8 h-8 text-gray-300 mb-1" />
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter leading-none">সাথী ছবি নেই</span>
+                      </div>
                     )}
                   </div>
 

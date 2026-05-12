@@ -11,13 +11,15 @@ export default function Settings() {
   const { isAdmin, isMainAdmin, systemSettings, updateSettings } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const toggleModule = async (module: string, currentStatus: boolean) => {
+  const toggleModule = async (moduleId: string, currentStatus: boolean) => {
+    if (loading) return;
+    
     try {
       setLoading(true);
-      await updateSettings({ [module]: !currentStatus });
-      toast.success('Module status updated');
+      await updateSettings({ [moduleId]: !currentStatus });
+      toast.success('Settings updated');
     } catch (error) {
-      toast.error('Failed to update module status');
+      toast.error('Failed to update settings');
     } finally {
       setLoading(false);
     }
@@ -84,8 +86,8 @@ export default function Settings() {
                     </div>
                     <button
                       disabled={loading}
-                      onClick={() => toggleModule(module.id, (systemSettings as any)?.[module.id])}
-                      className={`h-6 w-11 rounded-full relative transition-colors ${
+                      onClick={() => toggleModule(module.id, !!(systemSettings as any)?.[module.id])}
+                      className={`h-6 w-11 rounded-full relative transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                         (systemSettings as any)?.[module.id] ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-white/20'
                       }`}
                     >
@@ -118,9 +120,16 @@ export default function Settings() {
                   <p className="text-sm font-medium text-gray-900 dark:text-white">Member Registration</p>
                   <p className="text-xs text-gray-500 dark:text-white/40">Allow new members to register themselves.</p>
                 </div>
-                <div className="h-6 w-11 bg-indigo-600 rounded-full relative cursor-pointer">
-                  <div className="absolute right-1 top-1 h-4 w-4 bg-white rounded-full shadow-sm" />
+              {/* Member Registration - Disabled until DB column is added */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-white/5 opacity-50">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Member Registration</p>
+                  <p className="text-xs text-gray-500 dark:text-white/40">Allow new members to register themselves. (Requires DB Update)</p>
                 </div>
+                <div className="h-6 w-11 bg-gray-300 dark:bg-white/20 rounded-full relative cursor-not-allowed">
+                  <div className="absolute left-1 top-1 h-4 w-4 bg-white rounded-full shadow-sm" />
+                </div>
+              </div>
               </div>
             </CardContent>
           </Card>
