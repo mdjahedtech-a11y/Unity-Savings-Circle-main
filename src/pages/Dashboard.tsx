@@ -18,13 +18,13 @@ import { Modal } from '../components/ui/Modal';
 import { AgreementForm } from '../components/AgreementForm';
 
 export default function Dashboard() {
-  const { member, isAdmin, dashboardLoaded, setDashboardLoaded } = useAuth();
+  const { member, isAdmin, dashboardLoaded, setDashboardLoaded, cache, setCache } = useAuth();
   const navigate = useNavigate();
-  const [members, setMembers] = useState<any[]>([]);
-  const [allPayments, setAllPayments] = useState<any[]>([]);
-  const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>(cache.dashboard?.members || []);
+  const [allPayments, setAllPayments] = useState<any[]>(cache.dashboard?.allPayments || []);
+  const [recentPayments, setRecentPayments] = useState<any[]>(cache.dashboard?.recentPayments || []);
   const [loadingPayments, setLoadingPayments] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cache.dashboard);
   const [showAgreementPopup, setShowAgreementPopup] = useState(false);
 
   useEffect(() => {
@@ -127,7 +127,7 @@ export default function Dashboard() {
       const { data, error } = await supabase
         .from('payments')
         .select(`
-          *,
+          id, month, year, payment_date, total_amount, member_id,
           members (name, photo_url)
         `)
         .order('payment_date', { ascending: false })
@@ -135,6 +135,11 @@ export default function Dashboard() {
       
       if (error) throw error;
       setRecentPayments(data || []);
+      
+      // Update cache
+      if (cache.dashboard) {
+        setCache('dashboard', { ...cache.dashboard, recentPayments: data || [] });
+      }
     } catch (error) {
       console.error('Error fetching recent payments:', error);
     } finally {
@@ -143,7 +148,7 @@ export default function Dashboard() {
   };
 
   const fetchDashboardData = async (isRefresh = false) => {
-    setLoading(true);
+    if (!cache.dashboard || isRefresh) setLoading(true);
     try {
       const currentMonth = new Date().toLocaleString('default', { month: 'long' });
       const currentYear = new Date().getFullYear();
@@ -162,6 +167,14 @@ export default function Dashboard() {
 
       setMembers(membersData);
       setAllPayments(allPaymentsData);
+      
+      // Update global cache
+      setCache('dashboard', { 
+        stats: null, // stats are calculated via useMemo
+        members: membersData, 
+        allPayments: allPaymentsData,
+        recentPayments: cache.dashboard?.recentPayments || []
+      });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {

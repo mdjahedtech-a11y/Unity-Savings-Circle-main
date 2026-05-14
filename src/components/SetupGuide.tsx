@@ -180,6 +180,13 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_method text;
 DROP POLICY IF EXISTS "Users can only see their own payments." ON payments;
 DROP POLICY IF EXISTS "Payments are viewable by everyone." ON payments;
 CREATE POLICY "Payments are viewable by everyone." ON payments FOR SELECT USING (true);
+
+-- PERFORMANCE INDEXES (Make the app feel instant)
+-- Run these to speed up data loading as your member list grows
+CREATE INDEX IF NOT EXISTS idx_payments_member_id ON payments(member_id);
+CREATE INDEX IF NOT EXISTS idx_payments_month_year ON payments(month, year);
+CREATE INDEX IF NOT EXISTS idx_members_phone ON members(phone);
+CREATE INDEX IF NOT EXISTS idx_members_auth_user_id ON members(auth_user_id);
 */
 
 -- Seed Main Admin

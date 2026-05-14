@@ -14,10 +14,10 @@ import { useNavigate } from 'react-router-dom';
 import { removeBackground } from '../services/removeBgService';
 
 export default function MySavings() {
-  const { member, refreshProfile, isAdmin } = useAuth();
+  const { member, refreshProfile, isAdmin, cache, setCache } = useAuth();
   const navigate = useNavigate();
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [payments, setPayments] = useState<Payment[]>(cache.mySavings?.payments || []);
+  const [loading, setLoading] = useState(!cache.mySavings && !member);
   const [refreshing, setRefreshing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
@@ -43,14 +43,21 @@ export default function MySavings() {
   const fetchMyPayments = async (isRefresh = false) => {
     try {
       if (isRefresh) setRefreshing(true);
+      if (!cache.mySavings || isRefresh) setLoading(true);
+      
       const { data, error } = await supabase
         .from('payments')
-        .select('*')
+        .select('id, month, year, total_amount, penalty, payment_date, payment_method, payment_status, created_at')
         .eq('member_id', member?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPayments(data || []);
+      const paymentsData = data || [];
+      setPayments(paymentsData);
+      
+      // Update global cache
+      setCache('mySavings', { payments: paymentsData });
+      
       if (isRefresh) toast.success('Data refreshed');
     } catch (error) {
       console.error('Error fetching payments:', error);

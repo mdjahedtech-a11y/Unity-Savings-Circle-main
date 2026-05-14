@@ -9,6 +9,15 @@ interface AuthContextType {
   member: Member | null;
   systemSettings: SystemSettings | null;
   loading: boolean;
+  
+  // Global Cache
+  cache: {
+    dashboard: { stats: any; members: any[]; allPayments: any[]; recentPayments: any[] } | null;
+    membersList: { members: any[]; monthlyPayments: string[] } | null;
+    lastUpdated: { [key: string]: number };
+  };
+  setCache: (key: string, data: any) => void;
+  
   dashboardLoaded: boolean;
   setDashboardLoaded: (loaded: boolean) => void;
   isAdmin: boolean;
@@ -24,6 +33,8 @@ const AuthContext = createContext<AuthContextType>({
   member: null,
   systemSettings: null,
   loading: true,
+  cache: { dashboard: null, membersList: null, lastUpdated: {} },
+  setCache: () => {},
   dashboardLoaded: false,
   setDashboardLoaded: () => {},
   isAdmin: false,
@@ -40,7 +51,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [dashboardLoaded, setDashboardLoaded] = useState(false);
+  const [cache, setCacheState] = useState<any>({
+    dashboard: null,
+    membersList: null,
+    lastUpdated: {}
+  });
   const fetchingProfileFor = React.useRef<string | null>(null);
+
+  const setCache = (key: string, data: any) => {
+    setCacheState((prev: any) => ({
+      ...prev,
+      [key]: data,
+      lastUpdated: { ...prev.lastUpdated, [key]: Date.now() }
+    }));
+  };
 
   useEffect(() => {
     // Safety timeout to ensure the app opens even if initialization hangs
@@ -55,14 +79,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Auth initialization started...');
 
       const finish = () => {
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = Math.max(0, 400 - elapsedTime); // Reduced from 800ms
-        
-        setTimeout(() => {
-          console.log('Auth initialization finished, setting loading to false.');
-          clearTimeout(safetyTimer);
-          setLoading(false);
-        }, remainingTime);
+        console.log('Auth initialization finished, setting loading to false.');
+        clearTimeout(safetyTimer);
+        setLoading(false);
       };
 
       try {
@@ -374,7 +393,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = member?.role === 'admin' || isMainAdmin;
 
   return (
-    <AuthContext.Provider value={{ session, user, member, systemSettings, loading, dashboardLoaded, setDashboardLoaded, isAdmin, isMainAdmin, signOut, refreshProfile, updateSettings }}>
+    <AuthContext.Provider value={{ session, user, member, systemSettings, loading, cache, setCache, dashboardLoaded, setDashboardLoaded, isAdmin, isMainAdmin, signOut, refreshProfile, updateSettings }}>
       {children}
     </AuthContext.Provider>
   );

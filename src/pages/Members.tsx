@@ -14,10 +14,10 @@ import { cn } from '../lib/utils';
 import { AgreementForm } from '../components/AgreementForm';
 
 export default function Members() {
-  const { isAdmin, isMainAdmin } = useAuth();
+  const { isAdmin, isMainAdmin, cache, setCache } = useAuth();
   const navigate = useNavigate();
-  const [members, setMembers] = useState<Member[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [members, setMembers] = useState<Member[]>(cache.membersList?.members || []);
+  const [loading, setLoading] = useState(!cache.membersList);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'admin'>('all');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -65,7 +65,7 @@ export default function Members() {
   const [memberToRevokePayment, setMemberToRevokePayment] = useState<Member | null>(null);
 
   const fetchMembers = async (isRefresh = false) => {
-    if (isRefresh) setLoading(true);
+    if (!cache.membersList || isRefresh) setLoading(true);
     try {
       // Fetch all data in parallel
       const [membersRes, paymentsRes] = await Promise.all([
@@ -80,11 +80,11 @@ export default function Members() {
       const allPayments = paymentsRes.data || [];
 
       // Filter paid payments for the selected month/year
-      const paidMemberIds = new Set(
-        allPayments
+      const paidMemberIdsArray = allPayments
           .filter(p => p.month === selectedMonth && p.year === parseInt(selectedYear) && p.payment_status === 'paid')
-          .map(p => p.member_id)
-      );
+          .map(p => p.member_id);
+      
+      const paidMemberIds = new Set(paidMemberIdsArray);
       setMonthlyPayments(paidMemberIds);
 
       // Calculate total savings per member from allPayments
@@ -97,6 +97,12 @@ export default function Members() {
       });
 
       setMembers(membersWithSavings);
+      
+      // Update global cache
+      setCache('membersList', { 
+        members: membersWithSavings, 
+        monthlyPayments: paidMemberIdsArray 
+      });
     } catch (error) {
       console.error('Error fetching members:', error);
       toast.error('Failed to fetch members');

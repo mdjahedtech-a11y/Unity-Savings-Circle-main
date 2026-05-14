@@ -40,9 +40,9 @@ type Post = {
 };
 
 export default function Discussion() {
-  const { member, isAdmin } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { member, isAdmin, cache, setCache } = useAuth();
+  const [posts, setPosts] = useState<Post[]>(cache.discussion?.posts || []);
+  const [loading, setLoading] = useState(!cache.discussion);
   const [tableError, setTableError] = useState(false);
   
   const [newPostContent, setNewPostContent] = useState('');
@@ -67,13 +67,14 @@ export default function Discussion() {
 
   const fetchPosts = async () => {
     try {
+      if (!cache.discussion) setLoading(true);
       const { data, error } = await supabase
         .from('posts')
         .select(`
-          *,
+          id, member_id, content, created_at,
           members(id, name, role),
-          comments(*, members(id, name, role)),
-          post_likes(*)
+          comments(id, post_id, member_id, content, created_at, members(id, name, role)),
+          post_likes(id, post_id, member_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -93,6 +94,7 @@ export default function Discussion() {
       }));
 
       setPosts(formattedData);
+      setCache('discussion', { posts: formattedData });
       setTableError(false);
     } catch (error: any) {
       if (error.code !== '42P01') {
