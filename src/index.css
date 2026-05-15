@@ -14,6 +14,15 @@
   --color-bg-light: #f8fafc;
   --color-bg-gradient-start: #eef2ff;
   --color-bg-gradient-end: #f5f3ff;
+
+  @keyframes shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
 }
 
 @utility hide-scrollbar {
