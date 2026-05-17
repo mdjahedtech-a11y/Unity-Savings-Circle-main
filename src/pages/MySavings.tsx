@@ -134,306 +134,304 @@ export default function MySavings() {
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* Hero Section - Colorful & Stylish */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 p-8 text-white shadow-2xl shadow-indigo-500/20"
-      >
-        {/* Decorative Circles */}
-        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-            <div className="relative group">
-              <div className="h-28 w-28 rounded-full border-4 border-white/30 bg-white/20 backdrop-blur-md overflow-hidden relative shadow-2xl">
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-tr from-white/40 to-white/10 text-4xl font-bold">
-                  {member?.photo_url ? (
-                    <img 
-                      src={member.photo_url} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover" 
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    member?.name?.charAt(0) || 'A'
-                  )}
-                </div>
-                
-                {uploading && (
-                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10">
-                    <Loader2 className="h-10 w-10 animate-spin text-white mb-1" />
-                    <span className="text-[10px] font-bold text-white uppercase tracking-tighter">Processing</span>
-                  </div>
-                )}
-
-                <div 
-                  onClick={triggerFileInput}
-                  className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                >
-                  <Camera className="w-6 h-6 text-white" />
-                </div>
-              </div>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleImageUpload} 
-              accept="image/*" 
-              className="hidden" 
-            />
-
-            <button 
-              onClick={triggerFileInput}
-              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 border-2 border-white shadow-lg hover:bg-indigo-600 transition-colors"
-            >
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Camera className="h-4 w-4 text-white" />}
-            </button>
+    <div className="space-y-10 pb-12">
+      {/* Dynamic Profile Header */}
+      <section className="relative group">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-[2rem] bg-indigo-950 p-8 md:p-12 text-white shadow-2xl"
+        >
+          {/* Subtle Ambient Background */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3" />
           </div>
-          
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
-              <h1 className="text-3xl md:text-4xl font-black tracking-tight">{member?.name || 'Administrator'}</h1>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold uppercase tracking-widest border border-white/10">
-                  {member?.role === 'admin' ? 'Admin' : 'Active Member'}
-                </span>
-                <button
-                  onClick={handleRefresh}
-                  disabled={refreshing}
-                  className={cn(
-                    "p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all active:scale-95 disabled:opacity-50",
-                    refreshing && "animate-spin"
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-10">
+            {/* Profile Picture with Status Ring */}
+            <div className="relative shrink-0">
+              <div className="relative p-1 rounded-[2.5rem] bg-gradient-to-tr from-indigo-500 via-purple-500 to-emerald-500 shadow-2xl">
+                <div className="h-32 w-32 rounded-[2.3rem] bg-indigo-900 overflow-hidden relative border-4 border-indigo-950">
+                  <div className="flex h-full w-full items-center justify-center bg-indigo-900 text-4xl font-black text-white/20">
+                    {member?.photo_url ? (
+                      <img 
+                        src={member.photo_url} 
+                        alt={member.name} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      member?.name?.charAt(0) || 'A'
+                    )}
+                  </div>
+                  
+                  {uploading && (
+                    <div className="absolute inset-0 bg-indigo-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
+                      <Loader2 className="h-8 w-8 animate-spin text-white mb-2" />
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest text-center px-2">Processing</span>
+                    </div>
                   )}
-                >
-                  <RefreshCcw className="w-3.5 h-3.5" />
-                </button>
+                </div>
               </div>
+
+              <motion.button 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={triggerFileInput}
+                className="absolute -bottom-2 -right-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-xl border border-indigo-100 hover:bg-indigo-50 transition-colors z-20"
+              >
+                {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
+              </motion.button>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
             </div>
             
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 text-white/80">
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                <span className="text-sm font-medium">{member?.phone || 'N/A'}</span>
+            {/* Member Info */}
+            <div className="flex-1 text-center md:text-left space-y-4">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+                  <span className="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300">
+                    {member?.role === 'admin' ? 'Strategic Partner' : 'Active Member'}
+                  </span>
+                  <button
+                    onClick={handleRefresh}
+                    disabled={refreshing}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest border border-white/5",
+                      refreshing && "animate-pulse"
+                    )}
+                  >
+                    <RefreshCcw className={cn("w-3 h-3", refreshing && "animate-spin")} />
+                    Refresh
+                  </button>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-sm">
+                  {member?.name || 'Administrator'}
+                </h1>
+                <p className="text-indigo-200/60 font-medium tracking-wide flex items-center justify-center md:justify-start gap-2">
+                   <Phone className="w-3.5 h-3.5" />
+                   {member?.phone || 'N/A'}
+                </p>
               </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">
-                  {member?.created_at 
-                    ? `Joined ${new Date(member.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`
-                    : 'System Account'}
-                </span>
-              </div>
-            </div>
+              
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/80">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Portfolio Value</p>
+                    <p className="text-lg font-black text-white leading-none">৳{totalPaid.toLocaleString()}</p>
+                  </div>
+                </div>
 
-            <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
-              <a 
-                href="https://squoosh.app/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors border border-white/10"
-              >
-                <ArrowUpRight className="w-3 h-3" />
-                Reduce Photo Size (Max 1MB)
-              </a>
-              {member?.agreement_accepted && (
+                <div className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/80">
+                  <TrendingUp className="w-4 h-4 text-indigo-400" />
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Equity Ownership</p>
+                    <p className="text-lg font-black text-white leading-none">{member?.share_count || 0} Shares</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions Bar */}
+              <div className="pt-2 flex flex-wrap justify-center md:justify-start gap-3">
                 <button 
                   onClick={() => setShowAgreementModal(true)}
-                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/10"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-indigo-950 text-[11px] font-black uppercase tracking-widest shadow-lg hover:shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  <FileText className="w-3 h-3" />
-                  View Agreement
+                  <FileText className="w-3.5 h-3.5" />
+                  Agreement
                 </button>
-              )}
-              <button 
-                onClick={() => navigate('/reports')}
-                className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-full transition-colors border border-indigo-400 shadow-lg text-white"
-              >
-                <Download className="w-3 h-3" />
-                Monthly Report
-              </button>
-            </div>
-          </div>
-          
-          <div className="flex flex-col items-center justify-center px-8 py-4 bg-white/10 backdrop-blur-md rounded-3xl border border-white/10 min-w-[140px]">
-            <span className="text-[10px] uppercase tracking-[0.2em] font-black text-white/60 mb-1">Total Shares</span>
-            <span className="text-4xl font-black">{member?.share_count || 0}</span>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {loading ? (
-          [...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-8 w-32" />
-                </div>
-                <Skeleton className="h-12 w-12 rounded-xl" />
+                <button 
+                  onClick={() => navigate('/reports')}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-500 text-white text-[11px] font-black uppercase tracking-widest shadow-lg hover:shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Reports
+                </button>
+                <a 
+                  href="https://squoosh.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 border border-white/10 text-white/80 text-[11px] font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Tool
+                </a>
               </div>
             </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Modern Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {loading ? (
+          [...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-3xl" />
           ))
         ) : (
           <>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/20">
-                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest mb-1">Total Contributed</p>
-                      <h3 className="text-3xl font-black">৳{totalPaid.toLocaleString()}</h3>
-                    </div>
-                    <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
-                      <Wallet className="h-6 w-6" />
-                    </div>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
+              <div className="h-full p-6 rounded-[2rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600">
+                    <TrendingUp className="w-5 h-5" />
                   </div>
-                </CardContent>
-              </Card>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Yield Progress</span>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white">৳{totalPaid.toLocaleString()}</h3>
+                <div className="mt-2 h-1.5 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
+                   <div className="h-full bg-emerald-500 rounded-full" style={{ width: '85%' }} />
+                </div>
+              </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-xl shadow-purple-500/20">
-                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100 text-xs font-bold uppercase tracking-widest mb-1">Total Penalties</p>
-                      <h3 className="text-3xl font-black">৳{totalPenalty.toLocaleString()}</h3>
-                    </div>
-                    <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
-                      <XCircle className="h-6 w-6" />
-                    </div>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
+              <div className="h-full p-6 rounded-[2rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600">
+                    <AlertTriangle className="w-5 h-5" />
                   </div>
-                </CardContent>
-              </Card>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Deductions</span>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white">৳{totalPenalty.toLocaleString()}</h3>
+                <p className="text-[10px] font-bold text-purple-500/60 uppercase tracking-tighter mt-1">Maintenance & Fees</p>
+              </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Card className="group relative overflow-hidden border-none bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-xl shadow-blue-500/20">
-                <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-xs font-bold uppercase tracking-widest mb-1">Last Payment</p>
-                      <h3 className="text-2xl font-black">{lastPayment ? `${lastPayment.month} ${lastPayment.year}` : 'N/A'}</h3>
-                    </div>
-                    <div className="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
-                      <Calendar className="h-6 w-6" />
-                    </div>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
+              <div className="h-full p-6 rounded-[2rem] bg-indigo-600 text-white shadow-xl shadow-indigo-500/20">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-2xl bg-white/20 text-white">
+                    <Calendar className="w-5 h-5" />
                   </div>
-                </CardContent>
-              </Card>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Cycle Period</span>
+                </div>
+                <h3 className="text-2xl font-black truncate">{lastPayment ? `${lastPayment.month} ${lastPayment.year}` : 'Pending'}</h3>
+                <p className="text-[10px] font-bold text-white/60 uppercase tracking-tighter mt-1">Recent Settlement</p>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4 }}>
+              <div className="h-full p-6 rounded-[2rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Asset Ranking</span>
+                </div>
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white">Platinum</h3>
+                <p className="text-[10px] font-bold text-blue-500/60 uppercase tracking-widest mt-1">Verified Partner</p>
+              </div>
             </motion.div>
           </>
         )}
       </div>
 
-      <Card className="overflow-hidden border-none bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl shadow-2xl shadow-gray-200/50 dark:shadow-none">
-        <CardHeader className="border-b border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 px-8 py-6">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-black tracking-tight text-gray-900 dark:text-white">Payment History</CardTitle>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-500">
-              <ArrowUpRight className="h-4 w-4" />
-            </div>
+      {/* Activity Timeline */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">Financial Activity</h2>
+            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Transaction history and settlement logs</p>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-gray-100 dark:divide-white/5">
-            {loading ? (
-              [...Array(3)].map((_, i) => (
-                <div key={i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-8 gap-4 sm:gap-0">
-                  <div className="flex items-center gap-6 w-full sm:w-auto">
-                    <Skeleton className="w-14 h-14 rounded-2xl shrink-0" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-6 w-32" />
-                      <Skeleton className="h-4 w-48" />
-                    </div>
-                  </div>
-                  <div className="w-full sm:w-auto pl-20 sm:pl-0 space-y-2 flex flex-col items-start sm:items-end">
-                    <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                </div>
-              ))
-            ) : payments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-white/20">
-                <Clock className="h-12 w-12 mb-4 opacity-20" />
-                <p className="text-lg font-medium">No payment history found.</p>
-              </div>
-            ) : (
-              <AnimatePresence>
-                {payments.map((payment, index) => (
-                  <motion.div
-                    key={payment.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-8 hover:bg-gray-50 dark:hover:bg-white/5 transition-all gap-4 sm:gap-0"
-                  >
-                    <div className="flex items-center gap-6 w-full sm:w-auto">
+          <button className="flex items-center gap-2 text-xs font-black text-indigo-600 uppercase tracking-widest hover:bg-indigo-50 dark:hover:bg-indigo-500/10 px-4 py-2 rounded-xl transition-all">
+            Filter Logs
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {loading ? (
+            [...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-[2rem]" />
+            ))
+          ) : payments.length > 0 ? (
+            <AnimatePresence>
+              {payments.map((payment, index) => (
+                <motion.div
+                  key={payment.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="group relative bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[2rem] p-6 hover:shadow-xl hover:shadow-indigo-500/5 transition-all"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
                       <div className={cn(
-                        "flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-transform group-hover:scale-110",
+                        "flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.5rem] shadow-lg transition-all group-hover:scale-110 group-hover:rotate-6",
                         payment.payment_status === 'paid' 
                           ? 'bg-emerald-500 text-white shadow-emerald-500/20' 
                           : 'bg-amber-500 text-white shadow-amber-500/20'
                       )}>
-                        {payment.payment_status === 'paid' ? <CheckCircle className="h-7 w-7" /> : <Clock className="h-7 w-7" />}
+                        {payment.payment_status === 'paid' ? <CheckCircle className="h-8 w-8" /> : <Clock className="h-8 w-8" />}
                       </div>
-                      <div>
-                        <h4 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">{payment.month} {payment.year}</h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-bold text-gray-400 dark:text-white/40 uppercase tracking-widest">
-                            {new Date(payment.payment_date || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                           <h4 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{payment.month}</h4>
+                           <span className="text-xs font-bold text-indigo-500/60">{payment.year}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-white/5 text-[10px] font-black text-gray-500 uppercase">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(payment.payment_date || '').toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
+                          </div>
                           {payment.payment_method && (
-                            <>
-                              <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-white/20" />
-                              <span className="text-xs font-black text-indigo-500 uppercase tracking-widest">via {payment.payment_method}</span>
-                            </>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-500/5 text-[10px] font-black text-indigo-500 uppercase border border-indigo-500/10">
+                              <Wallet className="w-3 h-3" />
+                              {payment.payment_method}
+                            </div>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div className="text-left sm:text-right w-full sm:w-auto pl-20 sm:pl-0">
-                      <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">৳{payment.total_amount.toLocaleString()}</p>
-                      {payment.penalty > 0 && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          +৳{payment.penalty} Penalty
-                        </span>
-                      )}
+
+                    <div className="flex items-center justify-between sm:justify-end gap-10">
+                      <div className="text-right">
+                        <p className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">৳{payment.total_amount.toLocaleString()}</p>
+                        {payment.penalty > 0 && (
+                          <div className="flex items-center justify-end gap-1 text-[10px] font-black text-purple-500 uppercase tracking-tighter mt-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            ৳{payment.penalty} Penalty Included
+                          </div>
+                        )}
+                      </div>
+                      <div className="h-10 w-10 flex items-center justify-center rounded-2xl bg-gray-50 dark:bg-white/5 text-gray-300 dark:text-white/20 group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                         <ArrowUpRight className="w-5 h-5" />
+                      </div>
                     </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-32 text-center space-y-6 bg-white dark:bg-white/5 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-white/5">
+              <div className="h-24 w-24 rounded-[3rem] bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-300 dark:text-white/10">
+                <Clock className="w-10 h-10" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-gray-900 dark:text-white">No Activity Detected</h3>
+                <p className="text-sm font-medium text-gray-400 max-w-[280px]">Your settlement history will appear here once verified by the board.</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <Modal
         isOpen={showAgreementModal}
         onClose={() => setShowAgreementModal(false)}
-        title="Membership Agreement"
+        title="Institutional Agreement"
         className="max-w-5xl"
       >
-        <div className="bg-gray-50 dark:bg-gray-900/50 p-2 sm:p-4 rounded-xl">
+        <div className="bg-white dark:bg-indigo-950/40 p-4 rounded-3xl overflow-hidden border border-gray-100 dark:border-white/5 shadow-2xl">
           <AgreementForm documentOnly={true} />
         </div>
       </Modal>

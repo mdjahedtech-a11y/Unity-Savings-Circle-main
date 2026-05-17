@@ -14,9 +14,13 @@ interface AuthContextType {
   cache: {
     dashboard: { stats: any; members: any[]; allPayments: any[]; recentPayments: any[] } | null;
     membersList: { members: any[]; monthlyPayments: string[] } | null;
+    discussion: { posts: any[] } | null;
+    mySavings: { payments: any[] } | null;
+    reports: { data: any[]; allTimeTotal: number; month: string; year: string } | null;
     lastUpdated: { [key: string]: number };
   };
   setCache: (key: string, data: any) => void;
+  prefetchAllData: (member: Member) => Promise<void>;
   
   dashboardLoaded: boolean;
   setDashboardLoaded: (loaded: boolean) => void;
@@ -33,8 +37,9 @@ const AuthContext = createContext<AuthContextType>({
   member: null,
   systemSettings: null,
   loading: true,
-  cache: { dashboard: null, membersList: null, lastUpdated: {} },
+  cache: { dashboard: null, membersList: null, discussion: null, mySavings: null, reports: null, lastUpdated: {} },
   setCache: () => {},
+  prefetchAllData: async () => {},
   dashboardLoaded: false,
   setDashboardLoaded: () => {},
   isAdmin: false,
@@ -54,6 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [cache, setCacheState] = useState<any>({
     dashboard: null,
     membersList: null,
+    discussion: null,
+    mySavings: null,
+    reports: null,
     lastUpdated: {}
   });
   const fetchingProfileFor = React.useRef<string | null>(null);
@@ -64,6 +72,131 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       [key]: data,
       lastUpdated: { ...prev.lastUpdated, [key]: Date.now() }
     }));
+  };
+
+  const prefetchAllData = async (memberData: Member) => {
+    // Only prefetch if we haven't fetched in the last 2 minutes
+    const lastFetch = cache.lastUpdated.all || 0;
+    if (Date.now() - lastFetch < 120000) return;
+
+    console.log('Starting background prefetch of all data...');
+    
+    try {
+      // 1. Prefetch Dashboard Data
+      const dashPromise = Promise.all([
+        supabase.from('members').select('*'),
+        supabase.from('payments').select('*'),
+        supabase.from('payments')
+          .select(`id, month, year, payment_date, total_amount, member_id, members (name, photo_url)`)
+          .order('payment_date', { ascending: false })
+          .limit(10)
+      ]).then(([membersRes, allPaymentsRes, recentRes]) => {
+        if (!membersRes.error && !allPaymentsRes.error && !recentRes.error) {
+          setCache('dashboard', {
+            members: membersRes.data,
+            allPayments: allPaymentsRes.data,
+            recentPayments: recentRes.data
+          });
+          
+          // Optimization: Populate membersList cache from this same data
+          const membersWithSavings = (membersRes.data || []).map(m => {
+            const savings = (allPaymentsRes.data || [])
+              .filter(p => p.member_id === m.id && p.payment_status === 'paid')
+              .reduce((sum, p) => sum + (p.total_amount || 0), 0);
+            return { ...m, total_savings: savings };
+          });
+
+          // Assume current month for membersList monthlyPayments pre-fill
+          const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+          const currentYear = new Date().getFullYear();
+          const paidMemberIds = (allPaymentsRes.data || [])
+            .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'paid')
+            .map(p => p.member_id);
+
+          setCache('membersList', {
+            members: membersWithSavings,
+            monthlyPayments: paidMemberIds
+          });
+        }
+      });
+
+      // 2. Prefetch Discussion Data
+      const discPromise = supabase
+        .from('posts')
+        .select(`
+          id, member_id, content, created_at,
+          members(id, name, role),
+          comments(id, post_id, member_id, content, created_at, members(id, name, role)),
+          post_likes(id, post_id, member_id)
+        `)
+        .order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (!error && data) {
+            const formattedData = data.map((post: any) => ({
+              ...post,
+              likes: post.post_likes.length,
+              hasLiked: post.post_likes.some((l: any) => l.member_id === memberData.id)
+            }));
+            setCache('discussion', { posts: formattedData });
+          }
+        });
+
+      // 3. Prefetch My Savings
+      const savePromise = supabase
+        .from('payments')
+        .select('id, month, year, total_amount, penalty, payment_date, payment_method, payment_status, created_at')
+        .eq('member_id', memberData.id)
+        .order('created_at', { ascending: false })
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setCache('mySavings', { payments: data });
+          }
+        });
+
+      // 4. Prefetch Reports Data (Current Month)
+      const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+      const currentYear = new Date().getFullYear();
+      
+      const reportPromise = Promise.all([
+        supabase.from('members').select('*').order('name'),
+        supabase.from('payments').select('*').eq('month', currentMonth).eq('year', currentYear),
+        supabase.from('payments').select('total_amount').eq('payment_status', 'paid')
+      ]).then(([membersRes, paymentsRes, allTotalRes]) => {
+        if (!membersRes.error && !paymentsRes.error) {
+          const members = membersRes.data || [];
+          const payments = paymentsRes.data || [];
+          const allTimeTotal = (allTotalRes.data || []).reduce((sum, p) => sum + (p.total_amount || 0), 0);
+          
+          const paymentMap = new Map();
+          payments.forEach(p => paymentMap.set(p.member_id, p));
+
+          const reportData = members.map(m => {
+            const p = paymentMap.get(m.id);
+            return {
+              ...m,
+              paymentStatus: p ? p.payment_status : 'unpaid',
+              paymentMethod: p ? p.payment_method : '-',
+              amountPaid: p ? p.total_amount : 0,
+              penalty: p ? p.penalty : 0,
+              expectedAmount: m.share_count * 1000
+            };
+          });
+
+          setCache('reports', { 
+            data: reportData, 
+            allTimeTotal, 
+            month: currentMonth, 
+            year: currentYear.toString() 
+          });
+        }
+      });
+
+      await Promise.all([dashPromise, discPromise, savePromise, reportPromise]);
+      setCache('all', { timestamp: Date.now() });
+      console.log('Background prefetch completed successfully');
+    } catch (err) {
+      console.error('Background prefetch failed:', err);
+    }
   };
 
   useEffect(() => {
@@ -225,6 +358,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data) {
         console.log('Profile found:', data.name);
         setMember(data);
+        // Start background prefetch
+        prefetchAllData(data);
       } else {
         console.log('No profile found for user.');
         setMember(null);
@@ -393,7 +528,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = member?.role === 'admin' || isMainAdmin;
 
   return (
-    <AuthContext.Provider value={{ session, user, member, systemSettings, loading, cache, setCache, dashboardLoaded, setDashboardLoaded, isAdmin, isMainAdmin, signOut, refreshProfile, updateSettings }}>
+    <AuthContext.Provider value={{ session, user, member, systemSettings, loading, cache, setCache, prefetchAllData, dashboardLoaded, setDashboardLoaded, isAdmin, isMainAdmin, signOut, refreshProfile, updateSettings }}>
       {children}
     </AuthContext.Provider>
   );

@@ -35,12 +35,12 @@ import { cn } from '../lib/utils';
 import html2canvas from 'html2canvas';
 
 export default function Reports() {
-  const { isAdmin, member } = useAuth();
+  const { isAdmin, member, cache, setCache } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-  const [reportData, setReportData] = useState<any[]>([]);
-  const [allTimeTotal, setAllTimeTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [reportData, setReportData] = useState<any[]>(cache.reports?.data || []);
+  const [allTimeTotal, setAllTimeTotal] = useState(cache.reports?.allTimeTotal || 0);
+  const [loading, setLoading] = useState(!cache.reports);
   const [issuedDate, setIssuedDate] = useState(new Date().toLocaleDateString());
   const [showExportOptions, setShowExportOptions] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -63,7 +63,18 @@ export default function Reports() {
   }, [selectedMonth, selectedYear, isAdmin, member?.id]);
 
   const generateReport = async (isRefresh = false) => {
-    setLoading(true);
+    // Check cache first for current month if not refreshing
+    if (!isRefresh && 
+        cache.reports && 
+        cache.reports.month === selectedMonth && 
+        cache.reports.year === selectedYear) {
+      setReportData(cache.reports.data);
+      setAllTimeTotal(cache.reports.allTimeTotal);
+      setLoading(false);
+      return;
+    }
+
+    if (!cache.reports || isRefresh) setLoading(true);
     try {
       // Fetch all data for everyone to see the full report
       const promises: any[] = [
@@ -86,9 +97,10 @@ export default function Reports() {
       const members = membersRes.data || [];
       const currentMonthPayments = paymentsRes.data || [];
       
+      let finalAllTimeTotal = allTimeTotal;
       if (allPaymentsRes && !allPaymentsRes.error) {
-        const total = (allPaymentsRes.data || []).reduce((sum: number, p: any) => sum + (p.total_amount || 0), 0);
-        setAllTimeTotal(total);
+        finalAllTimeTotal = (allPaymentsRes.data || []).reduce((sum: number, p: any) => sum + (p.total_amount || 0), 0);
+        setAllTimeTotal(finalAllTimeTotal);
       }
 
       const paymentMap = new Map();
@@ -109,6 +121,19 @@ export default function Reports() {
       });
 
       setReportData(report);
+      
+      // Update cache if it's for current month
+      const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+      const currentYearStr = new Date().getFullYear().toString();
+      
+      if (selectedMonth === currentMonth && selectedYear === currentYearStr) {
+        setCache('reports', {
+          data: report,
+          allTimeTotal: finalAllTimeTotal,
+          month: selectedMonth,
+          year: selectedYear
+        });
+      }
     } catch (error) {
       console.error('Error generating report:', error);
       toast.error('Failed to generate report');
