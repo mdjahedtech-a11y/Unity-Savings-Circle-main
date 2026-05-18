@@ -251,122 +251,146 @@ export default function Dashboard() {
         <Marquee />
       </div>
 
-      {/* Modern Slider Section */}
-      <section className="space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-            <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-widest text-xs mt-2">
-              Welcome back, {member?.name || 'User'}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-             <CountdownTimer />
-             <motion.button 
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  fetchDashboardData(true);
-                  if (isAdmin) fetchRecentPayments();
-                }}
-                disabled={loading}
-                className={cn(
-                  "p-3 rounded-2xl bg-white dark:bg-white/5 shadow-sm border border-gray-100 dark:border-white/10 text-indigo-500 transition-all",
-                  loading && "animate-spin opacity-50"
-                )}
-              >
-                <RefreshCcw className="w-5 h-5" />
-              </motion.button>
-          </div>
+      {/* eye-catching Dashboard & Slider Section */}
+      <section className="relative overflow-hidden group rounded-[3rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-2xl transition-all duration-700 hover:shadow-indigo-500/10">
+        {/* Abstract Background Orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 group-hover:bg-indigo-500/20 transition-colors duration-1000" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-purple-500/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3 group-hover:bg-purple-500/20 transition-colors duration-1000" />
         </div>
 
-        <div className="relative group overflow-hidden rounded-[2.5rem] bg-gray-100 dark:bg-white/5 aspect-[16/9] md:aspect-[21/9] shadow-2xl">
-          {loadingSlider ? (
-            <Skeleton className="h-full w-full rounded-[2.5rem]" />
-          ) : sliderImages.length > 0 ? (
-            <div className="h-full w-full relative">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentSlide}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.5 }}
-                  className="absolute inset-0"
-                >
-                  <img 
-                    src={sliderImages[currentSlide].image_url} 
-                    alt={sliderImages[currentSlide].title || 'Slide'} 
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                  {(sliderImages[currentSlide].title || sliderImages[currentSlide].description) && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
-                      <motion.h2 
-                        initial={{ y: 20, opacity: 0 }} 
-                        animate={{ y: 0, opacity: 1 }} 
-                        className="text-2xl md:text-4xl font-black text-white mb-2"
-                      >
-                        {sliderImages[currentSlide].title}
-                      </motion.h2>
-                      <motion.p 
-                        initial={{ y: 20, opacity: 0 }} 
-                        animate={{ y: 0, opacity: 1 }} 
-                        transition={{ delay: 0.1 }}
-                        className="text-white/70 text-sm md:text-lg max-w-2xl"
-                      >
-                        {sliderImages[currentSlide].description}
-                      </motion.p>
-                    </div>
+        <div className="relative z-10">
+          {/* Header Overlay (Always visible or floating) */}
+          <div className="p-8 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+                <motion.button 
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    fetchDashboardData(true);
+                    if (isAdmin) fetchRecentPayments();
+                    fetchSliderImages();
+                  }}
+                  disabled={loading}
+                  className={cn(
+                    "p-2.5 rounded-2xl bg-gray-100 dark:bg-white/10 text-indigo-500 transition-all",
+                    loading && "animate-spin opacity-50"
                   )}
-                </motion.div>
-              </AnimatePresence>
+                >
+                  <RefreshCcw className="w-5 h-5" />
+                </motion.button>
+              </div>
+              <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-[0.3em] text-[10px] flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Welcome back, {member?.name || 'User'}
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <CountdownTimer />
+              <div className="hidden sm:flex px-6 py-3 rounded-2xl bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/20 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-white/50 backdrop-blur-md">
+                {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
 
-              {/* Navigation Controls */}
-              {sliderImages.length > 1 && (
-                <>
-                  <div className="absolute top-1/2 -translate-y-1/2 left-4 md:left-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={prevSlide}
-                      className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+          {/* Slider Content */}
+          <div className="px-8 pb-8">
+            <div className="relative overflow-hidden rounded-[2rem] bg-gray-100 dark:bg-white/5 aspect-[16/9] md:aspect-[21/6] shadow-xl border border-gray-200/50 dark:border-white/5">
+              {loadingSlider ? (
+                <Skeleton className="h-full w-full" />
+              ) : sliderImages.length > 0 ? (
+                <div className="h-full w-full relative">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentSlide}
+                      initial={{ opacity: 0, scale: 1.1 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.05 }}
+                      transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                      className="absolute inset-0"
                     >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                  </div>
-                  <div className="absolute top-1/2 -translate-y-1/2 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={nextSlide}
-                      className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </button>
-                  </div>
-
-                  {/* Indicators */}
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                    {sliderImages.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentSlide(i)}
-                        className={cn(
-                          "h-1.5 rounded-full transition-all duration-300",
-                          currentSlide === i ? "w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "w-1.5 bg-white/40"
-                        )}
+                      <img 
+                        src={sliderImages[currentSlide].image_url} 
+                        alt={sliderImages[currentSlide].title || 'Slide'} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
                       />
-                    ))}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                      
+                      <div className="absolute bottom-0 left-0 w-full p-8 md:p-12">
+                        <motion.div
+                          initial={{ y: 30, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          transition={{ delay: 0.2, duration: 0.5 }}
+                          className="max-w-3xl"
+                        >
+                          {sliderImages[currentSlide].title && (
+                            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight drop-shadow-2xl">
+                              {sliderImages[currentSlide].title}
+                            </h2>
+                          )}
+                          {sliderImages[currentSlide].description && (
+                            <p className="text-white/80 text-sm md:text-xl font-medium max-w-2xl leading-relaxed drop-shadow-lg">
+                              {sliderImages[currentSlide].description}
+                            </p>
+                          )}
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Navigation Controls */}
+                  {sliderImages.length > 1 && (
+                    <>
+                      <div className="absolute top-1/2 -translate-y-1/2 left-6 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
+                        <button 
+                          onClick={prevSlide}
+                          className="p-4 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all"
+                        >
+                          <ChevronLeft className="w-8 h-8" />
+                        </button>
+                      </div>
+                      <div className="absolute top-1/2 -translate-y-1/2 right-6 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-4 group-hover:translate-x-0">
+                        <button 
+                          onClick={nextSlide}
+                          className="p-4 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 hover:scale-110 transition-all"
+                        >
+                          <ChevronRight className="w-8 h-8" />
+                        </button>
+                      </div>
+
+                      {/* Progress Indicators */}
+                      <div className="absolute bottom-8 right-12 flex gap-3">
+                        {sliderImages.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setCurrentSlide(i)}
+                            className={cn(
+                              "h-1.5 rounded-full transition-all duration-500",
+                              currentSlide === i 
+                                ? "w-12 bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)]" 
+                                : "w-2 bg-white/30 hover:bg-white/50"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="h-full w-full flex flex-col items-center justify-center text-gray-400 p-8 text-center bg-gray-50 dark:bg-white/2">
+                  <div className="p-8 rounded-full bg-white dark:bg-white/5 shadow-inner mb-6">
+                    <ImageIcon className="w-16 h-16 opacity-10" />
                   </div>
-                </>
+                  <p className="font-black text-gray-300 dark:text-white/20 uppercase tracking-[0.4em] text-sm">Visionary Platform</p>
+                  <p className="text-xs mt-2 opacity-50 font-medium">Empowering progress through unified vision.</p>
+                </div>
               )}
             </div>
-          ) : (
-            <div className="h-full w-full flex flex-col items-center justify-center text-gray-400 p-8 text-center">
-              <div className="p-6 rounded-3xl bg-gray-50 dark:bg-white/5 mb-4">
-                <ImageIcon className="w-12 h-12 opacity-20" />
-              </div>
-              <p className="font-bold opacity-40 uppercase tracking-widest text-sm">Welcome to our platform</p>
-              <p className="text-xs mt-1">Admin has not added any slides yet.</p>
-            </div>
-          )}
+          </div>
         </div>
       </section>
 
