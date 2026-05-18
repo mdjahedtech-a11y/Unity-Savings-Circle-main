@@ -93,7 +93,7 @@ export const DistributionChart = React.memo(({ data }: { data: any[] }) => {
         </div>
         <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-3">
           {data.map((entry, index) => (
-            <div key={index} className="flex items-center gap-1.5">
+            <div key={`dist-${entry.name}-${index}`} className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
               <span className="text-[10px] text-gray-500 dark:text-white/60 whitespace-nowrap">{entry.name}</span>
             </div>

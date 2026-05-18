@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Payment } from '../types/index';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText, Sparkles, Download, ArrowRight } from 'lucide-react';
+import { Wallet, Calendar, CheckCircle, XCircle, Clock, Phone, User, Award, TrendingUp, ArrowUpRight, AlertTriangle, Camera, Loader2, RefreshCcw, FileText, Sparkles, Download, ArrowRight, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Modal } from '../components/ui/Modal';
@@ -212,8 +212,9 @@ export default function MySavings() {
                     Refresh
                   </button>
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-sm">
+                <h1 className="text-4xl md:text-5xl font-black tracking-tight text-white drop-shadow-sm flex items-center justify-center md:justify-start gap-2">
                   {member?.name || 'Administrator'}
+                  <BadgeCheck className="w-6 h-6 md:w-8 md:h-8 text-blue-400 fill-blue-400/20" />
                 </h1>
                 <p className="text-indigo-200/60 font-medium tracking-wide flex items-center justify-center md:justify-start gap-2">
                    <Phone className="w-3.5 h-3.5" />

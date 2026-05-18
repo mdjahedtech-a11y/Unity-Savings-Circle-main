@@ -211,207 +211,281 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 pb-12">
       <div className="-mt-8 -mx-4 sm:-mx-8">
         <Marquee />
       </div>
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-10 w-full lg:w-auto">
-          <div>
-            <div className="flex items-center gap-4">
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-              <button 
-                onClick={() => {
-                  fetchDashboardData(true);
-                  if (isAdmin) fetchRecentPayments();
-                }}
-                disabled={loading}
-                className={cn(
-                  "p-3 rounded-2xl bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all",
-                  loading && "animate-spin opacity-50"
-                )}
-                title="Refresh Data"
-              >
-                <RefreshCcw className="w-5 h-5 text-indigo-500" />
-              </button>
-            </div>
-            <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-widest text-xs mt-2">Welcome back, {member?.name || 'User'}</p>
-          </div>
-          <div className="flex-1 sm:flex-none">
-            <CountdownTimer />
-          </div>
-        </div>
-        <div className="bg-white/50 dark:bg-white/5 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/20 dark:border-white/10 text-sm font-bold text-indigo-600 dark:text-indigo-400 shadow-xl shadow-indigo-500/5 uppercase tracking-widest">
-          {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-        </div>
-      </div>
 
+      {/* Header Section */}
+      <section className="relative overflow-hidden rounded-[2.5rem] bg-indigo-950 p-8 md:p-12 text-white shadow-2xl">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/10 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3" />
+        </div>
+
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+               <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center p-4">
+                 <Wallet className="w-8 h-8 text-indigo-300" />
+               </div>
+               <div>
+                 <div className="flex items-center gap-3">
+                   <h1 className="text-4xl md:text-5xl font-black tracking-tight">Dashboard</h1>
+                   <motion.button 
+                    whileHover={{ scale: 1.1, rotate: 180 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => {
+                      fetchDashboardData(true);
+                      if (isAdmin) fetchRecentPayments();
+                    }}
+                    disabled={loading}
+                    className={cn(
+                      "p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all",
+                      loading && "animate-spin opacity-50"
+                    )}
+                  >
+                    <RefreshCcw className="w-4 h-4" />
+                  </motion.button>
+                 </div>
+                 <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-widest text-xs mt-2">
+                   Welcome back, {member?.name || 'User'}
+                 </p>
+               </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+            <CountdownTimer />
+            <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md text-xs font-black uppercase tracking-widest text-indigo-300">
+               {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bento Grid Stats */}
       <motion.div 
         layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
       >
         {loading ? (
           [...Array(5)].map((_, i) => (
-            <div key={i} className="bg-white/50 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-[2rem] p-8">
-              <div className="flex items-center justify-between">
-                <div className="space-y-4">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-32" />
-                </div>
-                <Skeleton className="h-14 w-14 rounded-2xl" />
-              </div>
-            </div>
+            <Skeleton key={`stat-skeleton-${i}`} className="h-40 rounded-[2.5rem]" />
           ))
         ) : (
           <>
-            <StatsCard 
-              title="Total Savings" 
-              value={`৳${stats.totalSavings.toLocaleString()}`} 
-              icon={Wallet} 
-              color="text-emerald-500"
-              delay={0.1}
-            />
-            <StatsCard 
-              title="Monthly Collection" 
-              value={`৳${stats.monthlyCollection.toLocaleString()}`} 
-              icon={TrendingUp} 
-              color="text-indigo-500"
-              delay={0.2}
-            />
-            <div className="bg-white/50 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-[2rem] p-8 flex flex-col justify-between shadow-xl shadow-indigo-500/5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">Collection Goal</p>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">৳{stats.collectionGoal.toLocaleString()}</h3>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600">
+                    <Wallet className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Savings</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-500">
-                  <TrendingUp className="w-6 h-6" />
+                <h3 className="text-3xl font-black text-gray-900 dark:text-white">৳{stats.totalSavings.toLocaleString()}</h3>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-600">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Monthly Collection</span>
+                </div>
+                <h3 className="text-3xl font-black text-gray-900 dark:text-white">৳{stats.monthlyCollection.toLocaleString()}</h3>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <div className="h-full p-8 rounded-[2.5rem] bg-indigo-600 text-white shadow-xl shadow-indigo-500/20">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Collection Goal</span>
+                  <div className="p-2 rounded-xl bg-white/20">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <h3 className="text-3xl font-black mb-4">৳{stats.collectionGoal.toLocaleString()}</h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                    <span>Progress</span>
+                    <span>{Math.min(100, Math.round(stats.collectionProgress))}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, stats.collectionProgress)}%` }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full bg-white rounded-full shadow-[0_0_10px_white]"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-bold uppercase tracking-widest">
-                  <span className="text-gray-400 dark:text-white/30">Progress</span>
-                  <span className="text-indigo-600 dark:text-indigo-400">{Math.min(100, Math.round(stats.collectionProgress))}%</span>
-                </div>
-                <div className="h-2 w-full bg-gray-100 dark:bg-white/5 rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(100, stats.collectionProgress)}%` }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full bg-indigo-500 rounded-full"
-                  />
-                </div>
-              </div>
-            </div>
-            <StatsCard 
-              title="Total Members" 
-              value={stats.totalMembers} 
-              icon={Users} 
-              color="text-purple-500"
-              delay={0.3}
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
               onClick={() => navigate('/members')}
-            />
-            <StatsCard 
-              title="Pending Payments" 
-              value={stats.pendingCount} 
-              icon={AlertCircle} 
-              color="text-amber-500"
-              delay={0.4}
-            />
+              className="cursor-pointer group"
+            >
+              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-purple-500/5 transition-all">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Members</span>
+                </div>
+                <h3 className="text-3xl font-black text-gray-900 dark:text-white transition-colors group-hover:text-purple-600">{stats.totalMembers}</h3>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-amber-500/5 transition-all">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-600">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending Payments</span>
+                </div>
+                <h3 className="text-3xl font-black text-gray-900 dark:text-white">{stats.pendingCount}</h3>
+              </div>
+            </motion.div>
           </>
         )}
       </motion.div>
 
+      {/* Analytics Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {loading ? (
           <>
-            <Skeleton className="h-[420px] rounded-[2rem] col-span-1 lg:col-span-2" />
-            <Skeleton className="h-[420px] rounded-[2rem]" />
+            <Skeleton className="h-[450px] rounded-[3rem] col-span-1 lg:col-span-2" />
+            <Skeleton className="h-[450px] rounded-[3rem]" />
           </>
         ) : (
           <>
-            <MonthlySavingsChart data={chartData.monthly} />
-            <DistributionChart data={chartData.distribution} />
+            <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-8 shadow-sm">
+               <MonthlySavingsChart data={chartData.monthly} />
+            </div>
+            <div className="bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-8 shadow-sm">
+               <DistributionChart data={chartData.distribution} />
+            </div>
           </>
         )}
         
         {isAdmin && (
-          <Card className="p-8 bg-white/70 dark:bg-gray-900/80 backdrop-blur-2xl border-white/40 dark:border-white/10 shadow-2xl shadow-indigo-500/10">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Recent Activity</h3>
-              <button 
-                onClick={() => navigate('/members')}
-                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest hover:underline"
-              >
-                View All
-              </button>
-            </div>
-            <div className="space-y-5">
-              {loadingPayments ? (
-                <div className="space-y-5">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-white/20">
-                      <div className="flex items-center gap-4">
-                        <Skeleton className="w-10 h-10 rounded-full" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-24" />
-                          <Skeleton className="h-3 w-16" />
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-right">
-                        <Skeleton className="h-4 w-16 ml-auto" />
-                        <Skeleton className="h-3 w-20 ml-auto" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : recentPayments.length > 0 ? (
-                recentPayments.map((p, i) => (
-                  <div key={p.id} className="flex items-center justify-between p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-white/20 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 flex items-center justify-center text-sm font-bold text-indigo-600 dark:text-indigo-400 overflow-hidden shadow-sm group-hover:scale-110 transition-transform">
-                        {p.members?.photo_url ? (
-                          <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        ) : (
-                          p.members?.name?.charAt(0)
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-base font-bold text-gray-900 dark:text-white">{p.members?.name}</p>
-                        <p className="text-xs font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">{p.month} {p.year}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-base font-bold text-indigo-600 dark:text-indigo-400">৳{p.total_amount.toLocaleString()}</p>
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-white/30 uppercase tracking-widest">
-                        {new Date(p.payment_date).toLocaleDateString()}
-                      </p>
-                    </div>
+          <div className="lg:col-span-3">
+             <section className="relative overflow-hidden bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-8 shadow-xl">
+               <div className="flex items-center justify-between mb-10 px-4">
+                  <div className="space-y-1">
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Recent Activity</h3>
                   </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-400 dark:text-white/40 text-sm py-12">No payments recorded yet.</p>
-              )}
+                  <motion.button 
+                    whileHover={{ x: 5 }}
+                    onClick={() => navigate('/members')}
+                    className="flex items-center gap-2 text-xs font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/10 px-6 py-3 rounded-2xl transition-all"
+                  >
+                    View All
+                    <TrendingUp className="w-4 h-4 rotate-90" />
+                  </motion.button>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                  <div className="space-y-4">
+                    {loadingPayments ? (
+                      [...Array(3)].map((_, i) => (
+                        <Skeleton key={`payment-skeleton-${i}`} className="h-24 rounded-3xl" />
+                      ))
+                    ) : recentPayments.length > 0 ? (
+                      recentPayments.map((p, i) => (
+                        <motion.div 
+                          key={p.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex items-center justify-between p-5 bg-gray-50 dark:bg-white/5 rounded-3xl border border-transparent hover:border-indigo-500/30 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
+                        >
+                          <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl bg-indigo-600 overflow-hidden shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
+                              {p.members?.photo_url ? (
+                                <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-white font-black text-xl">
+                                  {p.members?.name?.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-lg font-black text-gray-900 dark:text-white leading-tight">{p.members?.name}</p>
+                              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1 opacity-60">{p.month} {p.year}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">৳{p.total_amount.toLocaleString()}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-1">
+                              {new Date(p.payment_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                            </p>
+                          </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 dark:bg-white/5 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-white/10">
+                         <div className="p-4 rounded-full bg-gray-100 dark:bg-white/5 mb-4">
+                           <AlertCircle className="w-8 h-8 opacity-20" />
+                         </div>
+                         <p className="text-sm font-bold uppercase tracking-widest opacity-40">No settlements found</p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-white/5 rounded-[3rem] p-8 border border-white/40 dark:border-white/5">
+                    <div className="mb-6 flex items-center justify-between">
+                       <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">Growth Visualization</h4>
+                       <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
+                    </div>
+                    {!loadingPayments && recentPayments.length > 0 && (
+                      <RecentPaymentsChart data={recentPayments} />
+                    )}
+                  </div>
+               </div>
+             </section>
+          </div>
+        )}
+      </div>
+
+      {/* Global Growth Visualization */}
+      <section className="relative overflow-hidden bg-indigo-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl">
+         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-white/20 blur-[150px] rounded-full -translate-y-1/2" />
+         </div>
+         
+         <div className="relative z-10 space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+               <div className="space-y-2">
+                 <h3 className="text-3xl font-black tracking-tight">Savings Growth History</h3>
+               </div>
+               <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Total Savings</p>
+                    <p className="text-xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
+                  </div>
+                  <div className="h-10 w-px bg-white/10" />
+                  <TrendingUp className="w-8 h-8 text-emerald-400" />
+               </div>
             </div>
             
-            {!loadingPayments && recentPayments.length > 0 && (
-              <div className="mt-8">
-                <RecentPaymentsChart data={recentPayments} />
-              </div>
-            )}
-          </Card>
-        )}
-      </div>
+            <div className="w-full h-[400px] bg-white/5 rounded-[2rem] border border-white/10 p-6">
+              {loading ? (
+                <Skeleton className="h-full w-full rounded-2xl" />
+              ) : (
+                <GrowthChart data={chartData.growth} />
+              )}
+            </div>
+         </div>
+      </section>
 
-      <div className="grid grid-cols-1">
-        {loading ? (
-          <Skeleton className="h-[380px] rounded-2xl" />
-        ) : (
-          <GrowthChart data={chartData.growth} />
-        )}
-      </div>
-
-      {/* Agreement Popup for existing users */}
+      {/* Agreement Popup */}
       <Modal
         isOpen={showAgreementPopup}
         onClose={() => setShowAgreementPopup(false)}
@@ -419,13 +493,15 @@ export default function Dashboard() {
         className="max-w-4xl"
         closable={!!member?.agreement_accepted}
       >
-        <div className="text-sm text-gray-500 dark:text-white/50 mb-6">
+        <div className="text-sm font-medium text-gray-500 dark:text-white/50 mb-8 px-2 border-l-4 border-indigo-500">
           {!member?.agreement_accepted 
             ? "Please review and accept our membership agreement to continue using the application."
             : "Your agreement has been successfully completed. You can download it below or view it later in your profile."
           }
         </div>
-        <AgreementForm />
+        <div className="bg-gray-50 dark:bg-white/5 p-6 rounded-[2rem]">
+           <AgreementForm />
+        </div>
       </Modal>
     </div>
   );
