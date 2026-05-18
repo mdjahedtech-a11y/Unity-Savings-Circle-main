@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { StatsCard } from '../components/StatsCard';
 import { MonthlySavingsChart, DistributionChart, GrowthChart, RecentPaymentsChart } from '../components/Charts';
 import { CountdownTimer } from '../components/CountdownTimer';
-import { Users, Wallet, TrendingUp, AlertCircle, RefreshCcw } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Users, Wallet, TrendingUp, AlertCircle, RefreshCcw, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
-
 import { useNavigate } from 'react-router-dom';
-
 import { LoadingScreen } from '../components/LoadingScreen';
 import { Marquee } from '../components/Marquee';
 import { Modal } from '../components/ui/Modal';
@@ -26,6 +24,43 @@ export default function Dashboard() {
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [loading, setLoading] = useState(!cache.dashboard);
   const [showAgreementPopup, setShowAgreementPopup] = useState(false);
+  const [sliderImages, setSliderImages] = useState<any[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [loadingSlider, setLoadingSlider] = useState(true);
+
+  const fetchSliderImages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('slider_images')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+      
+      if (!error && data) {
+        setSliderImages(data);
+      }
+    } catch (err) {
+      console.error('Slider fetch error:', err);
+    } finally {
+      setLoadingSlider(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSliderImages();
+  }, []);
+
+  useEffect(() => {
+    if (sliderImages.length > 1) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [sliderImages]);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length);
 
   useEffect(() => {
     if (member && !member.agreement_accepted) {
@@ -216,55 +251,126 @@ export default function Dashboard() {
         <Marquee />
       </div>
 
-      {/* Header Section */}
-      <section className="relative overflow-hidden rounded-[2.5rem] bg-indigo-950 p-8 md:p-12 text-white shadow-2xl">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-500/10 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3" />
+      {/* Modern Slider Section */}
+      <section className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+            <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-widest text-xs mt-2">
+              Welcome back, {member?.name || 'User'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+             <CountdownTimer />
+             <motion.button 
+                whileHover={{ scale: 1.1, rotate: 180 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  fetchDashboardData(true);
+                  if (isAdmin) fetchRecentPayments();
+                }}
+                disabled={loading}
+                className={cn(
+                  "p-3 rounded-2xl bg-white dark:bg-white/5 shadow-sm border border-gray-100 dark:border-white/10 text-indigo-500 transition-all",
+                  loading && "animate-spin opacity-50"
+                )}
+              >
+                <RefreshCcw className="w-5 h-5" />
+              </motion.button>
+          </div>
         </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4">
-               <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center p-4">
-                 <Wallet className="w-8 h-8 text-indigo-300" />
-               </div>
-               <div>
-                 <div className="flex items-center gap-3">
-                   <h1 className="text-4xl md:text-5xl font-black tracking-tight">Dashboard</h1>
-                   <motion.button 
-                    whileHover={{ scale: 1.1, rotate: 180 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
-                      fetchDashboardData(true);
-                      if (isAdmin) fetchRecentPayments();
-                    }}
-                    disabled={loading}
-                    className={cn(
-                      "p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all",
-                      loading && "animate-spin opacity-50"
-                    )}
-                  >
-                    <RefreshCcw className="w-4 h-4" />
-                  </motion.button>
-                 </div>
-                 <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-widest text-xs mt-2">
-                   Welcome back, {member?.name || 'User'}
-                 </p>
-               </div>
+        <div className="relative group overflow-hidden rounded-[2.5rem] bg-gray-100 dark:bg-white/5 aspect-[16/9] md:aspect-[21/9] shadow-2xl">
+          {loadingSlider ? (
+            <Skeleton className="h-full w-full rounded-[2.5rem]" />
+          ) : sliderImages.length > 0 ? (
+            <div className="h-full w-full relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentSlide}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
+                >
+                  <img 
+                    src={sliderImages[currentSlide].image_url} 
+                    alt={sliderImages[currentSlide].title || 'Slide'} 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                  {(sliderImages[currentSlide].title || sliderImages[currentSlide].description) && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
+                      <motion.h2 
+                        initial={{ y: 20, opacity: 0 }} 
+                        animate={{ y: 0, opacity: 1 }} 
+                        className="text-2xl md:text-4xl font-black text-white mb-2"
+                      >
+                        {sliderImages[currentSlide].title}
+                      </motion.h2>
+                      <motion.p 
+                        initial={{ y: 20, opacity: 0 }} 
+                        animate={{ y: 0, opacity: 1 }} 
+                        transition={{ delay: 0.1 }}
+                        className="text-white/70 text-sm md:text-lg max-w-2xl"
+                      >
+                        {sliderImages[currentSlide].description}
+                      </motion.p>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation Controls */}
+              {sliderImages.length > 1 && (
+                <>
+                  <div className="absolute top-1/2 -translate-y-1/2 left-4 md:left-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={prevSlide}
+                      className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <div className="absolute top-1/2 -translate-y-1/2 right-4 md:right-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={nextSlide}
+                      className="p-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20 transition-all"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  {/* Indicators */}
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                    {sliderImages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentSlide(i)}
+                        className={cn(
+                          "h-1.5 rounded-full transition-all duration-300",
+                          currentSlide === i ? "w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]" : "w-1.5 bg-white/40"
+                        )}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-            <CountdownTimer />
-            <div className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md text-xs font-black uppercase tracking-widest text-indigo-300">
-               {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          ) : (
+            <div className="h-full w-full flex flex-col items-center justify-center text-gray-400 p-8 text-center">
+              <div className="p-6 rounded-3xl bg-gray-50 dark:bg-white/5 mb-4">
+                <ImageIcon className="w-12 h-12 opacity-20" />
+              </div>
+              <p className="font-bold opacity-40 uppercase tracking-widest text-sm">Welcome to our platform</p>
+              <p className="text-xs mt-1">Admin has not added any slides yet.</p>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
-      {/* Bento Grid Stats */}
+      {/* Stats Cards Moved to Secondary Row or kept minimal */}
       <motion.div 
         layout
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"

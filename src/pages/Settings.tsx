@@ -6,6 +6,7 @@ import { Settings as SettingsIcon, Shield, Bell, Save, AlertTriangle, LayoutDash
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { MarqueeManager } from '../components/MarqueeManager';
+import { SliderManager } from '../components/SliderManager';
 
 export default function Settings() {
   const { isAdmin, isMainAdmin, systemSettings, updateSettings } = useAuth();
@@ -52,6 +53,15 @@ export default function Settings() {
           className="md:col-span-2"
         >
           <MarqueeManager />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="md:col-span-2"
+        >
+          <SliderManager />
         </motion.div>
 
         <motion.div
