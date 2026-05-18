@@ -631,39 +631,39 @@ export default function Dashboard() {
       </div>
 
       {/* Global Growth Visualization */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl border border-white/5">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 rounded-[2rem] p-6 md:p-8 text-white shadow-2xl border border-white/5">
          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-500/30 blur-[150px] rounded-full -translate-y-1/2" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/20 blur-[120px] rounded-full translate-y-1/2" />
+            <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-500/30 blur-[130px] rounded-full -translate-y-1/2" />
+            <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-purple-500/20 blur-[100px] rounded-full translate-y-1/2" />
          </div>
          
-         <div className="relative z-10 space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-               <div className="space-y-2">
-                 <div className="flex items-center gap-3">
-                   <div className="h-12 w-12 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
-                     <TrendingUp className="w-6 h-6 text-indigo-300" />
+         <div className="relative z-10 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+               <div className="space-y-1.5">
+                 <div className="flex items-center gap-2.5">
+                   <div className="h-10 w-10 rounded-lg bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+                     <TrendingUp className="w-5 h-5 text-indigo-300" />
                    </div>
                    <div>
-                     <h3 className="text-2xl md:text-3xl font-black tracking-tight">Savings Growth History</h3>
-                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Cumulative performance index</p>
+                     <h3 className="text-xl md:text-2xl font-black tracking-tight">Savings Growth History</h3>
+                     <p className="text-[8px] font-bold text-white/40 uppercase tracking-[0.3em]">Cumulative performance index</p>
                    </div>
                  </div>
                </div>
                
-               <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-2xl p-4 border border-white/10 shadow-2xl">
+               <div className="flex items-center gap-3 bg-white/5 backdrop-blur-2xl rounded-xl p-3 border border-white/10 shadow-2xl">
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1.5">Total Assets</p>
-                    <p className="text-xl md:text-2xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
+                    <p className="text-[9px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Total Assets</p>
+                    <p className="text-lg md:text-xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
                   </div>
-                  <div className="h-10 w-px bg-white/20" />
-                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <TrendingUp className="w-6 h-6" />
+                  <div className="h-8 w-px bg-white/20" />
+                  <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <TrendingUp className="w-5 h-5" />
                   </div>
                </div>
             </div>
             
-            <div className="w-full h-[350px] bg-white/5 backdrop-blur-sm rounded-[2rem] border border-white/10 p-6 shadow-inner">
+            <div className="w-full h-[280px] bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-5 shadow-inner">
                <div className="h-full w-full">
                   {loading ? (
                     <Skeleton className="h-full w-full rounded-2xl opacity-10" />
@@ -673,14 +673,14 @@ export default function Dashboard() {
                </div>
             </div>
             
-            <div className="flex flex-wrap items-center gap-4 opacity-60">
-               <div className="flex items-center gap-2">
-                 <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-                 <span className="text-[9px] font-bold uppercase tracking-widest italic">Growth Trend</span>
+            <div className="flex flex-wrap items-center gap-4 opacity-50">
+               <div className="flex items-center gap-1.5">
+                 <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                 <span className="text-[8px] font-bold uppercase tracking-widest italic">Growth Trend</span>
                </div>
-               <div className="flex items-center gap-2">
-                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                 <span className="text-[9px] font-bold uppercase tracking-widest italic">Asset Accumulation</span>
+               <div className="flex items-center gap-1.5">
+                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                 <span className="text-[8px] font-bold uppercase tracking-widest italic">Asset Accumulation</span>
                </div>
             </div>
          </div>
