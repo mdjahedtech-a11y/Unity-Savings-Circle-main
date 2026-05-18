@@ -48,13 +48,16 @@ export function SliderManager() {
         is_active: true
       }]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
       
       toast.success('Slide added successfully');
       setNewSlide({ image_url: '', title: '', description: '' });
       fetchSlides();
-    } catch (error) {
-      toast.error('Failed to add slide');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add slide');
     } finally {
       setAdding(false);
     }
