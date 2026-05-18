@@ -40,29 +40,29 @@ export const CountdownTimer = () => {
   if (!isMounted) return null;
 
   const TimeUnit = React.memo(({ value, label, color }: { value: number, label: string, color: string }) => (
-    <div className="flex flex-col items-center px-2 sm:px-3 py-1 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 min-w-[50px] sm:min-w-[60px]">
+    <div className="flex flex-col items-center px-1.5 py-0.5 bg-white/10 backdrop-blur-sm rounded-lg border border-white/10 min-w-[34px] sm:min-w-[38px]">
       <motion.span 
         key={value}
-        initial={{ y: 5, opacity: 0 }}
+        initial={{ y: 2, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className={`text-lg sm:text-xl font-bold ${color} font-mono`}
+        className={`text-xs sm:text-sm font-black ${color} font-mono`}
       >
         {value.toString().padStart(2, '0')}
       </motion.span>
-      <span className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/60 font-medium">{label}</span>
+      <span className="text-[6px] uppercase tracking-tighter text-white/50 font-bold leading-none">{label}</span>
     </div>
   ));
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-2xl shadow-xl border border-white/30">
-      <div className="hidden sm:flex items-center justify-center w-8 h-8 bg-white/20 rounded-full shrink-0">
-        <Clock className="w-4 h-4 text-white animate-pulse" />
+    <div className="flex items-center gap-2 p-1.5 bg-indigo-600/90 dark:bg-indigo-500/20 backdrop-blur-md rounded-xl shadow-lg border border-white/20">
+      <div className="hidden xs:flex items-center justify-center w-6 h-6 bg-white/10 rounded-lg shrink-0">
+        <Clock className="w-3.5 h-3.5 text-white animate-pulse" />
       </div>
-      <div className="flex flex-col mr-1 sm:mr-2 shrink-0">
-        <span className="text-[10px] sm:text-xs font-bold text-white uppercase tracking-widest opacity-90">Remaining Time</span>
-        <span className="text-[8px] sm:text-[10px] text-white/80 font-medium">5 Years Savings Goal</span>
+      <div className="flex flex-col mr-1 shrink-0">
+        <span className="text-[8px] font-black text-white uppercase tracking-tight leading-none">Remained Time</span>
+        <span className="text-[6px] text-white/60 font-bold mt-0.5">SAVINGS GOAL</span>
       </div>
-      <div className="flex gap-1 sm:gap-2">
+      <div className="flex gap-1">
         <TimeUnit value={timeLeft.days} label="Days" color="text-white" />
         <TimeUnit value={timeLeft.hours} label="Hrs" color="text-white" />
         <TimeUnit value={timeLeft.minutes} label="Min" color="text-white" />
