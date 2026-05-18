@@ -370,62 +370,70 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Stats Cards Moved to Secondary Row or kept minimal */}
+      {/* Bento Grid Stats */}
       <motion.div 
         layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6"
       >
         {loading ? (
           [...Array(5)].map((_, i) => (
-            <Skeleton key={`stat-skeleton-${i}`} className="h-40 rounded-[2.5rem]" />
+            <Skeleton key={`stat-skeleton-${i}`} className="h-32 md:h-40 rounded-3xl" />
           ))
         ) : (
           <>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-emerald-500/5 transition-all">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600">
-                    <Wallet className="w-6 h-6" />
+              <div className="h-full p-5 md:p-6 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 transition-all group overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-emerald-500/10 transition-colors" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 group-hover:scale-110 transition-transform">
+                    <Wallet className="w-5 h-5" />
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Savings</span>
                 </div>
-                <h3 className="text-3xl font-black text-gray-900 dark:text-white">৳{stats.totalSavings.toLocaleString()}</h3>
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white truncate">৳{stats.totalSavings.toLocaleString()}</h3>
               </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-600">
-                    <TrendingUp className="w-6 h-6" />
+              <div className="h-full p-5 md:p-6 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all group overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-indigo-500/10 transition-colors" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Monthly Collection</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Monthly Coll.</span>
                 </div>
-                <h3 className="text-3xl font-black text-gray-900 dark:text-white">৳{stats.monthlyCollection.toLocaleString()}</h3>
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white truncate">৳{stats.monthlyCollection.toLocaleString()}</h3>
               </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <div className="h-full p-8 rounded-[2.5rem] bg-indigo-600 text-white shadow-xl shadow-indigo-500/20">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Collection Goal</span>
-                  <div className="p-2 rounded-xl bg-white/20">
-                    <TrendingUp className="w-4 h-4" />
+              <div className="h-full p-5 md:p-6 rounded-3xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 group hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-white/20 transition-colors" />
+                <div className="flex flex-col h-full relative z-10">
+                  <div className="flex items-center justify-between mb-auto text-white/70">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase tracking-widest leading-tight mb-1">Target Monthly Collection</span>
+                      <span className="text-sm font-bold text-white">৳{stats.collectionGoal.toLocaleString()}</span>
+                    </div>
+                    <div className="p-2 rounded-xl bg-white/20 backdrop-blur-md">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
                   </div>
-                </div>
-                <h3 className="text-3xl font-black mb-4">৳{stats.collectionGoal.toLocaleString()}</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
-                    <span>Progress</span>
-                    <span>{Math.min(100, Math.round(stats.collectionProgress))}%</span>
-                  </div>
-                  <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, stats.collectionProgress)}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full bg-white rounded-full shadow-[0_0_10px_white]"
-                    />
+                  
+                  <div className="mt-8">
+                    <div className="flex justify-between items-end mb-2">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-white/70">Progress</span>
+                       <span className="text-xl font-black">{Math.min(100, Math.round(stats.collectionProgress))}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, stats.collectionProgress)}%` }}
+                        transition={{ duration: 1.2, ease: "easeOut" }}
+                        className="h-full bg-white rounded-full shadow-[0_0_12px_rgba(255,255,255,0.7)]"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -436,26 +444,28 @@ export default function Dashboard() {
               onClick={() => navigate('/members')}
               className="cursor-pointer group"
             >
-              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-purple-500/5 transition-all">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all">
-                    <Users className="w-6 h-6" />
+              <div className="h-full p-5 md:p-6 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-purple-500/10 transition-all overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-purple-500/10 transition-colors" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                    <Users className="w-5 h-5" />
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Members</span>
                 </div>
-                <h3 className="text-3xl font-black text-gray-900 dark:text-white transition-colors group-hover:text-purple-600">{stats.totalMembers}</h3>
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white transition-colors group-hover:text-purple-600">{stats.totalMembers}</h3>
               </div>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-              <div className="h-full p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-amber-500/5 transition-all">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-600">
-                    <AlertCircle className="w-6 h-6" />
+              <div className="h-full p-5 md:p-6 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-amber-500/10 transition-all group overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-amber-500/10 transition-colors" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600">
+                    <AlertCircle className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending Payments</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending</span>
                 </div>
-                <h3 className="text-3xl font-black text-gray-900 dark:text-white">{stats.pendingCount}</h3>
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">{stats.pendingCount}</h3>
               </div>
             </motion.div>
           </>
@@ -471,12 +481,50 @@ export default function Dashboard() {
           </>
         ) : (
           <>
-            <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-8 shadow-sm">
-               <MonthlySavingsChart data={chartData.monthly} />
-            </div>
-            <div className="bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-8 shadow-sm">
-               <DistributionChart data={chartData.distribution} />
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="lg:col-span-2 min-h-[450px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-10 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all relative overflow-hidden group flex flex-col"
+            >
+               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full -mr-32 -mt-32 group-hover:bg-indigo-500/10 transition-colors" />
+               <div className="relative z-10 flex flex-col h-full">
+                 <div className="flex items-center gap-3 mb-8">
+                   <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-600">
+                     <TrendingUp className="w-6 h-6" />
+                   </div>
+                   <div>
+                     <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Monthly Savings</h3>
+                     <p className="text-[10px] font-bold text-gray-400 dark:text-white/30 uppercase tracking-[0.2em] mt-0.5">Last 6 Months Performance</p>
+                   </div>
+                 </div>
+                 <div className="flex-1">
+                   <MonthlySavingsChart data={chartData.monthly} />
+                 </div>
+               </div>
+            </motion.div>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="min-h-[450px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-10 shadow-sm hover:shadow-xl hover:shadow-purple-500/5 transition-all relative overflow-hidden group flex flex-col"
+            >
+               <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-3xl rounded-full -mr-32 -mt-32 group-hover:bg-purple-500/10 transition-colors" />
+               <div className="relative z-10 flex flex-col h-full">
+                 <div className="flex items-center gap-3 mb-8">
+                   <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600">
+                     <Users className="w-6 h-6" />
+                   </div>
+                   <div>
+                     <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Share Distribution</h3>
+                     <p className="text-[10px] font-bold text-gray-400 dark:text-white/30 uppercase tracking-[0.2em] mt-0.5">Stakeholder Overview</p>
+                   </div>
+                 </div>
+                 <div className="flex-1">
+                   <DistributionChart data={chartData.distribution} />
+                 </div>
+               </div>
+            </motion.div>
           </>
         )}
         
@@ -561,32 +609,57 @@ export default function Dashboard() {
       </div>
 
       {/* Global Growth Visualization */}
-      <section className="relative overflow-hidden bg-indigo-900 rounded-[3rem] p-8 md:p-12 text-white shadow-2xl">
-         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-white/20 blur-[150px] rounded-full -translate-y-1/2" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 rounded-[3.5rem] p-8 md:p-12 text-white shadow-2xl border border-white/5">
+         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
+            <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-indigo-500/30 blur-[180px] rounded-full -translate-y-1/2" />
+            <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/20 blur-[150px] rounded-full translate-y-1/2" />
          </div>
          
-         <div className="relative z-10 space-y-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-               <div className="space-y-2">
-                 <h3 className="text-3xl font-black tracking-tight">Savings Growth History</h3>
+         <div className="relative z-10 space-y-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+               <div className="space-y-3">
+                 <div className="flex items-center gap-4">
+                   <div className="h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+                     <TrendingUp className="w-8 h-8 text-indigo-300" />
+                   </div>
+                   <div>
+                     <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-1">Savings Growth History</h3>
+                     <p className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">Cumulative performance index</p>
+                   </div>
+                 </div>
                </div>
-               <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+               
+               <div className="flex items-center gap-6 bg-white/5 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 shadow-2xl">
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Total Savings</p>
-                    <p className="text-xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-2">Total Accumulated Assets</p>
+                    <p className="text-2xl md:text-3xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
                   </div>
-                  <div className="h-10 w-px bg-white/10" />
-                  <TrendingUp className="w-8 h-8 text-emerald-400" />
+                  <div className="h-12 w-px bg-white/20" />
+                  <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <TrendingUp className="w-8 h-8" />
+                  </div>
                </div>
             </div>
             
-            <div className="w-full h-[400px] bg-white/5 rounded-[2rem] border border-white/10 p-6">
-              {loading ? (
-                <Skeleton className="h-full w-full rounded-2xl" />
-              ) : (
-                <GrowthChart data={chartData.growth} />
-              )}
+            <div className="w-full h-[450px] bg-white/5 backdrop-blur-sm rounded-[2.5rem] border border-white/10 p-8 shadow-inner">
+               <div className="h-full w-full">
+                  {loading ? (
+                    <Skeleton className="h-full w-full rounded-2xl opacity-10" />
+                  ) : (
+                    <GrowthChart data={chartData.growth} />
+                  )}
+               </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-6 opacity-60">
+               <div className="flex items-center gap-2">
+                 <div className="w-3 h-3 rounded-full bg-indigo-500" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest italic">Growth Trend</span>
+               </div>
+               <div className="flex items-center gap-2">
+                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                 <span className="text-[10px] font-bold uppercase tracking-widest italic">Asset Accumulation</span>
+               </div>
             </div>
          </div>
       </section>

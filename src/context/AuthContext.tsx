@@ -380,16 +380,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await Promise.race([
         fetchPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 20000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 10000))
       ]) as any;
 
       if (error) {
-        if (retryCount < 2) {
+        if (retryCount < 1) {
           console.warn(`Settings fetch failed (attempt ${retryCount + 1}), retrying...`);
           return fetchSystemSettings(retryCount + 1);
         }
         console.error('Error fetching system settings:', error);
-        // Fallback to defaults if table doesn't exist or error
+        // Fallback to defaults
         setSystemSettings({
           id: 'default',
           show_dashboard: true,
@@ -413,21 +413,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           show_savings: true
         };
         
-        const { data: newData, error: insertError } = await supabase
-          .from('app_settings')
-          .insert(defaultSettings)
-          .select()
-          .maybeSingle();
-        
-        if (!insertError && newData) {
-          setSystemSettings(newData);
-        } else {
+        // Don't wait too long for the insert either
+        try {
+          const { data: newData, error: insertError } = await Promise.race([
+            supabase.from('app_settings').insert(defaultSettings).select().maybeSingle(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Insert timeout')), 5000))
+          ]) as any;
+          
+          if (!insertError && newData) {
+            setSystemSettings(newData);
+          } else {
+            console.warn('Failed to insert default settings, using temporary defaults');
+            setSystemSettings({ id: 'temp', ...defaultSettings });
+          }
+        } catch (e) {
+          console.warn('Timeout inserting default settings, using temporary defaults');
           setSystemSettings({ id: 'temp', ...defaultSettings });
         }
       }
     } catch (err) {
-      if (retryCount < 2) {
-        const waitTime = (retryCount + 1) * 2000;
+      if (retryCount < 1) {
+        const waitTime = (retryCount + 1) * 1000;
         console.warn(`Unexpected error fetching settings (attempt ${retryCount + 1}), retrying in ${waitTime}ms...`, err);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         return fetchSystemSettings(retryCount + 1);

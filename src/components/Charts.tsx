@@ -23,35 +23,37 @@ export const MonthlySavingsChart = React.memo(({ data }: { data: any[] }) => {
   const isDark = theme === 'dark';
 
   return (
-    <Card className="col-span-1 lg:col-span-2 bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
-      <CardHeader className="p-5 sm:p-6">
-        <CardTitle className="text-gray-900 dark:text-white text-lg sm:text-xl">Monthly Savings</CardTitle>
-      </CardHeader>
-      <CardContent className="h-[250px] sm:h-[300px] p-5 sm:p-6 pt-0">
+    <div className="flex flex-col h-full">
+      <div className="mb-6 flex items-center justify-between">
+        <h4 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Monthly Savings</h4>
+        <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest">Live Updates</div>
+      </div>
+      <div className="flex-1 min-h-[250px] sm:min-h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} vertical={false} />
-            <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={10} tickLine={false} axisLine={false} />
-            <YAxis stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} vertical={false} />
+            <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"} fontSize={10} tickLine={false} axisLine={false} />
+            <YAxis stroke={isDark ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)"} fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: isDark ? '#1f2937' : '#fff', 
-                border: isDark ? 'none' : '1px solid #e5e7eb', 
-                borderRadius: '8px', 
+                backgroundColor: isDark ? '#111827' : '#fff', 
+                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb', 
+                borderRadius: '16px', 
                 color: isDark ? '#fff' : '#111827',
-                boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                padding: '12px'
               }}
-              cursor={{ fill: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+              cursor={{ fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}
             />
-            <Bar dataKey="amount" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="amount" radius={[8, 8, 0, 0]} barSize={32}>
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });
 
@@ -60,11 +62,12 @@ export const DistributionChart = React.memo(({ data }: { data: any[] }) => {
   const isDark = theme === 'dark';
 
   return (
-    <Card className="bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
-      <CardHeader className="p-5 sm:p-6">
-        <CardTitle className="text-gray-900 dark:text-white text-lg sm:text-xl">Share Distribution</CardTitle>
-      </CardHeader>
-      <CardContent className="h-[250px] sm:h-[300px] flex flex-col p-5 sm:p-6 pt-0">
+    <div className="flex flex-col h-full">
+      <div className="mb-6">
+        <h4 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Share Distribution</h4>
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Resource allocation</p>
+      </div>
+      <div className="flex-1 min-h-[250px] sm:min-h-[300px] flex flex-col justify-center">
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -72,35 +75,36 @@ export const DistributionChart = React.memo(({ data }: { data: any[] }) => {
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={70}
-                paddingAngle={5}
+                innerRadius={60}
+                outerRadius={85}
+                paddingAngle={8}
                 dataKey="value"
+                stroke="none"
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip contentStyle={{ 
-                backgroundColor: isDark ? '#1f2937' : '#fff', 
-                border: isDark ? 'none' : '1px solid #e5e7eb', 
-                borderRadius: '8px', 
+                backgroundColor: isDark ? '#111827' : '#fff', 
+                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb', 
+                borderRadius: '16px', 
                 color: isDark ? '#fff' : '#111827',
-                boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
               }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-3">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mt-4 px-2">
           {data.map((entry, index) => (
-            <div key={`dist-${entry.name}-${index}`} className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-              <span className="text-[10px] text-gray-500 dark:text-white/60 whitespace-nowrap">{entry.name}</span>
+            <div key={`dist-${entry.name}-${index}`} className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+              <span className="text-[11px] font-bold text-gray-600 dark:text-white/70 whitespace-nowrap">{entry.name}</span>
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 });
 
@@ -109,34 +113,28 @@ export const GrowthChart = React.memo(({ data }: { data: any[] }) => {
   const isDark = theme === 'dark';
 
   return (
-    <Card className="col-span-1 lg:col-span-3 bg-white/80 dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none backdrop-blur-sm">
-      <CardHeader className="p-5 sm:p-6">
-        <CardTitle className="text-gray-900 dark:text-white text-lg sm:text-xl">Total Savings Growth</CardTitle>
-      </CardHeader>
-      <CardContent className="h-[250px] sm:h-[300px] p-5 sm:p-6 pt-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} vertical={false} />
-            <XAxis dataKey="name" stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={10} tickLine={false} axisLine={false} />
-            <YAxis stroke={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"} fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
-            <Tooltip contentStyle={{ 
-              backgroundColor: isDark ? '#1f2937' : '#fff', 
-              border: isDark ? 'none' : '1px solid #e5e7eb', 
-              borderRadius: '8px', 
-              color: isDark ? '#fff' : '#111827',
-              boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-            }} />
-            <Area type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
-          </AreaChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data}>
+        <defs>
+          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+        <XAxis dataKey="name" stroke="rgba(255,255,255,0.4)" fontSize={10} tickLine={false} axisLine={false} dy={10} />
+        <YAxis stroke="rgba(255,255,255,0.4)" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} dx={-10} />
+        <Tooltip contentStyle={{ 
+          backgroundColor: '#0f172a', 
+          border: '1px solid rgba(255,255,255,0.1)', 
+          borderRadius: '16px', 
+          color: '#fff',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+          padding: '12px'
+        }} />
+        <Area type="monotone" dataKey="value" stroke="#a855f7" strokeWidth={4} fillOpacity={1} fill="url(#colorValue)" />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 });
 
