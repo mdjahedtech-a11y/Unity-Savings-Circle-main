@@ -24,11 +24,11 @@ export const MonthlySavingsChart = React.memo(({ data }: { data: any[] }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="mb-6 flex items-center justify-between">
-        <h4 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Monthly Savings</h4>
-        <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest">Live Updates</div>
+      <div className="mb-4 flex items-center justify-between">
+        <h4 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Monthly Savings</h4>
+        <div className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[8px] font-black uppercase tracking-widest">Live</div>
       </div>
-      <div className="flex-1 min-h-[250px] sm:min-h-[300px]">
+      <div className="flex-1 min-h-[180px] sm:min-h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} vertical={false} />
@@ -63,11 +63,11 @@ export const DistributionChart = React.memo(({ data }: { data: any[] }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="mb-6">
-        <h4 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Share Distribution</h4>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Resource allocation</p>
+      <div className="mb-4">
+        <h4 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Distribution</h4>
+        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Resource mapping</p>
       </div>
-      <div className="flex-1 min-h-[250px] sm:min-h-[300px] flex flex-col justify-center">
+      <div className="flex-1 min-h-[180px] sm:min-h-[220px] flex flex-col justify-center">
         <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -75,9 +75,9 @@ export const DistributionChart = React.memo(({ data }: { data: any[] }) => {
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={85}
-                paddingAngle={8}
+                innerRadius={50}
+                outerRadius={70}
+                paddingAngle={6}
                 dataKey="value"
                 stroke="none"
               >

@@ -497,11 +497,11 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {loading ? (
           <>
-            <Skeleton className="h-[450px] rounded-[3rem] col-span-1 lg:col-span-2" />
-            <Skeleton className="h-[450px] rounded-[3rem]" />
+            <Skeleton className="h-[350px] rounded-[2.5rem] col-span-1 lg:col-span-2" />
+            <Skeleton className="h-[350px] rounded-[2.5rem]" />
           </>
         ) : (
           <>
@@ -509,16 +509,16 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="lg:col-span-2 min-h-[450px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-10 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all relative overflow-hidden group flex flex-col"
+              className="lg:col-span-2 min-h-[320px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all relative overflow-hidden group flex flex-col"
             >
                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 blur-3xl rounded-full -mr-32 -mt-32 group-hover:bg-indigo-500/10 transition-colors" />
                <div className="relative z-10 flex flex-col h-full">
-                 <div className="flex items-center gap-3 mb-8">
-                   <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-600">
-                     <TrendingUp className="w-6 h-6" />
+                 <div className="flex items-center gap-3 mb-6">
+                   <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600">
+                     <TrendingUp className="w-5 h-5" />
                    </div>
                    <div>
-                     <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Monthly Savings</h3>
+                     <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Monthly Savings</h3>
                      <p className="text-[10px] font-bold text-gray-400 dark:text-white/30 uppercase tracking-[0.2em] mt-0.5">Last 6 Months Performance</p>
                    </div>
                  </div>
@@ -531,16 +531,16 @@ export default function Dashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="min-h-[450px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-10 shadow-sm hover:shadow-xl hover:shadow-purple-500/5 transition-all relative overflow-hidden group flex flex-col"
+              className="min-h-[320px] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:shadow-purple-500/5 transition-all relative overflow-hidden group flex flex-col"
             >
                <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/5 blur-3xl rounded-full -mr-32 -mt-32 group-hover:bg-purple-500/10 transition-colors" />
                <div className="relative z-10 flex flex-col h-full">
-                 <div className="flex items-center gap-3 mb-8">
-                   <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-600">
-                     <Users className="w-6 h-6" />
+                 <div className="flex items-center gap-3 mb-6">
+                   <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600">
+                     <Users className="w-5 h-5" />
                    </div>
                    <div>
-                     <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Share Distribution</h3>
+                     <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">Share Distribution</h3>
                      <p className="text-[10px] font-bold text-gray-400 dark:text-white/30 uppercase tracking-[0.2em] mt-0.5">Stakeholder Overview</p>
                    </div>
                  </div>
@@ -554,26 +554,26 @@ export default function Dashboard() {
         
         {isAdmin && (
           <div className="lg:col-span-3">
-             <section className="relative overflow-hidden bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[3rem] p-8 shadow-xl">
-               <div className="flex items-center justify-between mb-10 px-4">
+             <section className="relative overflow-hidden bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[2.5rem] p-6 md:p-8 shadow-xl">
+               <div className="flex items-center justify-between mb-8 px-2">
                   <div className="space-y-1">
-                    <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Recent Activity</h3>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Recent Activity</h3>
                   </div>
                   <motion.button 
                     whileHover={{ x: 5 }}
                     onClick={() => navigate('/members')}
-                    className="flex items-center gap-2 text-xs font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/10 px-6 py-3 rounded-2xl transition-all"
+                    className="flex items-center gap-2 text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/10 px-4 py-2 rounded-xl transition-all"
                   >
                     View All
-                    <TrendingUp className="w-4 h-4 rotate-90" />
+                    <TrendingUp className="w-3.5 h-3.5 rotate-90" />
                   </motion.button>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                  <div className="space-y-4">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  <div className="space-y-3">
                     {loadingPayments ? (
                       [...Array(3)].map((_, i) => (
-                        <Skeleton key={`payment-skeleton-${i}`} className="h-24 rounded-3xl" />
+                        <Skeleton key={`payment-skeleton-${i}`} className="h-20 rounded-2xl" />
                       ))
                     ) : recentPayments.length > 0 ? (
                       recentPayments.map((p, i) => (
@@ -582,45 +582,43 @@ export default function Dashboard() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.1 }}
-                          className="flex items-center justify-between p-5 bg-gray-50 dark:bg-white/5 rounded-3xl border border-transparent hover:border-indigo-500/30 hover:bg-white dark:hover:bg-white/10 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
+                          className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-indigo-500/30 hover:bg-white dark:hover:bg-white/10 transition-all group"
                         >
-                          <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 rounded-2xl bg-indigo-600 overflow-hidden shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-indigo-600 overflow-hidden shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all shrink-0">
                               {p.members?.photo_url ? (
                                 <img src={p.members.photo_url} alt={p.members.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-white font-black text-xl">
+                                <div className="w-full h-full flex items-center justify-center text-white font-black text-lg">
                                   {p.members?.name?.charAt(0)}
                                 </div>
                               )}
                             </div>
-                            <div>
-                              <p className="text-lg font-black text-gray-900 dark:text-white leading-tight">{p.members?.name}</p>
-                              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1 opacity-60">{p.month} {p.year}</p>
+                            <div className="min-w-0">
+                              <p className="text-base font-black text-gray-900 dark:text-white leading-tight truncate">{p.members?.name}</p>
+                              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-0.5 opacity-60 leading-none">{p.month} {p.year}</p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xl font-black text-indigo-600 dark:text-indigo-400">৳{p.total_amount.toLocaleString()}</p>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-1">
+                          <div className="text-right shrink-0">
+                            <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">৳{p.total_amount.toLocaleString()}</p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mt-0.5">
                               {new Date(p.payment_date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                             </p>
                           </div>
                         </motion.div>
                       ))
                     ) : (
-                      <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 dark:bg-white/5 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-white/10">
-                         <div className="p-4 rounded-full bg-gray-100 dark:bg-white/5 mb-4">
-                           <AlertCircle className="w-8 h-8 opacity-20" />
-                         </div>
-                         <p className="text-sm font-bold uppercase tracking-widest opacity-40">No settlements found</p>
+                      <div className="h-48 flex flex-col items-center justify-center text-gray-400 bg-gray-50 dark:bg-white/5 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-white/10">
+                         <AlertCircle className="w-6 h-6 opacity-20 mb-3" />
+                         <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">No settlements found</p>
                       </div>
                     )}
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-white/5 rounded-[3rem] p-8 border border-white/40 dark:border-white/5">
-                    <div className="mb-6 flex items-center justify-between">
-                       <h4 className="text-sm font-black uppercase tracking-widest text-gray-400">Growth Visualization</h4>
-                       <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
+                  <div className="bg-gray-50 dark:bg-white/10 rounded-[2rem] p-6 border border-gray-100 dark:border-white/5">
+                    <div className="mb-4 flex items-center justify-between">
+                       <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Growth Visualization</h4>
+                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
                     </div>
                     {!loadingPayments && recentPayments.length > 0 && (
                       <RecentPaymentsChart data={recentPayments} />
@@ -633,39 +631,39 @@ export default function Dashboard() {
       </div>
 
       {/* Global Growth Visualization */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 rounded-[3.5rem] p-8 md:p-12 text-white shadow-2xl border border-white/5">
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-purple-950 rounded-[2.5rem] p-6 md:p-10 text-white shadow-2xl border border-white/5">
          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-            <div className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-indigo-500/30 blur-[180px] rounded-full -translate-y-1/2" />
-            <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/20 blur-[150px] rounded-full translate-y-1/2" />
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-indigo-500/30 blur-[150px] rounded-full -translate-y-1/2" />
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-500/20 blur-[120px] rounded-full translate-y-1/2" />
          </div>
          
-         <div className="relative z-10 space-y-10">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-               <div className="space-y-3">
-                 <div className="flex items-center gap-4">
-                   <div className="h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
-                     <TrendingUp className="w-8 h-8 text-indigo-300" />
+         <div className="relative z-10 space-y-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+               <div className="space-y-2">
+                 <div className="flex items-center gap-3">
+                   <div className="h-12 w-12 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center">
+                     <TrendingUp className="w-6 h-6 text-indigo-300" />
                    </div>
                    <div>
-                     <h3 className="text-3xl md:text-4xl font-black tracking-tight mb-1">Savings Growth History</h3>
-                     <p className="text-xs font-bold text-white/40 uppercase tracking-[0.3em]">Cumulative performance index</p>
+                     <h3 className="text-2xl md:text-3xl font-black tracking-tight">Savings Growth History</h3>
+                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em]">Cumulative performance index</p>
                    </div>
                  </div>
                </div>
                
-               <div className="flex items-center gap-6 bg-white/5 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 shadow-2xl">
+               <div className="flex items-center gap-4 bg-white/5 backdrop-blur-2xl rounded-2xl p-4 border border-white/10 shadow-2xl">
                   <div className="text-right">
-                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-2">Total Accumulated Assets</p>
-                    <p className="text-2xl md:text-3xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
+                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest leading-none mb-1.5">Total Assets</p>
+                    <p className="text-xl md:text-2xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
                   </div>
-                  <div className="h-12 w-px bg-white/20" />
-                  <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <TrendingUp className="w-8 h-8" />
+                  <div className="h-10 w-px bg-white/20" />
+                  <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <TrendingUp className="w-6 h-6" />
                   </div>
                </div>
             </div>
             
-            <div className="w-full h-[450px] bg-white/5 backdrop-blur-sm rounded-[2.5rem] border border-white/10 p-8 shadow-inner">
+            <div className="w-full h-[350px] bg-white/5 backdrop-blur-sm rounded-[2rem] border border-white/10 p-6 shadow-inner">
                <div className="h-full w-full">
                   {loading ? (
                     <Skeleton className="h-full w-full rounded-2xl opacity-10" />
@@ -675,14 +673,14 @@ export default function Dashboard() {
                </div>
             </div>
             
-            <div className="flex flex-wrap items-center gap-6 opacity-60">
+            <div className="flex flex-wrap items-center gap-4 opacity-60">
                <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-indigo-500" />
-                 <span className="text-[10px] font-bold uppercase tracking-widest italic">Growth Trend</span>
+                 <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+                 <span className="text-[9px] font-bold uppercase tracking-widest italic">Growth Trend</span>
                </div>
                <div className="flex items-center gap-2">
-                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                 <span className="text-[10px] font-bold uppercase tracking-widest italic">Asset Accumulation</span>
+                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                 <span className="text-[9px] font-bold uppercase tracking-widest italic">Asset Accumulation</span>
                </div>
             </div>
          </div>
