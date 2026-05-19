@@ -16,27 +16,26 @@ export const NotificationManager: React.FC = () => {
   );
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !messaging) return;
+    if (typeof window === 'undefined') return;
+
+    let timer: NodeJS.Timeout;
+    if (Notification.permission === 'default' && !showPopup) {
+      timer = setTimeout(() => {
+        setShowPopup(true);
+      }, 3000);
+    }
+
+    if (!messaging) return () => timer && clearTimeout(timer);
 
     const setupNotifications = async () => {
       const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+      if (!VAPID_KEY) return;
 
-      if (!VAPID_KEY) {
-        console.warn('VAPID key not found.');
-        return;
-      }
-
-      if (user && member) {
-        if (Notification.permission === 'granted') {
-          const fcmToken = await requestNotificationPermission(VAPID_KEY);
-          if (fcmToken) {
-            setToken(fcmToken);
-            await saveTokenToFirestore(fcmToken, member.id);
-          }
-        } else if (Notification.permission === 'default') {
-          // Only show popup for new users or if not dismissed in session
-          // The user specifically asked it to show every visit until enabled
-          setTimeout(() => setShowPopup(true), 2000);
+      if (user && member && Notification.permission === 'granted') {
+        const fcmToken = await requestNotificationPermission(VAPID_KEY);
+        if (fcmToken) {
+          setToken(fcmToken);
+          await saveTokenToFirestore(fcmToken, member.id);
         }
       }
     };
@@ -50,8 +49,11 @@ export const NotificationManager: React.FC = () => {
       });
     });
 
-    return () => unsubscribe();
-  }, [user, member]);
+    return () => {
+      if (timer) clearTimeout(timer);
+      unsubscribe();
+    };
+  }, [user, member, messaging]);
 
   const saveTokenToFirestore = async (fcmToken: string, userId: string) => {
     try {
