@@ -229,7 +229,7 @@ export default function Layout({ children, showSidebar = true }: { children: Rea
 
       {/* Mobile Bottom Nav */}
       {showSidebar && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-white/5 z-50 px-2 pb-safe pt-1 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0a0a0a] border-t border-white/5 z-50 px-2 pb-safe pt-1 shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
           <div className="flex items-end justify-around h-14 relative">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -243,13 +243,13 @@ export default function Layout({ children, showSidebar = true }: { children: Rea
                   >
                     <div className={cn(
                       "w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 active:scale-90",
-                      "bg-indigo-600 text-white shadow-indigo-500/40 border-4 border-white dark:border-gray-900"
+                      "bg-indigo-600 text-white shadow-indigo-500/40 border-4 border-[#0a0a0a]"
                     )}>
                       <item.icon className="w-7 h-7" />
                     </div>
                     <span className={cn(
                       "text-[10px] font-bold mt-1 transition-colors",
-                      isActive ? "text-indigo-600 dark:text-indigo-400" : "text-gray-400 dark:text-white/30"
+                      isActive ? "text-indigo-400" : "text-white/30"
                     )}>
                       {item.name}
                     </span>
@@ -265,13 +265,13 @@ export default function Layout({ children, showSidebar = true }: { children: Rea
                 >
                   <div className={cn(
                     "p-1 transition-all duration-300",
-                    isActive ? "text-indigo-600 dark:text-indigo-400 scale-110" : "text-gray-400 dark:text-white/30"
+                    isActive ? "text-indigo-400 scale-110" : "text-white/40"
                   )}>
                     <item.icon className={cn("w-5 h-5", isActive ? "stroke-[2.5px]" : "stroke-[2px]")} />
                   </div>
                   <span className={cn(
                     "text-[10px] font-medium mt-0.5 transition-colors text-center leading-tight px-1",
-                    isActive ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-gray-400 dark:text-white/30"
+                    isActive ? "text-indigo-400 font-bold" : "text-white/40"
                   )}>
                     {item.name}
                   </span>
