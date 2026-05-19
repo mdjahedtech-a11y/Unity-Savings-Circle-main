@@ -22,7 +22,7 @@ export const NotificationManager: React.FC = () => {
     if (Notification.permission === 'default' && !showPopup) {
       timer = setTimeout(() => {
         setShowPopup(true);
-      }, 3000);
+      }, 100);
     }
 
     if (!messaging) return () => timer && clearTimeout(timer);
