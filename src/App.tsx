@@ -6,6 +6,7 @@ import { Toaster } from 'sonner';
 import Layout from './components/Layout';
 import { LoadingScreen } from './components/LoadingScreen';
 import { AgreementForm } from './components/AgreementForm';
+import { NotificationManager } from './components/NotificationManager';
 
 // Lazy load pages
 const Login = lazy(() => import('./pages/Login'));
@@ -105,6 +106,7 @@ const AppContent = () => {
         </Routes>
       </Suspense>
       <Toaster position="top-right" theme={theme} />
+      <NotificationManager />
     </>
   );
 };

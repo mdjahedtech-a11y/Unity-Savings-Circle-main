@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "fcm_tokens": {
+      "title": "FCM Tokens",
+      "description": "Stores device tokens for push notifications",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user" },
+        "token": { "type": "string", "description": "The FCM registration token" },
+        "deviceType": { "type": "string", "description": "Type of device (e.g., web, mobile)" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "token", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "fcm_tokens/{tokenId}": {
+      "schema": "fcm_tokens",
+      "description": "Collection of FCM registration tokens"
+    }
+  }
+}

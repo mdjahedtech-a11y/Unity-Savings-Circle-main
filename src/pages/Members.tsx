@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '../components/ui/Skeleton';
 import { cn } from '../lib/utils';
 import { AgreementForm } from '../components/AgreementForm';
+import { db, sendPushNotification } from '../lib/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
 export default function Members() {
   const { isAdmin, isMainAdmin, cache, setCache } = useAuth();
@@ -309,6 +311,25 @@ export default function Members() {
       if (error) throw error;
       
       toast.success('Payment recorded successfully');
+
+      // Send Push Notification
+      try {
+        const tokensQuery = query(collection(db, 'fcm_tokens'), where('userId', '==', selectedMember.id));
+        const tokensSnapshot = await getDocs(tokensQuery);
+        
+        const notificationPromises = tokensSnapshot.docs.map(doc => {
+          const token = doc.data().token;
+          return sendPushNotification(
+            token, 
+            'Payment Confirmed! ✅', 
+            `Your payment of ৳${(amount + penalty).toLocaleString()} for ${paymentMonth} ${year} has been received.`
+          );
+        });
+        
+        await Promise.all(notificationPromises);
+      } catch (notifyError) {
+        console.error('Error sending payment notification:', notifyError);
+      }
 
       setIsPaymentModalOpen(false);
       fetchMembers();

@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { toast } from 'sonner';
 import { MarqueeManager } from '../components/MarqueeManager';
 import { SliderManager } from '../components/SliderManager';
+import { AdminNotificationCenter } from '../components/AdminNotificationCenter';
 
 export default function Settings() {
   const { isAdmin, isMainAdmin, systemSettings, updateSettings } = useAuth();
@@ -62,6 +63,15 @@ export default function Settings() {
           className="md:col-span-2"
         >
           <SliderManager />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+          className="md:col-span-2"
+        >
+          <AdminNotificationCenter />
         </motion.div>
 
         <motion.div
