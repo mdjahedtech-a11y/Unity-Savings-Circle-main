@@ -104,85 +104,77 @@ export const NotificationManager: React.FC = () => {
   return (
     <AnimatePresence>
       {showPopup && permission !== 'granted' && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:bottom-8 z-[100] flex items-end justify-center md:block">
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-md overflow-hidden bg-white dark:bg-[#0f172a] rounded-[2.5rem] shadow-[0_20px_50px_rgba(79,70,229,0.3)] border border-gray-100 dark:border-white/10"
+            initial={{ y: 100, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: 100, opacity: 0, scale: 0.9 }}
+            className="relative w-full max-w-[340px] overflow-hidden bg-white dark:bg-[#1e293b] rounded-[2rem] shadow-[0_20px_50px_rgba(79,70,229,0.25)] border border-indigo-50 dark:border-white/10"
           >
-            {/* Top Graphics */}
-            <div className="relative h-32 bg-indigo-600 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-600 opacity-90" />
-              <div className="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-              <div className="absolute bottom-[-20%] left-[10%] w-24 h-24 bg-white/10 rounded-full blur-xl" />
-              
-              <div className="absolute inset-0 flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 4 }}
-                  className="p-4 rounded-3xl bg-white/20 backdrop-blur-md border border-white/30"
-                >
-                  <BellRing className="w-10 h-10 text-white" />
-                </motion.div>
+            {/* Minimal Header with Icon */}
+            <div className="relative h-24 bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-0 left-0 w-20 h-20 bg-white rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute bottom-0 right-0 w-20 h-20 bg-indigo-400 rounded-full blur-2xl translate-x-1/2 translate-y-1/2" />
               </div>
+              
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="relative z-10 p-3 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30"
+              >
+                <BellRing className="w-8 h-8 text-white" />
+              </motion.div>
 
               <button 
                 onClick={() => setShowPopup(false)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors"
+                className="absolute top-3 right-3 p-1.5 rounded-full bg-black/10 text-white/80 hover:bg-black/20 transition-colors"
+                title="Dismiss for now"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="p-8 pb-10">
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
-                  Stay in the Loop!
+            <div className="p-6">
+              <div className="text-center mb-5">
+                <h2 className="text-lg font-black text-gray-900 dark:text-white tracking-tight mb-1">
+                  Don't Miss Out!
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                  Enable notifications to never miss an update from your circle.
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 font-bold leading-relaxed">
+                  Get instant payment alerts & group updates directly on your device.
                 </p>
               </div>
 
-              <div className="space-y-4 mb-8">
-                {benefits.map((benefit, idx) => (
-                  <motion.div
+              <div className="grid grid-cols-2 gap-2 mb-6">
+                {benefits.slice(0, 4).map((benefit, idx) => (
+                  <div
                     key={idx}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.1 * idx }}
-                    className="flex items-center gap-4 p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-indigo-500/30 transition-all group"
+                    className="flex flex-col items-center text-center gap-1.5 p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-transparent hover:border-indigo-500/20 transition-all"
                   >
-                    <div className={cn("p-2 rounded-xl bg-white dark:bg-white/10 shadow-sm", benefit.color)}>
-                      {benefit.icon}
+                    <div className={cn("p-1.5 rounded-lg bg-white dark:bg-white/10 shadow-sm", benefit.color)}>
+                      {React.cloneElement(benefit.icon as React.ReactElement, { className: 'w-3.5 h-3.5' })}
                     </div>
-                    <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                      {benefit.text}
+                    <span className="text-[9px] font-black leading-tight text-gray-600 dark:text-gray-400 uppercase tracking-tighter">
+                      {benefit.text.split(' ')[1] || benefit.text}
                     </span>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={handleEnableNotifications}
-                  className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black text-sm uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]"
+                  className="w-full py-3 rounded-xl bg-indigo-600 text-white font-black text-[11px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.97]"
                 >
-                  Allow Notifications
+                  Enable Now
                 </button>
                 <button
                   onClick={() => setShowPopup(false)}
-                  className="w-full py-4 rounded-2xl text-gray-400 dark:text-gray-500 font-black text-[10px] uppercase tracking-[0.2em] hover:text-gray-600 dark:hover:text-gray-300 transition-all"
+                  className="w-full py-2 rounded-xl text-gray-400 dark:text-gray-500 font-black text-[9px] uppercase tracking-[0.15em] hover:text-gray-600 dark:hover:text-gray-300 transition-all"
                 >
-                  Maybe Later
+                  Dismiss
                 </button>
               </div>
-
-              <p className="mt-6 text-[9px] text-center text-gray-400 dark:text-gray-600 uppercase tracking-widest font-bold flex items-center justify-center gap-2">
-                <ShieldCheck className="w-3 h-3" />
-                Trusted & Secure Connection
-              </p>
             </div>
           </motion.div>
         </div>
