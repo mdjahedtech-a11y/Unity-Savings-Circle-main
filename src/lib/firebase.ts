@@ -10,18 +10,23 @@ export const auth = getAuth(app);
 export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
 
 export const requestNotificationPermission = async (vapidKey?: string) => {
-  if (!messaging) return null;
+  if (!messaging) return { error: 'Messaging not supported' };
   
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
-      const token = await getToken(messaging, { vapidKey });
-      return token;
+      try {
+        const token = await getToken(messaging, { vapidKey });
+        return { token };
+      } catch (tokenError: any) {
+        console.error('Error getting FCM token:', tokenError);
+        return { error: 'Failed to generate token. Please refresh and try again.' };
+      }
     }
-    return null;
+    return { error: 'Permission denied' };
   } catch (error) {
     console.error('Error requesting notification permission:', error);
-    return null;
+    return { error: 'An unexpected error occurred' };
   }
 };
 

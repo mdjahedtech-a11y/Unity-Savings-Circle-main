@@ -380,15 +380,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const { data, error } = await Promise.race([
         fetchPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 10000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Settings fetch timeout')), 20000))
       ]) as any;
 
       if (error) {
-        if (retryCount < 1) {
+        if (retryCount < 2) {
           console.warn(`Settings fetch failed (attempt ${retryCount + 1}), retrying...`);
           return fetchSystemSettings(retryCount + 1);
         }
-        console.error('Error fetching system settings:', error);
+        console.warn('Persistent error fetching system settings, using defaults:', error.message);
         // Fallback to defaults
         setSystemSettings({
           id: 'default',
@@ -417,7 +417,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           const { data: newData, error: insertError } = await Promise.race([
             supabase.from('app_settings').insert(defaultSettings).select().maybeSingle(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Insert timeout')), 5000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Insert timeout')), 10000))
           ]) as any;
           
           if (!insertError && newData) {
@@ -431,14 +431,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setSystemSettings({ id: 'temp', ...defaultSettings });
         }
       }
-    } catch (err) {
-      if (retryCount < 1) {
+    } catch (err: any) {
+      if (retryCount < 2) {
         const waitTime = (retryCount + 1) * 1000;
-        console.warn(`Unexpected error fetching settings (attempt ${retryCount + 1}), retrying in ${waitTime}ms...`, err);
+        console.warn(`Unexpected error fetching settings (attempt ${retryCount + 1}), retrying in ${waitTime}ms...`, err.message);
         await new Promise(resolve => setTimeout(resolve, waitTime));
         return fetchSystemSettings(retryCount + 1);
       }
-      console.error('Final error fetching settings after retries:', err);
+      console.warn('Settings fetch exhausted retries, using defaults.', err.message || err);
       // Fallback to defaults on any unexpected error or timeout
       setSystemSettings({
         id: 'default',

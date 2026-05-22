@@ -18,8 +18,13 @@ export const NotificationManager: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Check if app is installed (standalone mode)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        (window.navigator as any).standalone === true;
+
     let timer: NodeJS.Timeout;
-    if (Notification.permission === 'default' && !showPopup) {
+    // The user wants it to show every visit if default, but only if "installed" (standalone)
+    if (Notification.permission === 'default' && !showPopup && isStandalone) {
       timer = setTimeout(() => {
         setShowPopup(true);
       }, 100);
@@ -32,10 +37,10 @@ export const NotificationManager: React.FC = () => {
       if (!VAPID_KEY) return;
 
       if (user && member && Notification.permission === 'granted') {
-        const fcmToken = await requestNotificationPermission(VAPID_KEY);
-        if (fcmToken) {
-          setToken(fcmToken);
-          await saveTokenToFirestore(fcmToken, member.id);
+        const result = await requestNotificationPermission(VAPID_KEY);
+        if (result.token) {
+          setToken(result.token);
+          await saveTokenToFirestore(result.token, member.id);
         }
       }
     };
@@ -53,7 +58,7 @@ export const NotificationManager: React.FC = () => {
       if (timer) clearTimeout(timer);
       unsubscribe();
     };
-  }, [user, member, messaging]);
+  }, [user, member, messaging, showPopup]);
 
   const saveTokenToFirestore = async (fcmToken: string, userId: string) => {
     try {
@@ -76,18 +81,32 @@ export const NotificationManager: React.FC = () => {
       return;
     }
 
+    const currentPermission = Notification.permission as string;
+    if (currentPermission === 'denied') {
+      toast.error('Access Blocked', { 
+        description: 'Notifications are blocked. Please enable them in your browser/system settings.' 
+      });
+      return;
+    }
+
     try {
-      const fcmToken = await requestNotificationPermission(VAPID_KEY);
-      if (fcmToken) {
-        setToken(fcmToken);
-        setPermission('granted');
+      const result = await requestNotificationPermission(VAPID_KEY);
+      const newPermission = Notification.permission;
+      setPermission(newPermission);
+
+      if (result.token) {
+        setToken(result.token);
         setShowPopup(false);
         if (member) {
-          await saveTokenToFirestore(fcmToken, member.id);
+          await saveTokenToFirestore(result.token, member.id);
         }
-        toast.success('Awesome!', { description: 'Notifications enabled successfully.' });
-      } else {
-        toast.error('Permission Denied', { description: 'Please enable notifications in browser settings.' });
+        toast.success('Success!', { description: 'Notifications enabled successfully.' });
+      } else if (result.error) {
+        if (newPermission === 'denied') {
+          toast.error('Permission Denied', { description: 'You blocked notifications. Please allow them in settings.' });
+        } else {
+          toast.error('Error', { description: result.error });
+        }
       }
     } catch (err) {
       toast.error('Request failed');
@@ -162,12 +181,22 @@ export const NotificationManager: React.FC = () => {
               </div>
 
               <div className="flex flex-col gap-2">
-                <button
+                <motion.button
                   onClick={handleEnableNotifications}
-                  className="w-full py-3 rounded-xl bg-indigo-600 text-white font-black text-[11px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.97]"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  animate={{ 
+                    boxShadow: ["0 0 0 0 rgba(79, 70, 229, 0)", "0 0 0 10px rgba(79, 70, 229, 0.1)", "0 0 0 0 rgba(79, 70, 229, 0)"] 
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-black text-[11px] uppercase tracking-widest hover:shadow-indigo-500/30 transition-all shadow-lg active:scale-[0.97]"
                 >
                   Enable Now
-                </button>
+                </motion.button>
                 <button
                   onClick={() => setShowPopup(false)}
                   className="w-full py-2 rounded-xl text-gray-400 dark:text-gray-500 font-black text-[9px] uppercase tracking-[0.15em] hover:text-gray-600 dark:hover:text-gray-300 transition-all"

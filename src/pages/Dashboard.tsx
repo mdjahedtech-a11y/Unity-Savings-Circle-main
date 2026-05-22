@@ -92,9 +92,14 @@ export default function Dashboard() {
     const collectionGoal = 41 * 1000; // 41 shares * 1000 taka
     const collectionProgress = (monthlyCollection / collectionGoal) * 100;
 
-    const pendingCount = allPayments
-      .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'pending')
-      .length;
+    const paidMemberIdsInCurrentMonth = new Set(
+      allPayments
+        .filter(p => p.month === currentMonth && p.year === currentYear && p.payment_status === 'paid')
+        .map(p => p.member_id)
+    );
+    
+    // Unpaid count is total members minus those who paid this month
+    const pendingCount = Math.max(0, totalMembers - paidMemberIdsInCurrentMonth.size);
 
     // Process Chart Data
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -191,7 +196,7 @@ export default function Dashboard() {
       // Fetch all data in parallel
       const [membersRes, paymentsRes] = await Promise.all([
         supabase.from('members').select('id, share_count'),
-        supabase.from('payments').select('total_amount, month, year, payment_status')
+        supabase.from('payments').select('total_amount, month, year, payment_status, member_id')
       ]);
 
       if (membersRes.error) throw membersRes.error;
@@ -488,9 +493,22 @@ export default function Dashboard() {
                   <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600">
                     <AlertCircle className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Unpaid Members</span>
                 </div>
                 <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">{stats.pendingCount}</h3>
+              </div>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+              <div className="h-full p-5 md:p-6 rounded-3xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 transition-all group overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-blue-500/10 transition-colors" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600">
+                    <TrendingUp className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Shares</span>
+                </div>
+                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">{stats.totalShares}</h3>
               </div>
             </motion.div>
           </>
