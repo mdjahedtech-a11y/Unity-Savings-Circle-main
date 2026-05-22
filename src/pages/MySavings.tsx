@@ -12,6 +12,7 @@ import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { NotificationToggle } from '../components/NotificationToggle';
+import { removeBackground } from '../services/removeBgService';
 
 export default function MySavings() {
   const { member, refreshProfile, isAdmin, cache, setCache } = useAuth();

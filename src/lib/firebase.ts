@@ -16,11 +16,18 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       try {
-        const token = await getToken(messaging, { vapidKey });
+        // Register the service worker explicitly to ensure getToken works reliably
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        const token = await getToken(messaging, { 
+          vapidKey,
+          serviceWorkerRegistration: registration
+        });
         return { token };
       } catch (tokenError: any) {
         console.error('Error getting FCM token:', tokenError);
-        return { error: 'Failed to generate token. Please refresh and try again.' };
+        // Provide more detailed error if possible
+        const errorMessage = tokenError?.message || 'Failed to generate token';
+        return { error: `${errorMessage}. Please refresh and try again.` };
       }
     }
     return { error: 'Permission denied' };

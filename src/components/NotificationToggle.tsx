@@ -52,6 +52,25 @@ export const NotificationToggle: React.FC = () => {
 
     setLoading(true);
     try {
+      const isInIframe = window.self !== window.top;
+      const currentPermission = Notification.permission as string;
+
+      if (currentPermission === 'denied') {
+        toast.error('Access Blocked', {
+          description: isInIframe
+            ? 'Notifications are blocked in this preview. Please open the app in a new tab.'
+            : 'Notifications are blocked. Please reset permission in your browser address bar.'
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (isInIframe && currentPermission === 'default') {
+        toast.warning('Preview Constraint', {
+          description: 'Permission requests may be blocked here. Please open in a new tab if no prompt appears.'
+        });
+      }
+
       if (!isEnabled) {
         // Enable
         const result = await requestNotificationPermission(VAPID_KEY);

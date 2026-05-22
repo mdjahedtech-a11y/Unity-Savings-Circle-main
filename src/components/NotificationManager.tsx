@@ -18,12 +18,14 @@ export const NotificationManager: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Check if app is installed (standalone mode)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                         (window.navigator as any).standalone === true;
 
     let timer: NodeJS.Timeout;
-    // The user wants it to show every visit if default, but only if "installed" (standalone)
+    // Show popup ONLY if:
+    // 1. Permission is default
+    // 2. Not already showing
+    // 3. User is in standalone mode (installed app) as requested
     if (Notification.permission === 'default' && !showPopup && isStandalone) {
       timer = setTimeout(() => {
         setShowPopup(true);
@@ -85,11 +87,21 @@ export const NotificationManager: React.FC = () => {
     }
 
     const currentPermission = Notification.permission as string;
+    const isInIframe = window.self !== window.top;
+
     if (currentPermission === 'denied') {
       toast.error('Access Blocked', { 
-        description: 'Notifications are blocked. Please enable them in your browser/system settings.' 
+        description: isInIframe 
+          ? 'Notifications are blocked in this preview. Please open the app in a new tab to enable.'
+          : 'Notifications are blocked. Please reset permission in your browser address bar.' 
       });
       return;
+    }
+
+    if (isInIframe && currentPermission === 'default') {
+      toast.warning('Preview Constraint', {
+        description: 'Notification requests may be blocked in the preview. If nothing happens, try opening the app in a new tab.'
+      });
     }
 
     try {
