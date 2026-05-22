@@ -11,7 +11,7 @@ import { AgreementForm } from '../components/AgreementForm';
 import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { removeBackground } from '../services/removeBgService';
+import { NotificationToggle } from '../components/NotificationToggle';
 
 export default function MySavings() {
   const { member, refreshProfile, isAdmin, cache, setCache } = useAuth();
@@ -242,6 +242,7 @@ export default function MySavings() {
 
               {/* Quick Actions Bar */}
               <div className="pt-2 flex flex-wrap justify-center md:justify-start gap-3">
+                <NotificationToggle />
                 <button 
                   onClick={() => setShowAgreementModal(true)}
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-indigo-950 text-[11px] font-black uppercase tracking-widest shadow-lg hover:shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"

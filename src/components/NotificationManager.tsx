@@ -36,6 +36,9 @@ export const NotificationManager: React.FC = () => {
       const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
       if (!VAPID_KEY) return;
 
+      const isManuallyDisabled = localStorage.getItem('notifications_disabled_manually') === 'true';
+      if (isManuallyDisabled) return;
+
       if (user && member && Notification.permission === 'granted') {
         const result = await requestNotificationPermission(VAPID_KEY);
         if (result.token) {
