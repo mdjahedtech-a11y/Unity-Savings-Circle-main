@@ -14,6 +14,7 @@ import { LoadingScreen } from '../components/LoadingScreen';
 import { Marquee } from '../components/Marquee';
 import { Modal } from '../components/ui/Modal';
 import { AgreementForm } from '../components/AgreementForm';
+import { CountingNumber } from '../components/CountingNumber';
 
 export default function Dashboard() {
   const { member, isAdmin, dashboardLoaded, setDashboardLoaded, cache, setCache } = useAuth();
@@ -421,7 +422,11 @@ export default function Dashboard() {
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Savings</span>
                 </div>
-                <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white truncate">৳{stats.totalSavings.toLocaleString()}</h3>
+                <CountingNumber 
+                  value={stats.totalSavings} 
+                  prefix="৳"
+                  className="text-xl md:text-2xl font-black text-gray-900 dark:text-white truncate"
+                />
               </div>
             </motion.div>
 
@@ -674,7 +679,11 @@ export default function Dashboard() {
                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-2xl rounded-xl p-3 border border-white/10 shadow-2xl">
                   <div className="text-right">
                     <p className="text-[9px] font-black text-white/40 uppercase tracking-widest leading-none mb-1">Total Assets</p>
-                    <p className="text-lg md:text-xl font-black text-white leading-none">৳{stats.totalSavings.toLocaleString()}</p>
+                    <CountingNumber 
+                      value={stats.totalSavings} 
+                      prefix="৳"
+                      className="text-lg md:text-xl font-black text-white leading-none"
+                    />
                   </div>
                   <div className="h-8 w-px bg-white/20" />
                   <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
