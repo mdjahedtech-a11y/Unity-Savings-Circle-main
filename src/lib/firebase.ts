@@ -16,17 +16,32 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       try {
-        // Register the service worker explicitly to ensure getToken works reliably
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        const cleanVapidKey = vapidKey.replace(/['"]+/g, '').trim();
+        if (!cleanVapidKey) {
+          return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
+        }
+
+        // Register the service worker explicitly
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/'
+        });
+        
+        // Wait for it to be active
+        await navigator.serviceWorker.ready;
+
         const token = await getToken(messaging, { 
-          vapidKey,
+          vapidKey: cleanVapidKey,
           serviceWorkerRegistration: registration
         });
         return { token };
       } catch (tokenError: any) {
-        console.error('Error getting FCM token:', tokenError);
-        // Provide more detailed error if possible
-        const errorMessage = tokenError?.message || 'Failed to generate token';
+        console.error('Full FCM error:', tokenError);
+        let errorMessage = tokenError?.message || 'Failed to generate token';
+        
+        if (errorMessage.includes('missing required authentication credential')) {
+          errorMessage = 'VAPID Key mismatch or invalid. Please ensure the VAPID key in your secrets matches your Firebase project Web Push certificate.';
+        }
+        
         return { error: `${errorMessage}. Please refresh and try again.` };
       }
     }

@@ -36,7 +36,7 @@ export const NotificationManager: React.FC = () => {
 
     const setupNotifications = async () => {
       const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-      if (!VAPID_KEY) return;
+      if (!VAPID_KEY || VAPID_KEY.trim() === '') return;
 
       const isManuallyDisabled = localStorage.getItem('notifications_disabled_manually') === 'true';
       if (isManuallyDisabled) return;
