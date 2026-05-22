@@ -23,10 +23,10 @@ export const NotificationToggle: React.FC = () => {
         // But since we don't know the exact token without requesting it, 
         // we'll check if the browser has a token and if it exists in DB.
         const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-        if (!VAPID_KEY || !messaging) return;
+        if (!messaging) return;
 
         try {
-          const result = await requestNotificationPermission(VAPID_KEY);
+          const result = await requestNotificationPermission(VAPID_KEY || undefined);
           if (result.token) {
             const tokenRef = doc(db, 'fcm_tokens', result.token);
             const tokenDoc = await getDoc(tokenRef);
@@ -45,11 +45,6 @@ export const NotificationToggle: React.FC = () => {
     if (typeof window === 'undefined' || !messaging || !member) return;
 
     const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-    if (!VAPID_KEY) {
-      toast.error('Notification system not configured');
-      return;
-    }
-
     setLoading(true);
     try {
       const isInIframe = window.self !== window.top;
@@ -73,7 +68,7 @@ export const NotificationToggle: React.FC = () => {
 
       if (!isEnabled) {
         // Enable
-        const result = await requestNotificationPermission(VAPID_KEY);
+        const result = await requestNotificationPermission(VAPID_KEY || undefined);
         if (result.token) {
           const tokenRef = doc(db, 'fcm_tokens', result.token);
           await setDoc(tokenRef, {
@@ -94,7 +89,7 @@ export const NotificationToggle: React.FC = () => {
         }
       } else {
         // Disable
-        const result = await requestNotificationPermission(VAPID_KEY);
+        const result = await requestNotificationPermission(VAPID_KEY || undefined);
         if (result.token) {
           const tokenRef = doc(db, 'fcm_tokens', result.token);
           await deleteDoc(tokenRef);

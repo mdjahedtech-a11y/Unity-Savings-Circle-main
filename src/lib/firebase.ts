@@ -12,11 +12,15 @@ export const messaging = typeof window !== 'undefined' ? getMessaging(app) : nul
 export const requestNotificationPermission = async (vapidKey?: string) => {
   if (!messaging) return { error: 'Messaging not supported' };
   
+  // Use provided key, or environment variable, or hardcoded fallback
+  const VAPID_KEY_FALLBACK = 'BFd61GInPVfOjRJasqwqSJjsRPmPjt2DLyErVSVgeosV4i41UzC9V7QbWPl-2-l4XGX22FoRRIqIEu1eCAiEaSc';
+  let targetVapidKey = vapidKey || import.meta.env.VITE_FIREBASE_VAPID_KEY || VAPID_KEY_FALLBACK;
+
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       try {
-        const cleanVapidKey = vapidKey.replace(/['"]+/g, '').trim();
+        const cleanVapidKey = targetVapidKey.replace(/['"]+/g, '').trim();
         if (!cleanVapidKey) {
           return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
         }

@@ -75,8 +75,10 @@ export default function Dashboard() {
         chartData: { monthly: [], distribution: [], growth: [] }
       };
     }
-    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-    const currentYear = new Date().getFullYear();
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const now = new Date();
+    const currentMonth = months[now.getMonth()];
+    const currentYear = now.getFullYear();
 
     // Calculate Stats
     const totalMembers = members.length;
@@ -102,8 +104,7 @@ export default function Dashboard() {
     const pendingCount = Math.max(0, totalMembers - paidMemberIdsInCurrentMonth.size);
 
     // Process Chart Data
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const currentMonthIndex = new Date().getMonth();
+    const currentMonthIndex = now.getMonth();
     
     // Get last 6 months
     const last6Months = [];

@@ -36,13 +36,11 @@ export const NotificationManager: React.FC = () => {
 
     const setupNotifications = async () => {
       const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-      if (!VAPID_KEY || VAPID_KEY.trim() === '') return;
-
       const isManuallyDisabled = localStorage.getItem('notifications_disabled_manually') === 'true';
       if (isManuallyDisabled) return;
 
       if (user && member && Notification.permission === 'granted') {
-        const result = await requestNotificationPermission(VAPID_KEY);
+        const result = await requestNotificationPermission(VAPID_KEY || undefined);
         if (result.token) {
           setToken(result.token);
           await saveTokenToFirestore(result.token, member.id);
@@ -81,11 +79,6 @@ export const NotificationManager: React.FC = () => {
 
   const handleEnableNotifications = async () => {
     const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-    if (!VAPID_KEY) {
-      toast.error('Setup incomplete', { description: 'Contact admin to set VAPID key.' });
-      return;
-    }
-
     const currentPermission = Notification.permission as string;
     const isInIframe = window.self !== window.top;
 
@@ -105,7 +98,7 @@ export const NotificationManager: React.FC = () => {
     }
 
     try {
-      const result = await requestNotificationPermission(VAPID_KEY);
+      const result = await requestNotificationPermission(VAPID_KEY || undefined);
       const newPermission = Notification.permission;
       setPermission(newPermission);
 
