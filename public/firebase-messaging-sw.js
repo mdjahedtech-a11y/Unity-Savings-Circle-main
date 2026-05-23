@@ -6,7 +6,7 @@ firebase.initializeApp({
   projectId: "rational-codex-n07pf",
   appId: "1:5302583012:web:57059ac335ee59696ef6f1",
   apiKey: "AIzaSyCoh-42qOp46ufVMXtDqX1uRZc7CNt5gQ8",
-  messagingSenderId: "5302583012",
+  messagingSenderId: "600550778467",
 });
 
 const messaging = firebase.messaging();

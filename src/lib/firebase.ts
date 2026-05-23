@@ -14,16 +14,20 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
   
   // Use provided key, or environment variable, or hardcoded fallback
   const VAPID_KEY_FALLBACK = 'BFd61GInPVfOjRJasqwqSJjsRPmPjt2DLyErVSVgeosV4i41UzC9V7QbWPl-2-l4XGX22FoRRIqIEu1eCAiEaSc';
-  let targetVapidKey = vapidKey || import.meta.env.VITE_FIREBASE_VAPID_KEY || VAPID_KEY_FALLBACK;
-
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       try {
-        const cleanVapidKey = targetVapidKey.replace(/['"]+/g, '').trim();
+        const envVapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+        const cleanVapidKey = (vapidKey || (envVapidKey && envVapidKey.trim() !== '' ? envVapidKey : VAPID_KEY_FALLBACK)).replace(/['"]+/g, '').trim();
+        
         if (!cleanVapidKey) {
           return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
         }
+
+        console.log('Attempting FCM registration with Sender ID:', firebaseConfig.messagingSenderId);
+        console.log('App ID:', firebaseConfig.appId);
+        console.log('Using VAPID Key (first 10 chars):', cleanVapidKey.substring(0, 10) + '...');
 
         // Register the service worker explicitly
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
@@ -42,8 +46,8 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
         console.error('Full FCM error:', tokenError);
         let errorMessage = tokenError?.message || 'Failed to generate token';
         
-        if (errorMessage.includes('missing required authentication credential')) {
-          errorMessage = 'VAPID Key mismatch or invalid. Please ensure the VAPID key in your secrets matches your Firebase project Web Push certificate.';
+        if (errorMessage.includes('missing required authentication credential') || errorMessage.includes('subscribe-failed')) {
+          errorMessage = `VAPID Key mismatch. Ensure your VAPID key matches the Web Push Certificate for Firebase Project with Sender ID: ${firebaseConfig.messagingSenderId}.`;
         }
         
         return { error: `${errorMessage}. Please refresh and try again.` };
