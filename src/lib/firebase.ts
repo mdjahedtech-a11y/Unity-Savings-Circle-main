@@ -15,32 +15,41 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
   // Use provided key, or environment variable, or hardcoded fallback
   const VAPID_KEY_FALLBACK = 'BFd61GInPVfOjRJasqwqSJjsRPmPjt2DLyErVSVgeosV4i41UzC9V7QbWPl-2-l4XGX22FoRRIqIEu1eCAiEaSc';
   try {
+    console.log('Requesting notification permission...');
     const permission = await Notification.requestPermission();
+    console.log('Permission result:', permission);
     if (permission === 'granted') {
       try {
         const envVapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
         const cleanVapidKey = (vapidKey || (envVapidKey && envVapidKey.trim() !== '' ? envVapidKey : VAPID_KEY_FALLBACK)).replace(/['"]+/g, '').trim();
         
         if (!cleanVapidKey) {
+          console.error('VAPID Key is missing');
           return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
         }
 
-        // Check if service worker is already registered and active
-        let registration = await navigator.serviceWorker.getRegistration('/');
+        console.log('Registering service worker...');
+        // Register the service worker
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+          scope: '/'
+        });
         
-        if (!registration) {
-          // Only register if not found
-          registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-            scope: '/'
-          });
-          // Wait for it to be active
-          await navigator.serviceWorker.ready;
-        }
+        console.log('Waiting for service worker ready (with 10s timeout)...');
+        // Wait for it to be active with a timeout
+        const swReadyPromise = navigator.serviceWorker.ready;
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Service worker ready timeout')), 10000)
+        );
+        
+        await Promise.race([swReadyPromise, timeoutPromise]);
+        console.log('Service worker ready');
 
+        console.log('Getting FCM token...');
         const token = await getToken(messaging, { 
           vapidKey: cleanVapidKey,
           serviceWorkerRegistration: registration
         });
+        console.log('FCM token received');
         return { token };
       } catch (tokenError: any) {
         console.error('Full FCM error:', tokenError);

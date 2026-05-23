@@ -106,18 +106,24 @@ export const NotificationToggle: React.FC = () => {
           toast.error('Failed to enable', { description: result.error });
         }
       } else {
-        // Disable
-        const result = await requestNotificationPermission(VAPID_KEY || undefined);
-        if (result.token) {
-          const tokenRef = doc(db, 'fcm_tokens', result.token);
-          await deleteDoc(tokenRef);
-          localStorage.setItem('notifications_enabled', 'false');
-          localStorage.setItem('notifications_disabled_manually', 'true');
-          setIsEnabled(false);
-          toast.success('Notifications Disabled', {
-            description: 'You will no longer receive push alerts on this device.'
-          });
+        // Disable - Just remove from Firestore and local state
+        // We try to get the current token silently to delete it from DB
+        try {
+          const result = await requestNotificationPermission(VAPID_KEY || undefined);
+          if (result.token) {
+            const tokenRef = doc(db, 'fcm_tokens', result.token);
+            await deleteDoc(tokenRef);
+          }
+        } catch (e) {
+          console.error("Error during silent token retrieval for disable:", e);
         }
+
+        localStorage.setItem('notifications_enabled', 'false');
+        localStorage.setItem('notifications_disabled_manually', 'true');
+        setIsEnabled(false);
+        toast.success('Notifications Disabled', {
+          description: 'You will no longer receive push alerts on this device.'
+        });
       }
     } catch (error) {
       console.error('Toggle error:', error);
