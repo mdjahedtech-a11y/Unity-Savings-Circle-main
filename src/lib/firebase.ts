@@ -25,13 +25,17 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
           return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
         }
 
-        // Register the service worker explicitly
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-          scope: '/'
-        });
+        // Check if service worker is already registered and active
+        let registration = await navigator.serviceWorker.getRegistration('/');
         
-        // Wait for it to be active
-        await navigator.serviceWorker.ready;
+        if (!registration) {
+          // Only register if not found
+          registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+            scope: '/'
+          });
+          // Wait for it to be active
+          await navigator.serviceWorker.ready;
+        }
 
         const token = await getToken(messaging, { 
           vapidKey: cleanVapidKey,

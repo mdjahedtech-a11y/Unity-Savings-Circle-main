@@ -12,28 +12,45 @@ export const NotificationToggle: React.FC = () => {
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('notifications_enabled') === 'true';
+    }
+    return false;
+  });
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !member) return;
     
     const checkStatus = async () => {
-      if (Notification.permission === 'granted' && member) {
-        // We need to check if we have a token in Firestore for this user
-        // But since we don't know the exact token without requesting it, 
-        // we'll check if the browser has a token and if it exists in DB.
-        const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-        if (!messaging) return;
+      // If we already think it's enabled from local storage, 
+      // we still check permission but don't show loading
+      if (Notification.permission !== 'granted') {
+        setIsEnabled(false);
+        localStorage.setItem('notifications_enabled', 'false');
+        return;
+      }
 
+      // If enabled but we haven't verified in this session, verify in background
+      if (isEnabled && messaging) {
+        // Just verify the token exists silently if possible
+        const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
         try {
+          // Rapid check if we can get a token (usually takes < 100ms if cached)
+          // We pass a smaller timeout if possible or just rely on the fact that it's background
           const result = await requestNotificationPermission(VAPID_KEY || undefined);
           if (result.token) {
-            const tokenRef = doc(db, 'fcm_tokens', result.token);
-            const tokenDoc = await getDoc(tokenRef);
-            setIsEnabled(tokenDoc.exists());
+            setIsEnabled(true);
+            localStorage.setItem('notifications_enabled', 'true');
+          } else {
+            // Only disable if we are sure it's invalid
+            if (result.error && (result.error.includes('denied') || result.error.includes('permission'))) {
+              setIsEnabled(false);
+              localStorage.setItem('notifications_enabled', 'false');
+            }
           }
-        } catch (error) {
-          console.error('Error checking notification status:', error);
+        } catch (e) {
+          console.error("Silent background check failed", e);
         }
       }
     };
@@ -78,6 +95,7 @@ export const NotificationToggle: React.FC = () => {
             updatedAt: serverTimestamp(),
           }, { merge: true });
           
+          localStorage.setItem('notifications_enabled', 'true');
           localStorage.removeItem('notifications_disabled_manually');
           setIsEnabled(true);
           setPermission('granted');
@@ -93,6 +111,7 @@ export const NotificationToggle: React.FC = () => {
         if (result.token) {
           const tokenRef = doc(db, 'fcm_tokens', result.token);
           await deleteDoc(tokenRef);
+          localStorage.setItem('notifications_enabled', 'false');
           localStorage.setItem('notifications_disabled_manually', 'true');
           setIsEnabled(false);
           toast.success('Notifications Disabled', {

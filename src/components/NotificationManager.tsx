@@ -40,10 +40,19 @@ export const NotificationManager: React.FC = () => {
       if (isManuallyDisabled) return;
 
       if (user && member && Notification.permission === 'granted') {
-        const result = await requestNotificationPermission(VAPID_KEY || undefined);
-        if (result.token) {
-          setToken(result.token);
-          await saveTokenToFirestore(result.token, member.id);
+        // Only run setup if we haven't verified recently or don't have it in local cache
+        const lastVerified = localStorage.getItem('fcm_token_verified_at');
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (!lastVerified || (now - parseInt(lastVerified)) > oneDay) {
+          const result = await requestNotificationPermission(VAPID_KEY || undefined);
+          if (result.token) {
+            setToken(result.token);
+            await saveTokenToFirestore(result.token, member.id);
+            localStorage.setItem('fcm_token_verified_at', now.toString());
+            localStorage.setItem('notifications_enabled', 'true');
+          }
         }
       }
     };
