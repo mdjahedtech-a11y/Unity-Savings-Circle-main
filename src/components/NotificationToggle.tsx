@@ -25,9 +25,9 @@ export const NotificationToggle: React.FC = () => {
     const autoEnable = async () => {
       // If permission is already granted but we haven't synced, do it automatically
       if (Notification.permission === 'granted' && !isEnabled) {
-        setLoading(true);
         const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
         try {
+          console.log('[NotificationToggle] Auto-enabling notifications...');
           const result = await requestNotificationPermission(VAPID_KEY || undefined);
           if (result.token) {
             const tokenRef = doc(db, 'fcm_tokens', result.token);
@@ -40,11 +40,10 @@ export const NotificationToggle: React.FC = () => {
             
             localStorage.setItem('notifications_enabled', 'true');
             setIsEnabled(true);
+            console.log('[NotificationToggle] Auto-enabled successfully');
           }
         } catch (e) {
-          console.error("Auto-enable failed", e);
-        } finally {
-          setLoading(false);
+          console.error("[NotificationToggle] Auto-enable failed", e);
         }
       }
     };

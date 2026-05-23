@@ -15,44 +15,53 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
   // Use provided key, or environment variable, or hardcoded fallback
   const VAPID_KEY_FALLBACK = 'BFd61GInPVfOjRJasqwqSJjsRPmPjt2DLyErVSVgeosV4i41UzC9V7QbWPl-2-l4XGX22FoRRIqIEu1eCAiEaSc';
   try {
-    console.log('Requesting notification permission...');
+    console.log('[FCM] Requesting notification permission...');
     const permission = await Notification.requestPermission();
-    console.log('Permission result:', permission);
+    console.log('[FCM] Permission result:', permission);
+    
     if (permission === 'granted') {
       try {
         const envVapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
         const cleanVapidKey = (vapidKey || (envVapidKey && envVapidKey.trim() !== '' ? envVapidKey : VAPID_KEY_FALLBACK)).replace(/['"]+/g, '').trim();
         
         if (!cleanVapidKey) {
-          console.error('VAPID Key is missing');
+          console.error('[FCM] VAPID Key is missing');
           return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
         }
 
-        console.log('Registering service worker...');
+        console.log('[FCM] Registering service worker...');
         // Register the service worker
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-          scope: '/'
-        });
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
         
-        console.log('Waiting for service worker ready (with 10s timeout)...');
-        // Wait for it to be active with a timeout
-        const swReadyPromise = navigator.serviceWorker.ready;
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Service worker ready timeout')), 10000)
-        );
+        // Ensure service worker is active before proceeding
+        // Instead of waiting for .ready (which can hang), we check the current state
+        let sw = registration.active || registration.waiting || registration.installing;
         
-        await Promise.race([swReadyPromise, timeoutPromise]);
-        console.log('Service worker ready');
+        if (sw && sw.state !== 'activated') {
+          console.log('[FCM] Waiting for SW to activate...');
+          await new Promise<void>((resolve) => {
+            const stateChangeListener = () => {
+              if (sw?.state === 'activated') {
+                sw.removeEventListener('statechange', stateChangeListener);
+                resolve();
+              }
+            };
+            sw?.addEventListener('statechange', stateChangeListener);
+            // Safety timeout
+            setTimeout(resolve, 5000);
+          });
+        }
 
-        console.log('Getting FCM token...');
+        console.log('[FCM] Getting FCM token...');
         const token = await getToken(messaging, { 
           vapidKey: cleanVapidKey,
           serviceWorkerRegistration: registration
         });
-        console.log('FCM token received');
+        
+        console.log('[FCM] Token generated successfully');
         return { token };
       } catch (tokenError: any) {
-        console.error('Full FCM error:', tokenError);
+        console.error('[FCM] Full error details:', tokenError);
         let errorMessage = tokenError?.message || 'Failed to generate token';
         
         if (errorMessage.includes('missing required authentication credential') || errorMessage.includes('subscribe-failed')) {
@@ -64,7 +73,7 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
     }
     return { error: 'Permission denied' };
   } catch (error) {
-    console.error('Error requesting notification permission:', error);
+    console.error('[FCM] Unexpected system error:', error);
     return { error: 'An unexpected error occurred' };
   }
 };
