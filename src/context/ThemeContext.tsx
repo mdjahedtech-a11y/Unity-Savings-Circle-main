@@ -22,6 +22,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
     localStorage.setItem('theme', theme);
+
+    // Update Chrome, Firefox OS and Opera status bar
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      if (theme === 'dark') {
+        metaThemeColor.setAttribute('content', '#0f172a');
+      } else {
+        metaThemeColor.setAttribute('content', '#eef2ff');
+      }
+    }
   }, [theme]);
 
   const toggleTheme = () => {

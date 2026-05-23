@@ -17,8 +17,8 @@ export default defineConfig(({mode}) => {
           name: 'Unity Savings Circle',
           short_name: 'Unity Savings Circle',
           description: 'Manage your savings circle efficiently',
-          theme_color: '#4f46e5', // Indigo-600
-          background_color: '#ffffff',
+          theme_color: '#0f172a',
+          background_color: '#0f172a',
           display: 'standalone',
           scope: '/',
           start_url: '/',
