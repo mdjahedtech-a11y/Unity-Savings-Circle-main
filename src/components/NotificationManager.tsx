@@ -25,34 +25,27 @@ export const NotificationManager: React.FC = () => {
     // Show popup ONLY if:
     // 1. Permission is default
     // 2. Not already showing
-    // 3. User is in standalone mode (installed app) as requested
-    if (Notification.permission === 'default' && !showPopup && isStandalone) {
+    // 3. User is a member (logged in)
+    if (Notification.permission === 'default' && !showPopup && member) {
       timer = setTimeout(() => {
         setShowPopup(true);
-      }, 100);
+      }, 3000); // 3 second delay to let the page settle
     }
 
     if (!messaging) return () => timer && clearTimeout(timer);
 
     const setupNotifications = async () => {
       const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-      const isManuallyDisabled = localStorage.getItem('notifications_disabled_manually') === 'true';
-      if (isManuallyDisabled) return;
-
+      
+      // Remove the manual disable check to ensure auto-enable for everyone
       if (user && member && Notification.permission === 'granted') {
-        // Only run setup if we haven't verified recently or don't have it in local cache
-        const lastVerified = localStorage.getItem('fcm_token_verified_at');
         const now = Date.now();
-        const oneDay = 24 * 60 * 60 * 1000;
-
-        if (!lastVerified || (now - parseInt(lastVerified)) > oneDay) {
-          const result = await requestNotificationPermission(VAPID_KEY || undefined);
-          if (result.token) {
-            setToken(result.token);
-            await saveTokenToFirestore(result.token, member.id);
-            localStorage.setItem('fcm_token_verified_at', now.toString());
-            localStorage.setItem('notifications_enabled', 'true');
-          }
+        const result = await requestNotificationPermission(VAPID_KEY || undefined);
+        if (result.token) {
+          setToken(result.token);
+          await saveTokenToFirestore(result.token, member.id);
+          localStorage.setItem('fcm_token_verified_at', now.toString());
+          localStorage.setItem('notifications_enabled', 'true');
         }
       }
     };

@@ -20,49 +20,52 @@ export const NotificationToggle: React.FC = () => {
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !member) return;
+    if (typeof window === 'undefined' || !member || !messaging) return;
     
-    const checkStatus = async () => {
-      // If we already think it's enabled from local storage, 
-      // we still check permission but don't show loading
-      if (Notification.permission !== 'granted') {
-        setIsEnabled(false);
-        localStorage.setItem('notifications_enabled', 'false');
-        return;
-      }
-
-      // If enabled but we haven't verified in this session, verify in background
-      if (isEnabled && messaging) {
-        // Just verify the token exists silently if possible
+    const autoEnable = async () => {
+      // If permission is already granted but we haven't synced, do it automatically
+      if (Notification.permission === 'granted' && !isEnabled) {
+        setLoading(true);
         const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
         try {
-          // Rapid check if we can get a token (usually takes < 100ms if cached)
-          // We pass a smaller timeout if possible or just rely on the fact that it's background
           const result = await requestNotificationPermission(VAPID_KEY || undefined);
           if (result.token) {
-            setIsEnabled(true);
+            const tokenRef = doc(db, 'fcm_tokens', result.token);
+            await setDoc(tokenRef, {
+              userId: member.id,
+              token: result.token,
+              deviceType: 'web',
+              updatedAt: serverTimestamp(),
+            }, { merge: true });
+            
             localStorage.setItem('notifications_enabled', 'true');
-          } else {
-            // Only disable if we are sure it's invalid
-            if (result.error && (result.error.includes('denied') || result.error.includes('permission'))) {
-              setIsEnabled(false);
-              localStorage.setItem('notifications_enabled', 'false');
-            }
+            setIsEnabled(true);
           }
         } catch (e) {
-          console.error("Silent background check failed", e);
+          console.error("Auto-enable failed", e);
+        } finally {
+          setLoading(false);
         }
       }
     };
 
-    checkStatus();
-  }, [member]);
+    autoEnable();
+  }, [member, messaging, isEnabled]);
 
   const handleToggle = async () => {
-    if (typeof window === 'undefined' || !messaging || !member) return;
+    if (typeof window === 'undefined' || !messaging || !member || loading) return;
+
+    // If it's already enabled, we don't want them to disable it manually as per the "auto" request
+    if (isEnabled) {
+      toast.info('Notifications Active', {
+        description: 'Automatic alerts are enabled for your account security.'
+      });
+      return;
+    }
 
     const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
     setLoading(true);
+    // ... rest of the logic for enabling ...
     try {
       const isInIframe = window.self !== window.top;
       const currentPermission = Notification.permission as string;
@@ -105,25 +108,6 @@ export const NotificationToggle: React.FC = () => {
         } else if (result.error) {
           toast.error('Failed to enable', { description: result.error });
         }
-      } else {
-        // Disable - Just remove from Firestore and local state
-        // We try to get the current token silently to delete it from DB
-        try {
-          const result = await requestNotificationPermission(VAPID_KEY || undefined);
-          if (result.token) {
-            const tokenRef = doc(db, 'fcm_tokens', result.token);
-            await deleteDoc(tokenRef);
-          }
-        } catch (e) {
-          console.error("Error during silent token retrieval for disable:", e);
-        }
-
-        localStorage.setItem('notifications_enabled', 'false');
-        localStorage.setItem('notifications_disabled_manually', 'true');
-        setIsEnabled(false);
-        toast.success('Notifications Disabled', {
-          description: 'You will no longer receive push alerts on this device.'
-        });
       }
     } catch (error) {
       console.error('Toggle error:', error);
