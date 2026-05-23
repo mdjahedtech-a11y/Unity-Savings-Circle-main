@@ -3,9 +3,9 @@ importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-messaging-comp
 
 // These must match firebase-applet-config.json
 firebase.initializeApp({
-  projectId: "rational-codex-n07pf",
-  appId: "1:5302583012:web:57059ac335ee59696ef6f1",
-  apiKey: "AIzaSyCoh-42qOp46ufVMXtDqX1uRZc7CNt5gQ8",
+  projectId: "unity-savings-circle",
+  appId: "1:600550778467:web:5c30cc2f2dc4f94ee27a56",
+  apiKey: "AIzaSyDVZFN9HNsD_kKbRxcC_Kwaj3uW53lZ5kk",
   messagingSenderId: "600550778467",
 });
 

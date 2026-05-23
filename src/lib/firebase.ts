@@ -25,10 +25,6 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
           return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
         }
 
-        console.log('Attempting FCM registration with Sender ID:', firebaseConfig.messagingSenderId);
-        console.log('App ID:', firebaseConfig.appId);
-        console.log('Using VAPID Key (first 10 chars):', cleanVapidKey.substring(0, 10) + '...');
-
         // Register the service worker explicitly
         const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
           scope: '/'
