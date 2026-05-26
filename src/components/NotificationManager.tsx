@@ -35,17 +35,28 @@ export const NotificationManager: React.FC = () => {
     if (!messaging) return () => timer && clearTimeout(timer);
 
     const setupNotifications = async () => {
+      // Avoid setup if already verified in this session or recently
+      const lastVerified = localStorage.getItem('fcm_token_verified_at');
+      const now = Date.now();
+      const oneHour = 60 * 60 * 1000;
+      
+      if (lastVerified && (now - parseInt(lastVerified)) < oneHour) {
+        return;
+      }
+
       const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
       
-      // Remove the manual disable check to ensure auto-enable for everyone
       if (user && member && Notification.permission === 'granted') {
-        const now = Date.now();
-        const result = await requestNotificationPermission(VAPID_KEY || undefined);
-        if (result.token) {
-          setToken(result.token);
-          await saveTokenToFirestore(result.token, member.id);
-          localStorage.setItem('fcm_token_verified_at', now.toString());
-          localStorage.setItem('notifications_enabled', 'true');
+        try {
+          const result = await requestNotificationPermission(VAPID_KEY || undefined);
+          if (result.token) {
+            setToken(result.token);
+            await saveTokenToFirestore(result.token, member.id);
+            localStorage.setItem('fcm_token_verified_at', now.toString());
+            localStorage.setItem('notifications_enabled', 'true');
+          }
+        } catch (e) {
+          console.error('[NotificationManager] Automatic setup failed', e);
         }
       }
     };

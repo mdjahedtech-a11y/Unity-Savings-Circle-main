@@ -26,49 +26,56 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
         
         if (!cleanVapidKey) {
           console.error('[FCM] VAPID Key is missing');
-          return { error: 'VAPID Key is empty. Please set VITE_FIREBASE_VAPID_KEY.' };
+          return { error: 'VAPID Key is missing. Please set VITE_FIREBASE_VAPID_KEY.' };
         }
 
-        console.log('[FCM] Registering service worker...');
-        // Register the service worker
-        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('[FCM] Ensuring service worker is registered...');
+        // Use a more robust way to get/register service worker
+        let registration = await navigator.serviceWorker.getRegistration('/');
         
-        // Ensure service worker is active before proceeding
-        // Instead of waiting for .ready (which can hang), we check the current state
-        let sw = registration.active || registration.waiting || registration.installing;
-        
-        if (sw && sw.state !== 'activated') {
-          console.log('[FCM] Waiting for SW to activate...');
-          await new Promise<void>((resolve) => {
-            const stateChangeListener = () => {
-              if (sw?.state === 'activated') {
-                sw.removeEventListener('statechange', stateChangeListener);
-                resolve();
-              }
-            };
-            sw?.addEventListener('statechange', stateChangeListener);
-            // Safety timeout
-            setTimeout(resolve, 5000);
+        if (!registration) {
+          console.log('[FCM] Registering new service worker...');
+          registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+            scope: '/'
           });
         }
+        
+        console.log('[FCM] Service worker registration status:', registration.active ? 'active' : (registration.waiting ? 'waiting' : 'installing'));
 
-        console.log('[FCM] Getting FCM token...');
+        // Wait for service worker to be ready with a reasonable timeout
+        const readyPromise = navigator.serviceWorker.ready;
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Service Worker ready timeout (10s)')), 10000)
+        );
+        
+        console.log('[FCM] Waiting for SW ready state...');
+        await Promise.race([readyPromise, timeoutPromise]);
+        
+        console.log('[FCM] SW ready. Requesting FCM token...');
+        // getToken usually takes care of waiting for the SW to be active
         const token = await getToken(messaging, { 
           vapidKey: cleanVapidKey,
           serviceWorkerRegistration: registration
         });
         
+        if (!token) {
+          throw new Error('FCM token is empty');
+        }
+
         console.log('[FCM] Token generated successfully');
         return { token };
       } catch (tokenError: any) {
-        console.error('[FCM] Full error details:', tokenError);
-        let errorMessage = tokenError?.message || 'Failed to generate token';
+        console.error('[FCM] Token Retrieval Error:', tokenError);
+        const errorCode = tokenError?.code || '';
+        const errorMessage = tokenError?.message || 'Unknown FCM error';
         
-        if (errorMessage.includes('missing required authentication credential') || errorMessage.includes('subscribe-failed')) {
-          errorMessage = `VAPID Key mismatch. Ensure your VAPID key matches the Web Push Certificate for Firebase Project with Sender ID: ${firebaseConfig.messagingSenderId}.`;
+        if (errorMessage.includes('missing required authentication credential') || 
+            errorMessage.includes('subscribe-failed') || 
+            errorCode === 'messaging/failed-serviceworker-registration') {
+          return { error: `Connection failed. This usually means the VAPID key or Firebase configuration is incorrect for this domain.` };
         }
         
-        return { error: `${errorMessage}. Please refresh and try again.` };
+        return { error: errorMessage };
       }
     }
     return { error: 'Permission denied' };

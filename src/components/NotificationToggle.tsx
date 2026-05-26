@@ -22,39 +22,40 @@ export const NotificationToggle: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined' || !member || !messaging) return;
     
-    const autoEnable = async () => {
-      // If permission is already granted but we haven't synced, do it automatically
-      if (Notification.permission === 'granted' && !isEnabled) {
-        const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-        try {
-          console.log('[NotificationToggle] Auto-enabling notifications...');
-          const result = await requestNotificationPermission(VAPID_KEY || undefined);
-          if (result.token) {
-            const tokenRef = doc(db, 'fcm_tokens', result.token);
-            await setDoc(tokenRef, {
-              userId: member.id,
-              token: result.token,
-              deviceType: 'web',
-              updatedAt: serverTimestamp(),
-            }, { merge: true });
-            
-            localStorage.setItem('notifications_enabled', 'true');
-            setIsEnabled(true);
-            console.log('[NotificationToggle] Auto-enabled successfully');
+    const checkStatus = async () => {
+      // If permission is already granted, we can check if we have a token verified recently
+      if (Notification.permission === 'granted') {
+        const isVerified = localStorage.getItem('notifications_enabled') === 'true';
+        if (!isVerified && !isEnabled) {
+          // Attempt silent sync
+          const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
+          try {
+            const result = await requestNotificationPermission(VAPID_KEY || undefined);
+            if (result.token) {
+              const tokenRef = doc(db, 'fcm_tokens', result.token);
+              await setDoc(tokenRef, {
+                userId: member.id,
+                token: result.token,
+                deviceType: 'web',
+                updatedAt: serverTimestamp(),
+              }, { merge: true });
+              localStorage.setItem('notifications_enabled', 'true');
+              setIsEnabled(true);
+            }
+          } catch (e) {
+            console.error("[NotificationToggle] Background sync failed", e);
           }
-        } catch (e) {
-          console.error("[NotificationToggle] Auto-enable failed", e);
         }
       }
     };
 
-    autoEnable();
-  }, [member, messaging, isEnabled]);
+    checkStatus();
+  }, [member, messaging]);
 
   const handleToggle = async () => {
     if (typeof window === 'undefined' || !messaging || !member || loading) return;
 
-    // If it's already enabled, we don't want them to disable it manually as per the "auto" request
+    // If it's already enabled, we show info instead of allowing disable
     if (isEnabled) {
       toast.info('Notifications Active', {
         description: 'Automatic alerts are enabled for your account security.'
@@ -64,10 +65,10 @@ export const NotificationToggle: React.FC = () => {
 
     const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
     setLoading(true);
-    // ... rest of the logic for enabling ...
+    
     try {
       const isInIframe = window.self !== window.top;
-      const currentPermission = Notification.permission as string;
+      const currentPermission = Notification.permission;
 
       if (currentPermission === 'denied') {
         toast.error('Access Blocked', {
@@ -81,36 +82,44 @@ export const NotificationToggle: React.FC = () => {
 
       if (isInIframe && currentPermission === 'default') {
         toast.warning('Preview Constraint', {
-          description: 'Permission requests may be blocked here. Please open in a new tab if no prompt appears.'
+          description: 'Permission requests are often blocked in iframes. Please open the app in a new tab if no prompt appears.'
         });
       }
 
-      if (!isEnabled) {
-        // Enable
-        const result = await requestNotificationPermission(VAPID_KEY || undefined);
-        if (result.token) {
-          const tokenRef = doc(db, 'fcm_tokens', result.token);
-          await setDoc(tokenRef, {
-            userId: member.id,
-            token: result.token,
-            deviceType: 'web',
-            updatedAt: serverTimestamp(),
-          }, { merge: true });
-          
-          localStorage.setItem('notifications_enabled', 'true');
-          localStorage.removeItem('notifications_disabled_manually');
-          setIsEnabled(true);
-          setPermission('granted');
-          toast.success('Notifications Enabled', {
-            description: 'You will now receive payment and group alerts.'
+      // Start a timeout to prevent infinite loading state in UI
+      const uiTimeout = setTimeout(() => {
+        if (loading) {
+          setLoading(false);
+          toast.error('Setup is taking longer than expected', {
+            description: 'Please refresh the page and try again.'
           });
-        } else if (result.error) {
-          toast.error('Failed to enable', { description: result.error });
         }
+      }, 15000);
+
+      const result = await requestNotificationPermission(VAPID_KEY || undefined);
+      clearTimeout(uiTimeout);
+
+      if (result.token) {
+        const tokenRef = doc(db, 'fcm_tokens', result.token);
+        await setDoc(tokenRef, {
+          userId: member.id,
+          token: result.token,
+          deviceType: 'web',
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+        
+        localStorage.setItem('notifications_enabled', 'true');
+        setIsEnabled(true);
+        setPermission('granted');
+        toast.success('Notifications Enabled', {
+          description: 'You will now receive real-time alerts.'
+        });
+      } else if (result.error) {
+        toast.error('Failed to enable', { description: result.error });
       }
     } catch (error) {
       console.error('Toggle error:', error);
-      toast.error('Action failed');
+      toast.error('An unexpected error occurred during setup');
     } finally {
       setLoading(false);
     }
