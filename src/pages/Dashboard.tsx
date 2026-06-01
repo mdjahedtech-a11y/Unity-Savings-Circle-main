@@ -15,6 +15,8 @@ import { Marquee } from '../components/Marquee';
 import { Modal } from '../components/ui/Modal';
 import { AgreementForm } from '../components/AgreementForm';
 import { CountingNumber } from '../components/CountingNumber';
+import { BalanceCard } from '../components/BalanceCard';
+import { SavingsAgeCounter } from '../components/SavingsAgeCounter';
 
 export default function Dashboard() {
   const { member, isAdmin, dashboardLoaded, setDashboardLoaded, cache, setCache } = useAuth();
@@ -258,6 +260,9 @@ export default function Dashboard() {
         <Marquee />
       </div>
 
+      {/* New Sleek Balance Card */}
+      <BalanceCard balance={stats.totalSavings} />
+
       {/* Standalone Slider Section */}
       <section className="relative group">
         <div className="relative overflow-hidden rounded-[2.5rem] bg-gray-100 dark:bg-white/5 aspect-[16/9] md:aspect-[21/7] shadow-2xl border border-gray-200/50 dark:border-white/5">
@@ -289,6 +294,26 @@ export default function Dashboard() {
                       transition={{ delay: 0.2, duration: 0.5 }}
                       className="max-w-3xl"
                     >
+                       <div className="flex items-center gap-3 mb-6">
+                        <motion.button 
+                          whileHover={{ scale: 1.1, rotate: 180 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => {
+                            fetchDashboardData(true);
+                            if (isAdmin) fetchRecentPayments();
+                            fetchSliderImages();
+                          }}
+                          disabled={loading}
+                          className={cn(
+                            "p-2 rounded-xl bg-white/10 backdrop-blur-md text-white transition-all border border-white/20",
+                            loading && "animate-spin opacity-50"
+                          )}
+                        >
+                          <RefreshCcw className="w-4 h-4" />
+                        </motion.button>
+                        <CountdownTimer />
+                      </div>
+
                       {sliderImages[currentSlide].title && (
                         <h2 className="text-2xl md:text-5xl font-black text-white mb-4 tracking-tight drop-shadow-2xl">
                           {sliderImages[currentSlide].title}
@@ -354,54 +379,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Dashboard Header Box */}
-      <motion.section 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 p-6 md:p-8 shadow-xl"
-      >
-        {/* Abstract Background Orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-purple-500/10 blur-[80px] rounded-full -translate-x-1/3 translate-y-1/3" />
-        </div>
-
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-              <motion.button 
-                whileHover={{ scale: 1.1, rotate: 180 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  fetchDashboardData(true);
-                  if (isAdmin) fetchRecentPayments();
-                  fetchSliderImages();
-                }}
-                disabled={loading}
-                className={cn(
-                  "p-2.5 rounded-2xl bg-gray-100 dark:bg-white/10 text-indigo-500 transition-all",
-                  loading && "animate-spin opacity-50"
-                )}
-              >
-                <RefreshCcw className="w-5 h-5" />
-              </motion.button>
-            </div>
-            <p className="text-gray-400 dark:text-white/30 font-bold uppercase tracking-[0.3em] text-[10px] flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Welcome back, {member?.name || 'User'}
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-            <CountdownTimer />
-            <div className="hidden md:flex px-6 py-3 rounded-2xl bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/20 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-white/50 backdrop-blur-md">
-              {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
       {/* Bento Grid Stats */}
       <motion.div 
         layout
@@ -418,15 +395,11 @@ export default function Dashboard() {
                 <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full -mr-12 -mt-12 group-hover:bg-emerald-500/10 transition-colors" />
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 group-hover:scale-110 transition-transform">
-                    <Wallet className="w-5 h-5" />
+                    <TrendingUp className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Savings</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Savings Age</span>
                 </div>
-                <CountingNumber 
-                  value={stats.totalSavings} 
-                  prefix="৳"
-                  className="text-xl md:text-2xl font-black text-gray-900 dark:text-white truncate"
-                />
+                <SavingsAgeCounter />
               </div>
             </motion.div>
 
