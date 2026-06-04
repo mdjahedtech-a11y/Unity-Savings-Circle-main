@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { messaging, requestNotificationPermission, onForegroundMessage, db } from '../lib/firebase';
+import { requestNotificationPermission, onForegroundMessage, db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { Bell, BellRing, CheckCircle2, ShieldCheck, Zap, X, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export const NotificationManager: React.FC = () => {
-  const { user, member } = useAuth();
-  const [token, setToken] = useState<string | null>(null);
+  const { user, member, refreshProfile } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
@@ -18,10 +18,8 @@ export const NotificationManager: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                        (window.navigator as any).standalone === true;
-
     let timer: NodeJS.Timeout;
+    
     // Show popup ONLY if:
     // 1. Permission is default
     // 2. Not already showing
@@ -29,10 +27,8 @@ export const NotificationManager: React.FC = () => {
     if (Notification.permission === 'default' && !showPopup && member) {
       timer = setTimeout(() => {
         setShowPopup(true);
-      }, 3000); // 3 second delay to let the page settle
+      }, 5000); // 5 second delay
     }
-
-    if (!messaging) return () => timer && clearTimeout(timer);
 
     const setupNotifications = async () => {
       // Avoid setup if already verified in this session or recently
@@ -44,16 +40,12 @@ export const NotificationManager: React.FC = () => {
         return;
       }
 
-      const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-      
       if (user && member && Notification.permission === 'granted') {
         try {
-          const result = await requestNotificationPermission(VAPID_KEY || undefined);
-          if (result.token) {
-            setToken(result.token);
-            await saveTokenToFirestore(result.token, member.id);
+          const result = await requestNotificationPermission();
+          if ('token' in result && result.token) {
+            await saveToken(result.token, member.id);
             localStorage.setItem('fcm_token_verified_at', now.toString());
-            localStorage.setItem('notifications_enabled', 'true');
           }
         } catch (e) {
           console.error('[NotificationManager] Automatic setup failed', e);
@@ -63,71 +55,79 @@ export const NotificationManager: React.FC = () => {
 
     setupNotifications();
 
-    const unsubscribe = onForegroundMessage((payload) => {
+    let unsubscribe: any;
+    onForegroundMessage((payload) => {
+      console.log('[FCM] Foreground message received:', payload);
       toast(payload.notification?.title || 'New Notification', {
         description: payload.notification?.body,
         icon: <BellRing className="w-4 h-4 text-indigo-500" />
       });
-    });
+    }).then(unsub => { unsubscribe = unsub; });
 
     return () => {
       if (timer) clearTimeout(timer);
-      unsubscribe();
+      if (unsubscribe) unsubscribe();
     };
-  }, [user, member, messaging, showPopup]);
+  }, [user, member, showPopup]);
 
-  const saveTokenToFirestore = async (fcmToken: string, userId: string) => {
+  const saveToken = async (fcmToken: string, memberId: string) => {
     try {
-      const tokenRef = doc(db, 'fcm_tokens', fcmToken);
-      await setDoc(tokenRef, {
-        userId,
-        token: fcmToken,
-        deviceType: 'web',
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
+      // 1. Save to Supabase (Primary)
+      const { error: supabaseError } = await supabase
+        .from('members')
+        .update({ fcm_token: fcmToken })
+        .eq('id', memberId);
+      
+      if (supabaseError) console.error('Supabase token save error:', supabaseError);
+
+      // 2. Save to Firestore (Secondary/Backup)
+      try {
+        const tokenRef = doc(db, 'fcm_tokens', fcmToken);
+        await setDoc(tokenRef, {
+          userId: memberId,
+          token: fcmToken,
+          deviceType: 'web',
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      } catch (firestoreError) {
+        // Firestore might fail if rules are strict, that's okay as Supabase is primary
+        console.warn('Firestore token save failed (expected if rules not setup):', firestoreError);
+      }
     } catch (error) {
-      console.error('Error saving token:', error);
+      console.error('General error saving token:', error);
     }
   };
 
   const handleEnableNotifications = async () => {
-    const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-    const currentPermission = Notification.permission as string;
+    const currentPermission = Notification.permission;
     const isInIframe = window.self !== window.top;
 
     if (currentPermission === 'denied') {
-      toast.error('Access Blocked', { 
-        description: isInIframe 
-          ? 'Notifications are blocked in this preview. Please open the app in a new tab to enable.'
-          : 'Notifications are blocked. Please reset permission in your browser address bar.' 
+      toast.error('Notifications Blocked', { 
+        description: 'Please reset notification permissions in your browser settings (click the lock icon in the address bar).' 
       });
       return;
     }
 
     if (isInIframe && currentPermission === 'default') {
       toast.warning('Preview Constraint', {
-        description: 'Notification requests may be blocked in the preview. If nothing happens, try opening the app in a new tab.'
+        description: 'Notification requests might be blocked in the preview. Please open the app in a new tab if this doesn\'t work.'
       });
     }
 
     try {
-      const result = await requestNotificationPermission(VAPID_KEY || undefined);
-      const newPermission = Notification.permission;
-      setPermission(newPermission);
+      const result = await requestNotificationPermission();
+      setPermission(Notification.permission);
 
-      if (result.token) {
-        setToken(result.token);
+      if ('token' in result && result.token) {
         setShowPopup(false);
         if (member) {
-          await saveTokenToFirestore(result.token, member.id);
+          await saveToken(result.token, member.id);
+          await refreshProfile();
         }
         toast.success('Success!', { description: 'Notifications enabled successfully.' });
-      } else if (result.error) {
-        if (newPermission === 'denied') {
-          toast.error('Permission Denied', { description: 'You blocked notifications. Please allow them in settings.' });
-        } else {
-          toast.error('Error', { description: result.error });
-        }
+      } else if ('error' in result) {
+        toast.error('Could not enable', { description: result.error });
       }
     } catch (err) {
       toast.error('Request failed');

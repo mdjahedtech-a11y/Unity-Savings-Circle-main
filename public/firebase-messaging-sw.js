@@ -1,5 +1,5 @@
-importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/11.4.0/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging-compat.js');
 
 // These must match firebase-applet-config.json
 firebase.initializeApp({

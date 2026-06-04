@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { messaging, requestNotificationPermission, db } from '../lib/firebase';
+import { requestNotificationPermission, db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
-import { doc, deleteDoc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { Bell, BellOff, Loader2, ShieldCheck } from 'lucide-react';
+import { Bell, BellOff, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const NotificationToggle: React.FC = () => {
@@ -20,25 +21,17 @@ export const NotificationToggle: React.FC = () => {
   });
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !member || !messaging) return;
+    if (typeof window === 'undefined' || !member) return;
     
     const checkStatus = async () => {
       // If permission is already granted, we can check if we have a token verified recently
       if (Notification.permission === 'granted') {
         const isVerified = localStorage.getItem('notifications_enabled') === 'true';
         if (!isVerified && !isEnabled) {
-          // Attempt silent sync
-          const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
           try {
-            const result = await requestNotificationPermission(VAPID_KEY || undefined);
-            if (result.token) {
-              const tokenRef = doc(db, 'fcm_tokens', result.token);
-              await setDoc(tokenRef, {
-                userId: member.id,
-                token: result.token,
-                deviceType: 'web',
-                updatedAt: serverTimestamp(),
-              }, { merge: true });
+            const result = await requestNotificationPermission();
+            if ('token' in result && result.token) {
+              await saveToken(result.token, member.id);
               localStorage.setItem('notifications_enabled', 'true');
               setIsEnabled(true);
             }
@@ -50,10 +43,27 @@ export const NotificationToggle: React.FC = () => {
     };
 
     checkStatus();
-  }, [member, messaging]);
+  }, [member]);
+
+  const saveToken = async (fcmToken: string, memberId: string) => {
+    try {
+      // 1. Supabase
+      await supabase.from('members').update({ fcm_token: fcmToken }).eq('id', memberId);
+      // 2. Firestore
+      try {
+        const tokenRef = doc(db, 'fcm_tokens', fcmToken);
+        await setDoc(tokenRef, {
+          userId: memberId,
+          token: fcmToken,
+          deviceType: 'web',
+          updatedAt: serverTimestamp(),
+        }, { merge: true });
+      } catch (e) {}
+    } catch (e) {}
+  };
 
   const handleToggle = async () => {
-    if (typeof window === 'undefined' || !messaging || !member || loading) return;
+    if (typeof window === 'undefined' || !member || loading) return;
 
     // If it's already enabled, we show info instead of allowing disable
     if (isEnabled) {
@@ -63,7 +73,6 @@ export const NotificationToggle: React.FC = () => {
       return;
     }
 
-    const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
     setLoading(true);
     
     try {
@@ -86,27 +95,10 @@ export const NotificationToggle: React.FC = () => {
         });
       }
 
-      // Start a timeout to prevent infinite loading state in UI
-      const uiTimeout = setTimeout(() => {
-        if (loading) {
-          setLoading(false);
-          toast.error('Setup is taking longer than expected', {
-            description: 'Please refresh the page and try again.'
-          });
-        }
-      }, 15000);
+      const result = await requestNotificationPermission();
 
-      const result = await requestNotificationPermission(VAPID_KEY || undefined);
-      clearTimeout(uiTimeout);
-
-      if (result.token) {
-        const tokenRef = doc(db, 'fcm_tokens', result.token);
-        await setDoc(tokenRef, {
-          userId: member.id,
-          token: result.token,
-          deviceType: 'web',
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
+      if ('token' in result && result.token) {
+        await saveToken(result.token, member.id);
         
         localStorage.setItem('notifications_enabled', 'true');
         setIsEnabled(true);
@@ -114,7 +106,7 @@ export const NotificationToggle: React.FC = () => {
         toast.success('Notifications Enabled', {
           description: 'You will now receive real-time alerts.'
         });
-      } else if (result.error) {
+      } else if ('error' in result) {
         toast.error('Failed to enable', { description: result.error });
       }
     } catch (error) {

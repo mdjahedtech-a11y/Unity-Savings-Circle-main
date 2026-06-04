@@ -16,6 +16,7 @@ export interface Member {
   agreement_date?: string;
   signature_data?: string;
   passport_photo_url?: string;
+  fcm_token?: string;
 }
 
 export type PaymentStatus = 'paid' | 'pending' | 'unpaid';

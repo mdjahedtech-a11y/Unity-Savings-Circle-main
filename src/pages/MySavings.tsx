@@ -12,6 +12,7 @@ import { cn } from '../lib/utils';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { NotificationToggle } from '../components/NotificationToggle';
+import { NotificationCenter } from '../components/NotificationCenter';
 import { removeBackground } from '../services/removeBgService';
 
 export default function MySavings() {
@@ -262,7 +263,11 @@ export default function MySavings() {
             </div>
           </div>
         </motion.div>
-      </section>      {/* Modern Stats Grid */}
+      </section>
+
+      <NotificationCenter />
+
+      {/* Modern Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {loading ? (
           [...Array(4)].map((_, i) => (

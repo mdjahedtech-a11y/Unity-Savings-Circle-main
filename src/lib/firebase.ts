@@ -1,19 +1,43 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
-export const messaging = typeof window !== 'undefined' ? getMessaging(app) : null;
+
+// Messaging singleton setup
+let messagingInstance: any = null;
+
+const getMessagingInstance = async () => {
+  if (typeof window === 'undefined') return null;
+  if (messagingInstance) return messagingInstance;
+  
+  try {
+    const supported = await isSupported();
+    if (supported) {
+      messagingInstance = getMessaging(app);
+      return messagingInstance;
+    }
+  } catch (err) {
+    console.error('[FCM] Error checking messaging support:', err);
+  }
+  return null;
+};
 
 export const requestNotificationPermission = async (vapidKey?: string) => {
-  if (!messaging) return { error: 'Messaging not supported' };
+  const messaging = await getMessagingInstance();
+  if (!messaging) {
+    console.error('[FCM] Messaging is not supported in this browser environment.');
+    return { error: 'Your browser does not support push notifications.' };
+  }
   
+  // VAPID Key is required for web push notifications in Firebase.
   // Use provided key, or environment variable, or hardcoded fallback
   const VAPID_KEY_FALLBACK = 'BFd61GInPVfOjRJasqwqSJjsRPmPjt2DLyErVSVgeosV4i41UzC9V7QbWPl-2-l4XGX22FoRRIqIEu1eCAiEaSc';
+  
   try {
     console.log('[FCM] Requesting notification permission...');
     const permission = await Notification.requestPermission();
@@ -26,11 +50,10 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
         
         if (!cleanVapidKey) {
           console.error('[FCM] VAPID Key is missing');
-          return { error: 'VAPID Key is missing. Please set VITE_FIREBASE_VAPID_KEY.' };
+          return { error: 'Configuration Error: VAPID Key is missing.' };
         }
 
         console.log('[FCM] Ensuring service worker is registered...');
-        // Use a more robust way to get/register service worker
         let registration = await navigator.serviceWorker.getRegistration('/');
         
         if (!registration) {
@@ -40,19 +63,10 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
           });
         }
         
-        console.log('[FCM] Service worker registration status:', registration.active ? 'active' : (registration.waiting ? 'waiting' : 'installing'));
-
-        // Wait for service worker to be ready with a reasonable timeout
-        const readyPromise = navigator.serviceWorker.ready;
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Service Worker ready timeout (10s)')), 10000)
-        );
-        
-        console.log('[FCM] Waiting for SW ready state...');
-        await Promise.race([readyPromise, timeoutPromise]);
+        // Wait for service worker to be ready
+        await navigator.serviceWorker.ready;
         
         console.log('[FCM] SW ready. Requesting FCM token...');
-        // getToken usually takes care of waiting for the SW to be active
         const token = await getToken(messaging, { 
           vapidKey: cleanVapidKey,
           serviceWorkerRegistration: registration
@@ -66,26 +80,20 @@ export const requestNotificationPermission = async (vapidKey?: string) => {
         return { token };
       } catch (tokenError: any) {
         console.error('[FCM] Token Retrieval Error:', tokenError);
-        const errorCode = tokenError?.code || '';
-        const errorMessage = tokenError?.message || 'Unknown FCM error';
-        
-        if (errorMessage.includes('missing required authentication credential') || 
-            errorMessage.includes('subscribe-failed') || 
-            errorCode === 'messaging/failed-serviceworker-registration') {
-          return { error: `Connection failed. This usually means the VAPID key or Firebase configuration is incorrect for this domain.` };
-        }
-        
-        return { error: errorMessage };
+        return { error: tokenError?.message || 'Failed to generate security token.' };
       }
+    } else if (permission === 'denied') {
+      return { error: 'Notifications blocked. Please enable them in your browser settings code/profile.' };
     }
-    return { error: 'Permission denied' };
+    return { error: 'Permission dismissed.' };
   } catch (error) {
     console.error('[FCM] Unexpected system error:', error);
-    return { error: 'An unexpected error occurred' };
+    return { error: 'A system error occurred. Please try again.' };
   }
 };
 
-export const onForegroundMessage = (callback: (payload: any) => void) => {
+export const onForegroundMessage = async (callback: (payload: any) => void) => {
+  const messaging = await getMessagingInstance();
   if (!messaging) return () => {};
   return onMessage(messaging, callback);
 };
