@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { db } from '../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { Bell, Send, Loader2, Users } from 'lucide-react';
@@ -12,8 +13,22 @@ export const AdminNotificationCenter: React.FC = () => {
 
   useEffect(() => {
     const fetchTokenCount = async () => {
-      const querySnapshot = await getDocs(collection(db, 'fcm_tokens'));
-      setTokenCount(querySnapshot.size);
+      try {
+        // Collect tokens from both sources to be safe
+        const [supabaseRes, firestoreRes] = await Promise.all([
+          supabase.from('members').select('fcm_token').not('fcm_token', 'is', null),
+          getDocs(collection(db, 'fcm_tokens'))
+        ]);
+
+        const supabaseTokens = supabaseRes.data?.map(m => m.fcm_token).filter(Boolean) || [];
+        const firestoreTokens = firestoreRes.docs.map(doc => doc.data().token).filter(Boolean);
+        
+        // Unique tokens
+        const allTokens = new Set([...supabaseTokens, ...firestoreTokens]);
+        setTokenCount(allTokens.size);
+      } catch (err) {
+        console.error('Error fetching token count:', err);
+      }
     };
     fetchTokenCount();
   }, []);
@@ -27,28 +42,49 @@ export const AdminNotificationCenter: React.FC = () => {
 
     setSending(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'fcm_tokens'));
-      const tokens = querySnapshot.docs.map(doc => doc.data().token);
+      // 1. Fetch from Supabase
+      const { data: members, error: supabaseError } = await supabase
+        .from('members')
+        .select('fcm_token')
+        .not('fcm_token', 'is', null);
 
-      if (tokens.length === 0) {
+      if (supabaseError) console.warn('Supabase fetch error:', supabaseError);
+      
+      // 2. Fetch from Firestore
+      const firestoreSnapshot = await getDocs(collection(db, 'fcm_tokens'));
+      
+      const supabaseTokens = members?.map(m => m.fcm_token).filter(Boolean) || [];
+      const firestoreTokens = firestoreSnapshot.docs.map(doc => doc.data().token).filter(Boolean);
+
+      // Merge and deduplicate
+      const allTokens = Array.from(new Set([...supabaseTokens, ...firestoreTokens]));
+
+      if (allTokens.length === 0) {
         toast.error('No active device tokens found.');
         return;
       }
 
       let successCount = 0;
-      for (const token of tokens) {
-        const response = await fetch('/api/send-notification', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, title, body: message }),
-        });
-        
-        if (response.ok) successCount++;
+      for (const token of allTokens) {
+        try {
+          const response = await fetch('/api/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, title, body: message }),
+          });
+          
+          if (response.ok) successCount++;
+        } catch (err) {
+          console.error('[Broadcast] Failed for token:', token, err);
+        }
       }
 
       toast.success(`Broadcast complete! Sent to ${successCount} devices.`);
       setTitle('');
       setMessage('');
+      
+      // Refresh count
+      setTokenCount(allTokens.length);
     } catch (error) {
       console.error('Broadcast error:', error);
       toast.error('Failed to send broadcast');

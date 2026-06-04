@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { requestNotificationPermission, onForegroundMessage } from '../lib/firebase';
+import { requestNotificationPermission, onForegroundMessage, db } from '../lib/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -46,13 +47,30 @@ export const NotificationCenter: React.FC = () => {
       const result = await requestNotificationPermission();
       
       if ('token' in result && result.token) {
-        // Save token to Supabase
-        const { error } = await supabase
-          .from('members')
-          .update({ fcm_token: result.token })
-          .eq('id', member.id);
+        // 1. Save token to Supabase
+        try {
+          const { error: supabaseError } = await supabase
+            .from('members')
+            .update({ fcm_token: result.token })
+            .eq('id', member.id);
+          
+          if (supabaseError) console.error('Supabase token save error:', supabaseError);
+        } catch (err) {
+          console.error('Supabase update failed:', err);
+        }
         
-        if (error) throw error;
+        // 2. Save to Firestore (More reliable for global broadcast counting)
+        try {
+          const tokenRef = doc(db, 'fcm_tokens', result.token);
+          await setDoc(tokenRef, {
+            userId: member.id,
+            token: result.token,
+            deviceType: 'web',
+            updatedAt: serverTimestamp(),
+          }, { merge: true });
+        } catch (err) {
+          console.error('Firestore token save error:', err);
+        }
         
         setPermission('granted');
         await refreshProfile();
