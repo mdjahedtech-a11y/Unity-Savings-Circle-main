@@ -46,51 +46,55 @@ export function Marquee() {
   const combinedText = messages.map(m => m.text).join('   •   ');
 
   return (
-    <div className="relative w-full overflow-hidden bg-white/10 dark:bg-white/5 backdrop-blur-md border-b border-white/10 dark:border-white/5 shadow-sm">
-      <div className="flex items-center h-12">
-        {/* Breaking Badge */}
-        <div className="relative z-10 flex items-center h-full px-4 bg-gradient-to-r from-red-600 to-orange-500 shadow-lg">
-          <motion.div
-            animate={{ opacity: [1, 0.5, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="absolute inset-0 bg-red-500 blur-md opacity-20"
-          />
-          <span className="relative text-[10px] font-black tracking-tighter text-white uppercase flex items-center gap-1">
-            <Zap className="w-3 h-3 fill-current" />
-            Breaking
-          </span>
-        </div>
+    <div className="relative w-full px-4 py-2">
+      <div className="relative overflow-hidden bg-white/60 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl shadow-indigo-500/5">
+        <div className="flex items-center h-10 md:h-12">
+          {/* Breaking Badge */}
+          <div className="relative z-20 flex items-center h-full px-4 md:px-6 bg-gradient-to-r from-red-600 via-red-500 to-orange-500 border-r border-white/10">
+            <motion.div
+              animate={{ opacity: [0.1, 0.3, 0.1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 bg-white"
+            />
+            <span className="relative text-[9px] md:text-[10px] font-black tracking-[0.2em] text-white uppercase flex items-center gap-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              </span>
+              Update
+            </span>
+          </div>
 
-        {/* Marquee Content */}
-        <div className="flex-1 overflow-hidden relative group">
-          <motion.div
-            className="flex whitespace-nowrap items-center"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            whileHover={{ animationPlayState: 'paused' }}
-          >
-            <div className="flex items-center gap-12 pr-12">
-              {/* Duplicate content for seamless loop */}
-              {[...Array(2)].map((_, loopIdx) => (
-                <div key={loopIdx} className="flex items-center gap-12">
-                  {messages.map((msg, idx) => (
-                    <span key={`${loopIdx}-${idx}`} className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                      <span className="text-orange-500 animate-pulse">🔥</span>
-                      {msg.text}
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </motion.div>
-          
-          {/* Fades for smooth edges */}
-          <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-white/20 dark:from-gray-900/20 to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white/20 dark:from-gray-900/20 to-transparent z-10 pointer-events-none" />
+          {/* Marquee Content */}
+          <div className="flex-1 overflow-hidden relative group">
+            <motion.div
+              className="flex whitespace-nowrap items-center h-full"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            >
+              <div className="flex items-center gap-12 pr-12">
+                {/* Duplicate content for seamless loop */}
+                {[...Array(2)].map((_, loopIdx) => (
+                  <div key={loopIdx} className="flex items-center gap-16">
+                    {messages.map((msg, idx) => (
+                      <span key={`${loopIdx}-${idx}`} className="text-[11px] md:text-sm font-bold text-gray-700 dark:text-white/90 flex items-center gap-4 tracking-tight">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/40" />
+                        {msg.text}
+                      </span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+            
+            {/* Edge Fades */}
+            <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-white/40 dark:from-indigo-950/20 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white/40 dark:from-indigo-950/20 to-transparent z-10 pointer-events-none" />
+          </div>
         </div>
       </div>
     </div>
