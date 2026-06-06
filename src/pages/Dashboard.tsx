@@ -16,6 +16,7 @@ import { AgreementForm } from '../components/AgreementForm';
 import { CountingNumber } from '../components/CountingNumber';
 import { BalanceCard } from '../components/BalanceCard';
 import { SavingsAgeCounter } from '../components/SavingsAgeCounter';
+import { LivestreamPopup } from '../components/LivestreamPopup';
 
 export default function Dashboard() {
   const { member, isAdmin, dashboardLoaded, setDashboardLoaded, cache, setCache } = useAuth();
@@ -261,6 +262,8 @@ export default function Dashboard() {
 
       {/* New Sleek Balance Card */}
       <BalanceCard balance={stats.totalSavings} />
+
+      <LivestreamPopup />
 
       {/* Standalone Slider Section */}
       <section className="relative group">

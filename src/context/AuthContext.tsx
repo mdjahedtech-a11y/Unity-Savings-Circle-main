@@ -375,7 +375,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const fetchPromise = supabase
         .from('app_settings')
-        .select('id, show_dashboard, show_reports, show_investments, show_discussion, show_savings')
+        .select('id, show_dashboard, show_reports, show_investments, show_discussion, show_savings, livestream_url, livestream_badge')
         .maybeSingle();
 
       const { data, error } = await Promise.race([
@@ -391,7 +391,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.warn('Persistent error fetching system settings, using defaults:', error.message);
         // Fallback to defaults
         setSystemSettings({
-          id: 'default',
+          id: 0,
           show_dashboard: true,
           show_reports: true,
           show_investments: true,
@@ -406,17 +406,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         // Create default settings if none exist
         const defaultSettings = {
+          id: 1, // Use fixed ID 1 for settings row
           show_dashboard: true,
           show_reports: true,
           show_investments: true,
           show_discussion: true,
-          show_savings: true
+          show_savings: true,
+          livestream_url: 'https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID',
+          livestream_badge: 'FIFA'
         };
         
         // Don't wait too long for the insert either
         try {
           const { data: newData, error: insertError } = await Promise.race([
-            supabase.from('app_settings').insert(defaultSettings).select().maybeSingle(),
+            supabase.from('app_settings').upsert(defaultSettings).select().maybeSingle(),
             new Promise((_, reject) => setTimeout(() => reject(new Error('Insert timeout')), 10000))
           ]) as any;
           
@@ -424,11 +427,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setSystemSettings(newData);
           } else {
             console.warn('Failed to insert default settings, using temporary defaults');
-            setSystemSettings({ id: 'temp', ...defaultSettings });
+            setSystemSettings(defaultSettings);
           }
         } catch (e) {
           console.warn('Timeout inserting default settings, using temporary defaults');
-          setSystemSettings({ id: 'temp', ...defaultSettings });
+          setSystemSettings(defaultSettings);
         }
       }
     } catch (err: any) {
@@ -441,7 +444,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.warn('Settings fetch exhausted retries, using defaults.', err.message || err);
       // Fallback to defaults on any unexpected error or timeout
       setSystemSettings({
-        id: 'default',
+        id: 0,
         show_dashboard: true,
         show_reports: true,
         show_investments: true,
@@ -458,38 +461,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSystemSettings({ ...systemSettings, ...newSettings });
       }
 
-      if (!systemSettings || systemSettings.id === 'default' || systemSettings.id === 'temp') {
-        const baseSettings = systemSettings || {
-          show_dashboard: true,
-          show_reports: true,
-          show_investments: true,
-          show_discussion: true,
-          show_savings: true
-        };
-
-        const settingsToInsert = {
-          show_dashboard: newSettings.show_dashboard ?? baseSettings.show_dashboard,
-          show_reports: newSettings.show_reports ?? baseSettings.show_reports,
-          show_investments: newSettings.show_investments ?? baseSettings.show_investments,
-          show_discussion: newSettings.show_discussion ?? baseSettings.show_discussion,
-          show_savings: newSettings.show_savings ?? baseSettings.show_savings,
-        };
-
-        const { data, error } = await supabase
-          .from('app_settings')
-          .insert(settingsToInsert)
-          .select()
-          .maybeSingle();
-
-        if (error) throw error;
-        if (data) setSystemSettings(data);
-        return;
-      }
+      // Ensure we have a valid row ID to targeting
+      const targetId = systemSettings?.id && systemSettings.id > 0 ? systemSettings.id : 1;
 
       const { data, error } = await supabase
         .from('app_settings')
-        .update(newSettings)
-        .eq('id', systemSettings.id)
+        .upsert({ 
+          id: targetId,
+          ...newSettings 
+        })
         .select()
         .maybeSingle();
 
@@ -497,16 +477,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (data) {
         setSystemSettings(data);
-      } else {
-        // If the row was deleted or not found, try to recreate it
-        const { data: newData, error: insertError } = await supabase
-          .from('app_settings')
-          .insert({ ...systemSettings, ...newSettings })
-          .select()
-          .maybeSingle();
-        
-        if (insertError) throw insertError;
-        if (newData) setSystemSettings(newData);
       }
     } catch (err) {
       console.error('Error updating settings:', err);

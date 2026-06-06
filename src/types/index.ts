@@ -47,12 +47,14 @@ export interface MonthlyReport {
 }
 
 export interface SystemSettings {
-  id: string;
+  id: number;
   show_dashboard: boolean;
   show_reports: boolean;
   show_investments: boolean;
   show_discussion: boolean;
   show_savings: boolean;
+  livestream_url?: string;
+  livestream_badge?: string;
   updated_at?: string;
 }
 
