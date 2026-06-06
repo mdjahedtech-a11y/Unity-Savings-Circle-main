@@ -172,7 +172,23 @@ export const LivestreamPopup: React.FC = () => {
               </div>
 
               {/* Player Body */}
-              <div className="relative bg-zinc-950 flex-1 aspect-video">
+              <div className="relative bg-zinc-950 flex-1 aspect-video group/player">
+                {/* Channel Branding (Top Left) */}
+                <div className="absolute top-4 left-4 z-20 flex items-center gap-2 pointer-events-none transition-opacity duration-500 group-hover/player:opacity-100">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg overflow-hidden border border-white/20 shadow-2xl bg-black/40 backdrop-blur-md p-0.5">
+                    <img 
+                      src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" 
+                      alt="Station Logo" 
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div className="hidden md:flex flex-col">
+                    <span className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-md">Unity Circle</span>
+                    <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-tighter drop-shadow-md">Official Feed</span>
+                  </div>
+                </div>
+
                 {isIframe ? (
                   <iframe
                     src={finalEmbedUrl}
