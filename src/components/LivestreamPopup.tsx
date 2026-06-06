@@ -1,37 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Tv, X, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
+import { Tv, X, Maximize2, Minimize2, ExternalLink, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Hls from 'hls.js';
 
 export const LivestreamPopup: React.FC = () => {
   const { systemSettings } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
+  const [buffering, setBuffering] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const streamUrl = systemSettings?.livestream_url || '';
   const badgeText = systemSettings?.livestream_badge || 'FIFA';
 
-  // Extract video ID if it's a youtube link for better iframe handling
-  // Detect if the link is a direct video or iframe
-  const isDirectVideo = (url: string) => {
-    return url.match(/\.(mp4|webm|m4v|ogv|mov|m3u8)$/i);
-  };
+  // Detect if the link is a direct video or HLS stream
+  const isHls = (url: string) => url.match(/\.(m3u8)$/i);
+  const isDirectVideo = (url: string) => url.match(/\.(mp4|webm|m4v|ogv|mov)$/i);
+
+  useEffect(() => {
+    let hls: Hls | null = null;
+
+    if (isOpen && videoRef.current && isHls(streamUrl)) {
+      if (Hls.isSupported()) {
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90,
+          // Adaptive bitrate configuration hints
+          abrEwmaFastLive: 1,
+          abrEwmaSlowLive: 5,
+        });
+        hls.loadSource(streamUrl);
+        hls.attachMedia(videoRef.current);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          videoRef.current?.play().catch(e => console.log("Auto-play blocked:", e));
+        });
+        
+        // Handle buffering
+        hls.on(Hls.Events.FRAG_BUFFERED, () => setBuffering(false));
+        hls.on(Hls.Events.ERROR, (_, data) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                hls?.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                hls?.recoverMediaError();
+                break;
+              default:
+                hls?.destroy();
+                break;
+            }
+          }
+        });
+      } else if (videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
+        // Native HLS support (Safari)
+        videoRef.current.src = streamUrl;
+      }
+    }
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
+  }, [isOpen, streamUrl]);
 
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
     if (url.includes('youtube.com/watch?v=')) {
       const id = url.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${id}?autoplay=1`;
+      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&rel=0`;
     }
     if (url.includes('youtu.be/')) {
       const id = url.split('youtu.be/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${id}?autoplay=1`;
+      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&rel=0`;
     }
     return url;
   };
 
-  const finalUrl = getEmbedUrl(streamUrl);
+  const finalEmbedUrl = getEmbedUrl(streamUrl);
+  const hlsStream = isHls(streamUrl);
   const directVideo = isDirectVideo(streamUrl);
+  const isIframe = !hlsStream && !directVideo;
 
   if (!streamUrl) return null;
 
@@ -121,32 +173,46 @@ export const LivestreamPopup: React.FC = () => {
 
               {/* Player Body */}
               <div className="relative bg-zinc-950 flex-1 aspect-video">
-                {directVideo ? (
-                  <video
-                    src={streamUrl}
-                    controls
-                    autoPlay
-                    className="w-full h-full object-contain"
-                    poster="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80&w=1200"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                ) : (
+                {isIframe ? (
                   <iframe
-                    src={finalUrl}
+                    src={finalEmbedUrl}
                     className="w-full h-full border-0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   />
+                ) : (
+                  <div className="relative w-full h-full">
+                    <video
+                      ref={videoRef}
+                      controls
+                      autoPlay
+                      playsInline
+                      className="w-full h-full object-contain"
+                      poster="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80&w=1200"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                    
+                    {buffering && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                         <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                         >
+                           <Activity className="w-8 h-8 text-indigo-500" />
+                         </motion.div>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Aesthetic Overlay (Only visible when not playing) */}
                 {!isMaximized && (
                   <div className="absolute top-4 right-4 pointer-events-none opacity-40">
                     <div className="text-[8px] font-mono text-white/50 space-y-1">
-                      <p>BITRATE: 4.2 MBPS</p>
-                      <p>FPS: 60.0</p>
-                      <p>RES: 1080P HD</p>
+                      <p>QUALITY: {hlsStream ? 'AUTO (ADAPTIVE)' : 'HIGH'}</p>
+                      <p>LATENCY: LOW</p>
+                      <p>NETWORK: {hlsStream ? 'OPTIMIZED' : 'DIRECT'}</p>
                     </div>
                   </div>
                 )}
