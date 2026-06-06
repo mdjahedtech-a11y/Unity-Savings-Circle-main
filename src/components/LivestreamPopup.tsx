@@ -234,32 +234,6 @@ export const LivestreamPopup: React.FC = () => {
                 )}
               </div>
 
-              {/* Footer */}
-              <div className="p-4 bg-zinc-900/80 backdrop-blur-md flex items-center justify-between border-t border-white/5">
-                <div className="flex items-center gap-4">
-                   <div className="flex -space-x-2">
-                    {[...Array(3)].map((_, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-zinc-900 bg-zinc-800 flex items-center justify-center text-[8px] font-bold text-white/40">
-                        {String.fromCharCode(65 + i)}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-tighter">
-                    Secure Feed • Active Link Established
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <a 
-                    href={streamUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 hover:text-indigo-300 transition-colors group"
-                  >
-                    Direct Access
-                    <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </a>
-                </div>
-              </div>
             </motion.div>
           </div>
         )}
