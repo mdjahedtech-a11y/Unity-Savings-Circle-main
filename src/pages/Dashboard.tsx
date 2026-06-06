@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { StatsCard } from '../components/StatsCard';
 import { MonthlySavingsChart, DistributionChart, GrowthChart, RecentPaymentsChart } from '../components/Charts';
-import { CountdownTimer } from '../components/CountdownTimer';
 import { Users, Wallet, TrendingUp, AlertCircle, RefreshCcw, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -311,7 +310,6 @@ export default function Dashboard() {
                         >
                           <RefreshCcw className="w-4 h-4" />
                         </motion.button>
-                        <CountdownTimer />
                       </div>
 
                       {sliderImages[currentSlide].title && (
