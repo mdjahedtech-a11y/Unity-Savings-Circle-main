@@ -152,7 +152,7 @@ export const LivestreamPopup: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
                   <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">
-                    Network Transmission: {badgeText}
+                    Live: {badgeText}
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
@@ -219,17 +219,6 @@ export const LivestreamPopup: React.FC = () => {
                          </motion.div>
                       </div>
                     )}
-                  </div>
-                )}
-
-                {/* Aesthetic Overlay (Only visible when not playing) */}
-                {!isMaximized && (
-                  <div className="absolute top-4 right-4 pointer-events-none opacity-40">
-                    <div className="text-[8px] font-mono text-white/50 space-y-1">
-                      <p>QUALITY: {hlsStream ? 'AUTO (ADAPTIVE)' : 'HIGH'}</p>
-                      <p>LATENCY: LOW</p>
-                      <p>NETWORK: {hlsStream ? 'OPTIMIZED' : 'DIRECT'}</p>
-                    </div>
                   </div>
                 )}
               </div>
