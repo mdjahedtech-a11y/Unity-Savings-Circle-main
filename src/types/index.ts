@@ -46,6 +46,15 @@ export interface MonthlyReport {
   details: Payment[];
 }
 
+export interface TvChannel {
+  id: number;
+  name: string;
+  url: string;
+  badge: string;
+  icon_url?: string;
+  created_at?: string;
+}
+
 export interface SystemSettings {
   id: number;
   show_dashboard: boolean;

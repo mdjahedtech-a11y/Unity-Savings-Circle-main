@@ -8,31 +8,11 @@ import { toast } from 'sonner';
 import { MarqueeManager } from '../components/MarqueeManager';
 import { SliderManager } from '../components/SliderManager';
 import { AdminNotificationCenter } from '../components/AdminNotificationCenter';
+import { TvChannelManager } from '../components/TvChannelManager';
 
 export default function Settings() {
   const { isAdmin, isMainAdmin, systemSettings, updateSettings } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [livestreamUrl, setLivestreamUrl] = useState(systemSettings?.livestream_url || '');
-  const [livestreamBadge, setLivestreamBadge] = useState(systemSettings?.livestream_badge || 'FIFA');
-
-  const handleLivestreamUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (updating) return;
-
-    try {
-      setUpdating(true);
-      await updateSettings({
-        livestream_url: livestreamUrl,
-        livestream_badge: livestreamBadge
-      });
-      toast.success('Livestream settings updated');
-    } catch (error) {
-      toast.error('Failed to update livestream settings');
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   const toggleModule = async (moduleId: string, currentStatus: boolean) => {
     if (loading) return;
@@ -101,53 +81,7 @@ export default function Settings() {
           transition={{ delay: 0.2 }}
           className="md:col-span-2"
         >
-          <Card className="bg-white dark:bg-white/5 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-none">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Tv className="w-5 h-5 text-red-500" />
-                Livestream Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLivestreamUpdate} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-500 dark:text-white/40 uppercase tracking-widest">
-                      Floating Badge Text
-                    </label>
-                    <input
-                      type="text"
-                      value={livestreamBadge}
-                      onChange={(e) => setLivestreamBadge(e.target.value)}
-                      placeholder="e.g., FIFA"
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-black text-gray-500 dark:text-white/40 uppercase tracking-widest">
-                      Stream Embed URL
-                    </label>
-                    <input
-                      type="text"
-                      value={livestreamUrl}
-                      onChange={(e) => setLivestreamUrl(e.target.value)}
-                      placeholder="YouTube Embed URL"
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:text-white"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button 
-                    type="submit" 
-                    disabled={updating}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest h-11 px-8 rounded-xl shadow-lg shadow-indigo-600/20"
-                  >
-                    {updating ? 'Saving...' : 'Update Livestream Settings'}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+          <TvChannelManager />
         </motion.div>
 
         <motion.div

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { Member, SystemSettings } from '../types/index';
+import { Member, SystemSettings, TvChannel } from '../types/index';
 
 interface AuthContextType {
   session: Session | null;
@@ -29,6 +29,9 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateSettings: (settings: Partial<SystemSettings>) => Promise<void>;
+  tvChannels: TvChannel[];
+  addChannel: (channel: Omit<TvChannel, 'id'>) => Promise<void>;
+  deleteChannel: (id: number) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -47,6 +50,9 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   refreshProfile: async () => {},
   updateSettings: async () => {},
+  tvChannels: [],
+  addChannel: async () => {},
+  deleteChannel: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -54,6 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [member, setMember] = useState<Member | null>(null);
   const [systemSettings, setSystemSettings] = useState<SystemSettings | null>(null);
+  const [tvChannels, setTvChannels] = useState<TvChannel[]>([]);
   const [loading, setLoading] = useState(true);
   const [dashboardLoaded, setDashboardLoaded] = useState(false);
   const [cache, setCacheState] = useState<any>({
@@ -223,6 +230,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           (async () => {
             // 1. Fetch system settings (non-blocking)
             fetchSystemSettings().catch(err => console.warn('Settings fetch failed:', err));
+            fetchChannels().catch(err => console.warn('Channels fetch failed:', err));
 
             // 2. Get current session with internal timeout
             const sessionPromise = supabase.auth.getSession();
@@ -486,6 +494,37 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const fetchChannels = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tv_channels')
+        .select('*')
+        .order('id', { ascending: true });
+      if (!error && data) setTvChannels(data);
+    } catch (err) {
+      console.error('Error fetching channels:', err);
+    }
+  };
+
+  const addChannel = async (channel: Omit<TvChannel, 'id'>) => {
+    const { data, error } = await supabase
+      .from('tv_channels')
+      .insert(channel)
+      .select()
+      .single();
+    if (error) throw error;
+    if (data) setTvChannels(prev => [...prev, data]);
+  };
+
+  const deleteChannel = async (id: number) => {
+    const { error } = await supabase
+      .from('tv_channels')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    setTvChannels(prev => prev.filter(c => c.id !== id));
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setMember(null);
@@ -504,7 +543,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = member?.role === 'admin' || isMainAdmin;
 
   return (
-    <AuthContext.Provider value={{ session, user, member, systemSettings, loading, cache, setCache, prefetchAllData, dashboardLoaded, setDashboardLoaded, isAdmin, isMainAdmin, signOut, refreshProfile, updateSettings }}>
+    <AuthContext.Provider value={{ 
+      session, user, member, systemSettings, loading, cache, setCache, 
+      prefetchAllData, dashboardLoaded, setDashboardLoaded, isAdmin, 
+      isMainAdmin, signOut, refreshProfile, updateSettings,
+      tvChannels, addChannel, deleteChannel
+    }}>
       {children}
     </AuthContext.Provider>
   );
