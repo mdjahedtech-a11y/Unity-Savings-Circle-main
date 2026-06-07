@@ -257,16 +257,25 @@ export const LivestreamPopup: React.FC = () => {
                       className="flex flex-col"
                     >
                       {/* Player Area */}
-                      <div className="relative aspect-video bg-zinc-950 group/player border-b border-white/5">
-                        {/* Channel Branding */}
-                        <div className="absolute top-4 left-4 z-20 flex items-center gap-2 pointer-events-none transition-opacity duration-500 group-hover/player:opacity-100">
-                          <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-black/60 backdrop-blur-md p-0.5">
-                             <img 
-                              src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWNXzEfKLD7sdDcYAY8gzdpZGvKm1yzpSzbaEGTWT9oqObUG3UOBlyYFTuGpYqNY3R-nqTjcc8u1dVg81Df_cfNZD1dzF2HTQDc3ETt-AK3XJme23MHHMRu-1lr-ciInjvl0u-AqL7XlZw5HUN7Oen8R15d0wEqiA-aX7aV8H-3pWVZHQVwyQ3dM4ARZg/s1280/20260306_214605.jpg" 
-                              alt="Logo" 
-                              className="w-full h-full object-cover"
-                            />
+                      <div className="relative aspect-video bg-zinc-950 group/player border-b border-white/5 overflow-hidden">
+                        {/* Watermark/Credit (Bottom Left) */}
+                        <div className="absolute bottom-4 left-4 z-20 pointer-events-none transition-opacity duration-500 opacity-30 group-hover/player:opacity-100">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                              Made by - Jahed Hasan
+                            </span>
                           </div>
+                        </div>
+
+                        {/* Top-right Status Indicators (Subtle) */}
+                        <div className="absolute top-4 right-4 z-20 pointer-events-none opacity-40 group-hover/player:opacity-100 transition-opacity">
+                           <div className="flex items-center gap-2">
+                             <div className="flex flex-col items-end">
+                               <span className="text-[8px] font-mono text-indigo-400 font-bold uppercase tracking-tighter">HD Transmission</span>
+                               <span className="text-[7px] font-mono text-white/50 uppercase tracking-widest">{selectedChannel?.badge} FEED</span>
+                             </div>
+                             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                           </div>
                         </div>
 
                         {isIframe ? (
