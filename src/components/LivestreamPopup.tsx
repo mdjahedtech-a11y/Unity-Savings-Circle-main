@@ -17,8 +17,15 @@ export const LivestreamPopup: React.FC = () => {
   const streamUrl = selectedChannel?.url || '';
   
   // Detect if the link is a direct video or HLS stream
-  const isHls = (url: string) => url.match(/\.(m3u8)$/i);
-  const isDirectVideo = (url: string) => url.match(/\.(mp4|webm|m4v|ogv|mov)$/i);
+  const isHls = (url: string) => url.toLowerCase().includes('.m3u8');
+  const isDirectVideo = (url: string) => {
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    return cleanUrl.endsWith('.mp4') || 
+           cleanUrl.endsWith('.webm') || 
+           cleanUrl.endsWith('.m4v') || 
+           cleanUrl.endsWith('.ogv') || 
+           cleanUrl.endsWith('.mov');
+  };
 
   useEffect(() => {
     let hls: Hls | null = null;
