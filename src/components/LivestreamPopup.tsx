@@ -279,19 +279,21 @@ export const LivestreamPopup: React.FC = () => {
                         </div>
 
                         {isIframe ? (
-                          <iframe
-                            src={finalEmbedUrl}
-                            className="w-full h-full border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                          />
+                          <div className="w-full h-full [filter:brightness(1.05)_contrast(1.1)_saturate(1.2)]">
+                            <iframe
+                              src={finalEmbedUrl}
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              allowFullScreen
+                            />
+                          </div>
                         ) : (
                           <video
                             ref={videoRef}
                             controls
                             autoPlay
                             playsInline
-                            className="w-full h-full object-contain"
+                            className="w-full h-full object-contain [filter:brightness(1.05)_contrast(1.1)_saturate(1.2)]"
                             poster="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80&w=1200"
                           />
                         )}
