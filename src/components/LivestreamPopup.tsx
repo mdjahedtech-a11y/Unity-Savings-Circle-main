@@ -260,8 +260,8 @@ export const LivestreamPopup: React.FC = () => {
                          isMaximized ? 'flex-1' : 'aspect-video'
                       }`}>
                         {/* Watermark/Credit (Bottom Left - Extra Small) */}
-                        <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 z-30 pointer-events-none transition-opacity duration-500 opacity-20 group-hover/player:opacity-60">
-                           <span className="text-[6px] md:text-[8px] font-black text-white/50 uppercase tracking-[0.3em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                        <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 z-30 pointer-events-none transition-opacity duration-500 opacity-40 group-hover/player:opacity-90">
+                           <span className="text-[6px] md:text-[8px] font-black text-white/70 uppercase tracking-[0.3em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                              Made by - Jahed Hasan
                            </span>
                         </div>
