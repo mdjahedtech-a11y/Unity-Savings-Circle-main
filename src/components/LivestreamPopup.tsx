@@ -14,6 +14,7 @@ export const LivestreamPopup: React.FC = () => {
   const [showChannelList, setShowChannelList] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
   const streamUrl = selectedChannel?.url || '';
   
   // Detect if the link is a direct video or HLS stream
@@ -29,6 +30,7 @@ export const LivestreamPopup: React.FC = () => {
 
   useEffect(() => {
     let hls: Hls | null = null;
+    setIsVideoLoading(true);
 
     if (isOpen && videoRef.current && isHls(streamUrl)) {
       if (Hls.isSupported()) {
@@ -42,9 +44,14 @@ export const LivestreamPopup: React.FC = () => {
         hls.loadSource(streamUrl);
         hls.attachMedia(videoRef.current);
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          videoRef.current?.play().catch(e => console.log("Auto-play blocked:", e));
+          videoRef.current?.play().catch(() => {});
         });
-        hls.on(Hls.Events.FRAG_BUFFERED, () => setBuffering(false));
+        
+        hls.on(Hls.Events.FRAG_BUFFERED, () => {
+          setBuffering(false);
+          setIsVideoLoading(false);
+        });
+
         hls.on(Hls.Events.ERROR, (_, data) => {
           if (data.fatal) {
             switch (data.type) {
@@ -68,11 +75,11 @@ export const LivestreamPopup: React.FC = () => {
     if (!url) return '';
     if (url.includes('youtube.com/watch?v=')) {
       const id = url.split('v=')[1]?.split('&')[0];
-      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&rel=0`;
+      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&rel=0&modestbranding=1`;
     }
     if (url.includes('youtu.be/')) {
       const id = url.split('youtu.be/')[1]?.split('?')[0];
-      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&rel=0`;
+      return `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&rel=0&modestbranding=1`;
     }
     return url;
   };
@@ -92,6 +99,7 @@ export const LivestreamPopup: React.FC = () => {
   };
 
   const handleSelectChannel = (channel: TvChannel) => {
+    setIsVideoLoading(true);
     setSelectedChannel(channel);
     setShowChannelList(false);
   };
@@ -133,13 +141,13 @@ export const LivestreamPopup: React.FC = () => {
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center md:p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="absolute inset-0 bg-black/95 backdrop-blur-xl"
             />
 
             <motion.div
@@ -149,50 +157,49 @@ export const LivestreamPopup: React.FC = () => {
                 opacity: 1, 
                 scale: 1, 
                 y: 0,
-                width: isMaximized ? '98vw' : showChannelList ? 'min(95vw, 600px)' : 'min(95vw, 900px)',
-                maxHeight: isMaximized ? '95vh' : '90vh'
+                width: isMaximized ? '100vw' : showChannelList ? 'min(95vw, 600px)' : 'min(98vw, 1100px)',
+                height: isMaximized ? '100vh' : 'auto',
+                maxHeight: '100vh'
               }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-zinc-950 rounded-[2.5rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 flex flex-col"
+              className={`relative bg-zinc-950 overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 flex flex-col ${
+                isMaximized ? 'rounded-none' : 'rounded-3xl md:rounded-[2.5rem]'
+              }`}
             >
               {/* Header */}
-              <div className="p-5 flex items-center justify-between bg-zinc-900/50 border-b border-white/5 backdrop-blur-md z-10">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 shadow-inner">
-                    <Tv className="w-5 h-5 text-indigo-500" />
+              <div className="p-4 md:p-5 flex items-center justify-between bg-zinc-900/40 border-b border-white/5 backdrop-blur-md z-20 shrink-0">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                    <Tv className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                       {showChannelList ? 'Transmission Hub' : selectedChannel?.name}
-                       {!showChannelList && <span className="bg-red-500 text-[8px] px-1.5 py-0.5 rounded font-black tracking-widest">LIVE</span>}
+                  <div className="min-w-0">
+                    <h3 className="text-xs md:text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-2 truncate">
+                       {showChannelList ? 'TV HUB' : selectedChannel?.name}
+                       {!showChannelList && <span className="bg-red-500 text-[7px] md:text-[8px] px-1 md:px-1.5 py-0.5 rounded font-black tracking-widest text-white shrink-0">LIVE</span>}
                     </h3>
-                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-tighter">
-                      {showChannelList ? `${tvChannels.length} Active Channels Available` : 'High Definition Secure Feed'}
-                    </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 md:gap-2">
                   {!showChannelList && (
                     <button
                       onClick={() => setShowChannelList(true)}
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 transition-all border border-white/10"
-                      title="Channel List"
+                      className="p-2 md:p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 transition-all border border-white/10"
                     >
                       <Globe className="w-4 h-4" />
                     </button>
                   )}
                   <button
                     onClick={() => setIsMaximized(!isMaximized)}
-                    className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 transition-all border border-white/10"
+                    className="hidden md:block p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 transition-all border border-white/10"
                   >
                     {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all border border-red-500/20"
+                    className="p-2 md:p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-all border border-red-500/20"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
               </div>
@@ -203,47 +210,39 @@ export const LivestreamPopup: React.FC = () => {
                   {showChannelList ? (
                     <motion.div
                       key="list"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20 }}
-                      className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6"
                     >
                       {tvChannels.map((channel, idx) => (
                         <motion.button
                           key={channel.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: idx * 0.05 }}
                           onClick={() => handleSelectChannel(channel)}
-                          className={`group relative p-4 rounded-3xl border transition-all text-left overflow-hidden ${
+                          className={`group relative p-4 md:p-6 rounded-2xl md:rounded-[2rem] border transition-all text-left overflow-hidden ${
                             selectedChannel?.id === channel.id 
-                            ? 'bg-indigo-600 border-indigo-400 shadow-[0_0_20px_rgba(79,70,229,0.3)]' 
-                            : 'bg-zinc-900 border-white/5 hover:border-indigo-500/50 hover:bg-zinc-800'
+                            ? 'bg-indigo-600 border-indigo-400 shadow-2xl' 
+                            : 'bg-zinc-900/50 border-white/5 hover:border-indigo-500/50 hover:bg-zinc-800'
                           }`}
                         >
-                          {/* Background Glow */}
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          
                           <div className="relative flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
+                            <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl md:rounded-[1.25rem] flex items-center justify-center shrink-0 ${
                               selectedChannel?.id === channel.id ? 'bg-white/20' : 'bg-indigo-500/10'
                             }`}>
-                              <Zap className={`w-6 h-6 ${selectedChannel?.id === channel.id ? 'text-white' : 'text-indigo-500'}`} />
+                              <Zap className={`w-6 h-6 md:w-7 md:h-7 ${selectedChannel?.id === channel.id ? 'text-white' : 'text-indigo-500'}`} />
                             </div>
                             <div className="flex-1 min-w-0">
-                               <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[8px] px-1.5 py-0.5 rounded font-black tracking-widest uppercase ${
-                                  selectedChannel?.id === channel.id ? 'bg-white text-indigo-600' : 'bg-red-500 text-white'
-                                }`}>
-                                  {channel.badge}
-                                </span>
-                                <span className="text-[10px] text-white/40 font-bold uppercase tracking-tighter">CH-{idx + 1}</span>
-                              </div>
-                              <h4 className="text-sm font-black text-white truncate uppercase tracking-widest">{channel.name}</h4>
+                               <span className={`text-[6px] md:text-[8px] px-1.5 py-0.5 rounded font-black tracking-widest uppercase mb-1.5 inline-block ${
+                                 selectedChannel?.id === channel.id ? 'bg-white text-indigo-600' : 'bg-red-500 text-white'
+                               }`}>
+                                 {channel.badge}
+                               </span>
+                              <h4 className="text-sm md:text-base font-black text-white truncate uppercase tracking-widest">{channel.name}</h4>
                             </div>
-                            <ChevronRight className={`w-5 h-5 transition-transform group-hover:translate-x-1 ${
-                              selectedChannel?.id === channel.id ? 'text-white' : 'text-white/20'
-                            }`} />
+                            <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white transition-all transform group-hover:translate-x-1" />
                           </div>
                         </motion.button>
                       ))}
@@ -254,84 +253,116 @@ export const LivestreamPopup: React.FC = () => {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="flex flex-col"
+                      className="flex flex-col h-full"
                     >
                       {/* Player Area */}
-                      <div className="relative aspect-video bg-zinc-950 group/player border-b border-white/5 overflow-hidden">
-                        {/* Watermark/Credit (Bottom Left) */}
-                        <div className="absolute bottom-4 left-4 z-20 pointer-events-none transition-opacity duration-500 opacity-30 group-hover/player:opacity-100">
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                              Made by - Jahed Hasan
-                            </span>
-                          </div>
+                      <div className={`relative bg-zinc-950 group/player border-b border-white/5 flex flex-col justify-center overflow-hidden ${
+                         isMaximized ? 'flex-1' : 'aspect-video'
+                      }`}>
+                        {/* Watermark/Credit (Bottom Left - Extra Small) */}
+                        <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 z-30 pointer-events-none transition-opacity duration-500 opacity-20 group-hover/player:opacity-60">
+                           <span className="text-[6px] md:text-[8px] font-black text-white/50 uppercase tracking-[0.3em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                             Made by - Jahed Hasan
+                           </span>
                         </div>
 
                         {/* Top-right Status Indicators (Subtle) */}
-                        <div className="absolute top-4 right-4 z-20 pointer-events-none opacity-40 group-hover/player:opacity-100 transition-opacity">
-                           <div className="flex items-center gap-2">
-                             <div className="flex flex-col items-end">
-                               <span className="text-[8px] font-mono text-indigo-400 font-bold uppercase tracking-tighter">HD Transmission</span>
-                               <span className="text-[7px] font-mono text-white/50 uppercase tracking-widest">{selectedChannel?.badge} FEED</span>
+                        {!isVideoLoading && (
+                          <div className="absolute top-2 md:top-4 right-2 md:right-4 z-30 pointer-events-none opacity-0 group-hover/player:opacity-40 transition-opacity">
+                             <div className="flex items-center gap-2">
+                               <span className="text-[6px] md:text-[8px] font-mono text-white/50 uppercase tracking-widest">
+                                 {hlsStream ? 'AUTO (ADAPTIVE)' : 'FIXED-STREAM'}
+                               </span>
+                               <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-red-500 animate-pulse" />
                              </div>
-                             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                           </div>
-                        </div>
+                          </div>
+                        )}
 
-                        {isIframe ? (
-                          <div className="w-full h-full [filter:brightness(1.05)_contrast(1.1)_saturate(1.2)]">
+                        <div className="w-full h-full [filter:brightness(1.05)_contrast(1.1)_saturate(1.3)] origin-center transition-transform duration-700">
+                          {isIframe ? (
                             <iframe
                               src={finalEmbedUrl}
+                              onLoad={() => setIsVideoLoading(false)}
                               className="w-full h-full border-0"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                               allowFullScreen
                             />
-                          </div>
-                        ) : (
-                          <video
-                            ref={videoRef}
-                            controls
-                            autoPlay
-                            playsInline
-                            className="w-full h-full object-contain [filter:brightness(1.05)_contrast(1.1)_saturate(1.2)]"
-                            poster="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80&w=1200"
-                          />
-                        )}
+                          ) : (
+                            <div className="relative w-full h-full">
+                              <video
+                                ref={videoRef}
+                                onCanPlay={() => setIsVideoLoading(false)}
+                                onWaiting={() => setBuffering(true)}
+                                onPlaying={() => setBuffering(false)}
+                                controls
+                                autoPlay
+                                playsInline
+                                className="w-full h-full object-contain"
+                                poster="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&q=80&w=1200"
+                              />
+                            </div>
+                          )}
+                        </div>
 
-                        {buffering && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                             <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-                               <Activity className="w-10 h-10 text-indigo-500" />
-                             </motion.div>
+                        {/* Animated Loading/Buffering Layer */}
+                        {(isVideoLoading || buffering) && (
+                          <div className="absolute inset-0 z-40 flex items-center justify-center bg-zinc-950/90 backdrop-blur-md">
+                             <div className="flex flex-col items-center gap-6">
+                               <div className="relative">
+                                 <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                  className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.2)]"
+                                 />
+                                 <Tv className="absolute inset-0 m-auto w-5 h-5 md:w-6 md:h-6 text-indigo-400 animate-pulse" />
+                               </div>
+                               <div className="text-center">
+                                 <p className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-[0.4em] mb-1">
+                                   Optimizing Feed
+                                 </p>
+                                 <div className="flex items-center justify-center gap-1">
+                                   {[...Array(3)].map((_, i) => (
+                                     <motion.div
+                                      key={i}
+                                      animate={{ scale: [1, 1.5, 1] }}
+                                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                                      className="w-1 h-1 rounded-full bg-indigo-500/40"
+                                     />
+                                   ))}
+                                 </div>
+                               </div>
+                             </div>
                           </div>
                         )}
                       </div>
 
-                      {/* Mini Channel List Below Player */}
-                      <div className="p-4 bg-zinc-900/30">
-                        <div className="flex items-center gap-2 mb-4">
-                           <Play className="w-3 h-3 text-indigo-500 fill-indigo-500" />
-                           <h5 className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">Quick Switch Channel</h5>
+                      {/* Mini Switch Panel Below Player */}
+                      <div className="p-3 md:p-4 bg-zinc-900/20 border-t border-white/5 shrink-0">
+                        <div className="flex items-center gap-2 mb-3 px-1">
+                           <div className="w-1 h-1 rounded-full bg-indigo-500" />
+                           <h5 className="text-[8px] md:text-[10px] font-black text-white/40 uppercase tracking-[0.25em]">Switch Feed</h5>
                         </div>
-                        <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                        <div className="flex gap-2.5 overflow-x-auto pb-2 custom-scrollbar no-scrollbar scroll-smooth">
                            {tvChannels.map((channel) => (
                             <button
                               key={channel.id}
                               onClick={() => handleSelectChannel(channel)}
-                              className={`flex-shrink-0 px-4 py-3 rounded-2xl border transition-all flex items-center gap-3 min-w-[160px] ${
+                              className={`flex-shrink-0 px-4 py-3 rounded-2xl border transition-all flex items-center gap-3 min-w-[150px] md:min-w-[180px] ${
                                 selectedChannel?.id === channel.id 
                                 ? 'bg-indigo-600/20 border-indigo-500 shadow-lg' 
-                                : 'bg-black/40 border-white/5 hover:bg-white/5'
+                                : 'bg-white/5 border-white/5 hover:bg-white/[0.08]'
                               }`}
                             >
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                selectedChannel?.id === channel.id ? 'bg-indigo-500' : 'bg-white/5'
+                              <div className={`w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                selectedChannel?.id === channel.id ? 'bg-indigo-500 shadow-lg' : 'bg-white/5'
                               }`}>
-                                <Tv className="w-4 h-4 text-white" />
+                                <Zap className={`w-4 h-4 md:w-5 md:h-5 text-white ${selectedChannel?.id === channel.id ? 'animate-pulse' : ''}`} />
                               </div>
                               <div className="text-left overflow-hidden">
-                                <p className="text-[10px] font-black text-white uppercase tracking-wider truncate mb-0.5">{channel.name}</p>
-                                <span className="text-[8px] text-white/40 uppercase font-bold">{channel.badge} Feed</span>
+                                <p className="text-[9px] md:text-[10px] font-black text-white uppercase tracking-wider truncate mb-0.5">{channel.name}</p>
+                                <span className={`text-[6px] md:text-[7px] uppercase font-bold tracking-widest ${
+                                  selectedChannel?.id === channel.id ? 'text-indigo-400' : 'text-white/20'
+                                }`}>{channel.badge}</span>
                               </div>
                             </button>
                            ))}
