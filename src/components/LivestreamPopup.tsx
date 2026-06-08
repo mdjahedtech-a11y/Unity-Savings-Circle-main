@@ -15,6 +15,7 @@ export const LivestreamPopup: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const [isVideoLoading, setIsVideoLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
   const streamUrl = selectedChannel?.url || '';
   
   // Detect if the link is a direct video or HLS stream
@@ -28,9 +29,21 @@ export const LivestreamPopup: React.FC = () => {
            cleanUrl.endsWith('.mov');
   };
 
+  const toggleFullScreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
   useEffect(() => {
     let hls: Hls | null = null;
     setIsVideoLoading(true);
+    setBuffering(false);
 
     if (isOpen && videoRef.current && isHls(streamUrl)) {
       if (Hls.isSupported()) {
@@ -38,6 +51,12 @@ export const LivestreamPopup: React.FC = () => {
           enableWorker: true,
           lowLatencyMode: true,
           backBufferLength: 90,
+          maxBufferLength: 60,
+          maxMaxBufferLength: 120,
+          maxBufferHole: 0.5,
+          initialLiveManifestSize: 2,
+          manifestLoadingMaxRetry: 4,
+          levelLoadingMaxRetry: 4,
           abrEwmaFastLive: 1,
           abrEwmaSlowLive: 5,
         });
@@ -47,8 +66,7 @@ export const LivestreamPopup: React.FC = () => {
           videoRef.current?.play().catch(() => {});
         });
         
-        hls.on(Hls.Events.FRAG_BUFFERED, () => {
-          setBuffering(false);
+        hls.on(Hls.Events.LEVEL_LOADED, () => {
           setIsVideoLoading(false);
         });
 
@@ -69,7 +87,7 @@ export const LivestreamPopup: React.FC = () => {
     return () => {
       if (hls) hls.destroy();
     };
-  }, [isOpen, selectedChannel]);
+  }, [isOpen, selectedChannel, streamUrl]);
 
   const getEmbedUrl = (url: string) => {
     if (!url) return '';
@@ -190,10 +208,18 @@ export const LivestreamPopup: React.FC = () => {
                     </button>
                   )}
                   <button
+                    onClick={toggleFullScreen}
+                    className="hidden md:block p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 transition-all border border-indigo-500/20"
+                    title="Fullscreen"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                  </button>
+                  <button
                     onClick={() => setIsMaximized(!isMaximized)}
                     className="hidden md:block p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 transition-all border border-white/10"
+                    title={isMaximized ? 'Restore' : 'Expand Modal'}
                   >
-                    {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    {isMaximized ? <Minimize2 className="w-4 h-4" /> : <ExternalLink className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={() => setIsOpen(false)}
@@ -256,29 +282,35 @@ export const LivestreamPopup: React.FC = () => {
                       className="flex flex-col h-full"
                     >
                       {/* Player Area */}
-                      <div className={`relative bg-zinc-950 group/player border-b border-white/5 flex flex-col justify-center overflow-hidden ${
+                      <div 
+                        ref={containerRef}
+                        className={`relative bg-zinc-950 group/player border-b border-white/5 flex flex-col justify-center overflow-hidden transition-all duration-500 ${
                          isMaximized ? 'flex-1' : 'aspect-video'
                       }`}>
-                        {/* Watermark/Credit (Bottom Left - Extra Small) */}
+                        {/* Vivid Filter Overlay */}
+                        <div className="absolute inset-0 z-10 pointer-events-none [filter:brightness(1.05)_contrast(1.15)_saturate(1.4)] mix-blend-overlay opacity-20 bg-gradient-to-tr from-indigo-500/10 via-transparent to-purple-500/10" />
+
+                        {/* Watermark/Credit (Bottom Left) */}
                         <div className="absolute bottom-2 md:bottom-4 left-2 md:left-4 z-30 pointer-events-none transition-opacity duration-500 opacity-40 group-hover/player:opacity-90">
-                           <span className="text-[6px] md:text-[8px] font-black text-white/70 uppercase tracking-[0.3em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                           <span className="text-[5px] md:text-[7px] font-black text-white/60 uppercase tracking-[0.4em] drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
                              Made by - Jahed Hasan
                            </span>
                         </div>
 
-                        {/* Top-right Status Indicators (Subtle) */}
+                        {/* Top-right Status Indicators */}
                         {!isVideoLoading && (
                           <div className="absolute top-2 md:top-4 right-2 md:right-4 z-30 pointer-events-none opacity-0 group-hover/player:opacity-40 transition-opacity">
                              <div className="flex items-center gap-2">
-                               <span className="text-[6px] md:text-[8px] font-mono text-white/50 uppercase tracking-widest">
-                                 {hlsStream ? 'AUTO (ADAPTIVE)' : 'FIXED-STREAM'}
+                               <span className="text-[6px] md:text-[8px] font-mono text-white/50 uppercase tracking-widest bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
+                                 {hlsStream ? 'ADAPTIVE HD' : 'DIRECT FEED'}
                                </span>
                                <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-red-500 animate-pulse" />
                              </div>
                           </div>
                         )}
 
-                        <div className="w-full h-full [filter:brightness(1.05)_contrast(1.1)_saturate(1.3)] origin-center transition-transform duration-700">
+                        {/* Video Content */}
+                        <div className="w-full h-full [filter:brightness(1.05)_contrast(1.1)_saturate(1.3)] origin-center">
                           {isIframe ? (
                             <iframe
                               src={finalEmbedUrl}
@@ -293,7 +325,10 @@ export const LivestreamPopup: React.FC = () => {
                                 ref={videoRef}
                                 onCanPlay={() => setIsVideoLoading(false)}
                                 onWaiting={() => setBuffering(true)}
-                                onPlaying={() => setBuffering(false)}
+                                onPlaying={() => {
+                                  setBuffering(false);
+                                  setIsVideoLoading(false);
+                                }}
                                 controls
                                 autoPlay
                                 playsInline
@@ -303,37 +338,6 @@ export const LivestreamPopup: React.FC = () => {
                             </div>
                           )}
                         </div>
-
-                        {/* Animated Loading/Buffering Layer */}
-                        {(isVideoLoading || buffering) && (
-                          <div className="absolute inset-0 z-40 flex items-center justify-center bg-zinc-950/90 backdrop-blur-md">
-                             <div className="flex flex-col items-center gap-6">
-                               <div className="relative">
-                                 <motion.div
-                                  animate={{ rotate: 360 }}
-                                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                  className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-indigo-500/20 border-t-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.2)]"
-                                 />
-                                 <Tv className="absolute inset-0 m-auto w-5 h-5 md:w-6 md:h-6 text-indigo-400 animate-pulse" />
-                               </div>
-                               <div className="text-center">
-                                 <p className="text-[8px] md:text-[10px] font-black text-white uppercase tracking-[0.4em] mb-1">
-                                   Optimizing Feed
-                                 </p>
-                                 <div className="flex items-center justify-center gap-1">
-                                   {[...Array(3)].map((_, i) => (
-                                     <motion.div
-                                      key={i}
-                                      animate={{ scale: [1, 1.5, 1] }}
-                                      transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                                      className="w-1 h-1 rounded-full bg-indigo-500/40"
-                                     />
-                                   ))}
-                                 </div>
-                               </div>
-                             </div>
-                          </div>
-                        )}
                       </div>
 
                       {/* Mini Switch Panel Below Player */}
