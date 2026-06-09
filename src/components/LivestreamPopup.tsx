@@ -50,15 +50,17 @@ export const LivestreamPopup: React.FC = () => {
         hls = new Hls({
           enableWorker: true,
           lowLatencyMode: true,
-          backBufferLength: 90,
-          maxBufferLength: 60,
-          maxMaxBufferLength: 120,
+          backBufferLength: 60,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60,
           maxBufferHole: 0.5,
-          initialLiveManifestSize: 2,
-          manifestLoadingMaxRetry: 4,
-          levelLoadingMaxRetry: 4,
+          initialLiveManifestSize: 1,
+          manifestLoadingMaxRetry: 10,
+          levelLoadingMaxRetry: 10,
+          fragLoadingMaxRetry: 10,
+          startLevel: 0,
           abrEwmaFastLive: 1,
-          abrEwmaSlowLive: 5,
+          abrEwmaSlowLive: 3,
         });
         hls.loadSource(streamUrl);
         hls.attachMedia(videoRef.current);
