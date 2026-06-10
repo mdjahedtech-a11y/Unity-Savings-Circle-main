@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Tv, X, Maximize2, Minimize2, ExternalLink, Activity, Play, ChevronRight, Globe, Zap } from 'lucide-react';
+import { Tv, X, Maximize2, Minimize2, ExternalLink, Activity, Play, ChevronRight, Globe, Zap, RotateCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { TvChannel } from '../types';
 import Hls from 'hls.js';
@@ -29,14 +29,39 @@ export const LivestreamPopup: React.FC = () => {
            cleanUrl.endsWith('.mov');
   };
 
-  const toggleFullScreen = () => {
+  const toggleFullScreen = async () => {
     if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
-    } else {
-      document.exitFullscreen();
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.error("Fullscreen error:", err);
+    }
+  };
+
+  const handleRotate = async () => {
+    if (!containerRef.current) return;
+    
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+        // Try to lock orientation to landscape on mobile
+        if (window.screen?.orientation?.lock) {
+          await window.screen.orientation.lock('landscape').catch(() => {
+            // Silently fail if not supported
+          });
+        }
+      } else {
+        await document.exitFullscreen();
+        if (window.screen?.orientation?.unlock) {
+          window.screen.orientation.unlock();
+        }
+      }
+    } catch (err) {
+      console.error("Rotation error:", err);
     }
   };
 
@@ -212,8 +237,15 @@ export const LivestreamPopup: React.FC = () => {
                     </button>
                   )}
                   <button
+                    onClick={handleRotate}
+                    className="p-2 md:p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 transition-all border border-indigo-500/20"
+                    title="Rotate to Landscape"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                  </button>
+                  <button
                     onClick={toggleFullScreen}
-                    className="hidden md:block p-2.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 transition-all border border-indigo-500/20"
+                    className="hidden md:block p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 transition-all border border-white/10"
                     title="Fullscreen"
                   >
                     <Maximize2 className="w-4 h-4" />
