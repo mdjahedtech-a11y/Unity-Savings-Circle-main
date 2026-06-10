@@ -50,15 +50,17 @@ export const LivestreamPopup: React.FC = () => {
         hls = new Hls({
           enableWorker: true,
           lowLatencyMode: true,
-          backBufferLength: 60,
-          maxBufferLength: 30,
-          maxMaxBufferLength: 60,
+          capLevelToPlayerSize: true, // Save bandwidth based on player size
+          backBufferLength: 30,       // Keep less history to save memory
+          maxBufferLength: 20,       // Balanced buffer for stability
+          maxMaxBufferLength: 40,
           maxBufferHole: 0.5,
-          initialLiveManifestSize: 1,
-          manifestLoadingMaxRetry: 10,
-          levelLoadingMaxRetry: 10,
-          fragLoadingMaxRetry: 10,
-          startLevel: 0,
+          liveSyncDurationCount: 3,  // Number of fragments to stay behind live edge
+          liveMaxLatencyDurationCount: 10, // Max delay before skipping to catch up
+          manifestLoadingMaxRetry: 15,
+          levelLoadingMaxRetry: 15,
+          fragLoadingMaxRetry: 15,
+          fragLoadingTimeOut: 15000,
           abrEwmaFastLive: 1,
           abrEwmaSlowLive: 3,
         });
