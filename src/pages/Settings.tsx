@@ -9,6 +9,7 @@ import { MarqueeManager } from '../components/MarqueeManager';
 import { SliderManager } from '../components/SliderManager';
 import { AdminNotificationCenter } from '../components/AdminNotificationCenter';
 import { TvChannelManager } from '../components/TvChannelManager';
+import { TvSponsorManager } from '../components/TvSponsorManager';
 
 export default function Settings() {
   const { isAdmin, isMainAdmin, systemSettings, updateSettings } = useAuth();
@@ -82,6 +83,15 @@ export default function Settings() {
           className="md:col-span-2"
         >
           <TvChannelManager />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className="md:col-span-2"
+        >
+          <TvSponsorManager />
         </motion.div>
 
         <motion.div

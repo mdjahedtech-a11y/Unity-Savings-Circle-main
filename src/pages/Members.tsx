@@ -135,9 +135,30 @@ export default function Members() {
 
       if (error) throw error;
       
+      // Optimistic Update for instant UI feedback
+      const currentMemberId = memberToRevokePayment.id;
+      setMonthlyPayments(prev => {
+        const next = new Set(prev);
+        next.delete(currentMemberId);
+        return next;
+      });
+      
+      // Update member list savings optimistically
+      setMembers(prev => prev.map(m => {
+        if (m.id === currentMemberId) {
+          // We don't know the exact amount to subtract here easily without fetching, 
+          // but removing the paid status in the UI is the most important part.
+          // fetchMembers will fix the exact total_savings shortly.
+          return m;
+        }
+        return m;
+      }));
+
       toast.success(`Payment for ${selectedMonth} revoked`);
       setIsRevokePaymentModalOpen(false);
       setMemberToRevokePayment(null);
+      
+      // Fetch in background to sync with server
       fetchMembers();
     } catch (error: any) {
       console.error('Error revoking payment:', error);
@@ -310,28 +331,42 @@ export default function Members() {
 
       if (error) throw error;
       
+      // Optimistic Update for instant UI feedback
+      const paidMemberId = selectedMember.id;
+      setMonthlyPayments(prev => new Set([...prev, paidMemberId]));
+      
+      const totalPaid = (isNaN(amount) ? 0 : amount) + (isNaN(penalty) ? 0 : penalty);
+      setMembers(prev => prev.map(m => 
+        m.id === paidMemberId 
+          ? { ...m, total_savings: (m.total_savings || 0) + totalPaid } 
+          : m
+      ));
+
       toast.success('Payment recorded successfully');
-
-      // Send Push Notification
-      try {
-        const tokensQuery = query(collection(db, 'fcm_tokens'), where('userId', '==', selectedMember.id));
-        const tokensSnapshot = await getDocs(tokensQuery);
-        
-        const notificationPromises = tokensSnapshot.docs.map(doc => {
-          const token = doc.data().token;
-          return sendPushNotification(
-            token, 
-            'Payment Confirmed! ✅', 
-            `Your payment of ৳${(amount + penalty).toLocaleString()} for ${paymentMonth} ${year} has been received.`
-          );
-        });
-        
-        await Promise.all(notificationPromises);
-      } catch (notifyError) {
-        console.error('Error sending payment notification:', notifyError);
-      }
-
       setIsPaymentModalOpen(false);
+
+      // Send Push Notification in background (non-blocking)
+      (async () => {
+        try {
+          const tokensQuery = query(collection(db, 'fcm_tokens'), where('userId', '==', paidMemberId));
+          const tokensSnapshot = await getDocs(tokensQuery);
+          
+          const notificationPromises = tokensSnapshot.docs.map(doc => {
+            const token = doc.data().token;
+            return sendPushNotification(
+              token, 
+              'Payment Confirmed! ✅', 
+              `Your payment of ৳${totalPaid.toLocaleString()} for ${paymentMonth} ${year} has been received.`
+            );
+          });
+          
+          await Promise.all(notificationPromises);
+        } catch (notifyError) {
+          console.error('Error sending payment notification:', notifyError);
+        }
+      })();
+
+      // Background fetch to sync with server
       fetchMembers();
     } catch (error: any) {
       console.error('Error adding payment:', error);

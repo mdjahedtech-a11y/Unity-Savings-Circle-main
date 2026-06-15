@@ -4,6 +4,7 @@ import { Tv, X, Maximize2, Minimize2, ExternalLink, Activity, Play, ChevronRight
 import { useAuth } from '../context/AuthContext';
 import { TvChannel } from '../types';
 import Hls from 'hls.js';
+import { SponsorOverlay } from './SponsorOverlay';
 
 export const LivestreamPopup: React.FC = () => {
   const { tvChannels } = useAuth();
@@ -49,8 +50,9 @@ export const LivestreamPopup: React.FC = () => {
       if (!document.fullscreenElement) {
         await containerRef.current.requestFullscreen();
         // Try to lock orientation to landscape on mobile
-        if (window.screen?.orientation?.lock) {
-          await window.screen.orientation.lock('landscape').catch(() => {
+        const orientation = window.screen.orientation as any;
+        if (orientation && orientation.lock) {
+          await orientation.lock('landscape').catch(() => {
             // Silently fail if not supported
           });
         }
@@ -323,6 +325,9 @@ export const LivestreamPopup: React.FC = () => {
                         className={`relative bg-zinc-950 group/player border-b border-white/5 flex flex-col justify-center overflow-hidden transition-all duration-500 ${
                          isMaximized ? 'flex-1' : 'aspect-video'
                       }`}>
+                        {/* Sponsor Animation */}
+                        <SponsorOverlay />
+
                         {/* Vivid Filter Overlay */}
                         <div className="absolute inset-0 z-10 pointer-events-none [filter:brightness(1.05)_contrast(1.15)_saturate(1.4)] mix-blend-overlay opacity-20 bg-gradient-to-tr from-indigo-500/10 via-transparent to-purple-500/10" />
 

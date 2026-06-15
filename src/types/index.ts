@@ -73,3 +73,13 @@ export interface MarqueeText {
   is_active: boolean;
   created_at?: string;
 }
+
+export interface TvSponsor {
+  id: string;
+  name: string;
+  image_url?: string;
+  is_active: boolean;
+  show_interval_seconds: number;
+  display_duration_seconds: number;
+  updated_at?: string;
+}
