@@ -383,7 +383,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const fetchPromise = supabase
         .from('app_settings')
-        .select('id, show_dashboard, show_reports, show_investments, show_discussion, show_savings, livestream_url, livestream_badge')
+        .select('id, show_dashboard, show_reports, show_investments, show_discussion, show_savings, is_apps_off, livestream_url, livestream_badge')
         .maybeSingle();
 
       const { data, error } = await Promise.race([
@@ -404,7 +404,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           show_reports: true,
           show_investments: true,
           show_discussion: true,
-          show_savings: true
+          show_savings: true,
+          is_apps_off: false
         });
         return;
       }
@@ -420,6 +421,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           show_investments: true,
           show_discussion: true,
           show_savings: true,
+          is_apps_off: false,
           livestream_url: 'https://www.youtube.com/embed/live_stream?channel=YOUR_CHANNEL_ID',
           livestream_badge: 'FIFA'
         };
@@ -457,7 +459,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         show_reports: true,
         show_investments: true,
         show_discussion: true,
-        show_savings: true
+        show_savings: true,
+        is_apps_off: false
       });
     }
   };

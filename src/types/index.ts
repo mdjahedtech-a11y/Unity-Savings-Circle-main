@@ -62,6 +62,7 @@ export interface SystemSettings {
   show_investments: boolean;
   show_discussion: boolean;
   show_savings: boolean;
+  is_apps_off: boolean;
   livestream_url?: string;
   livestream_badge?: string;
   updated_at?: string;

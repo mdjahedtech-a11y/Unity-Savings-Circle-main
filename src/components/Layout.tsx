@@ -23,9 +23,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { Button } from './ui/Button';
 import { toast } from 'sonner';
+import { MaintenanceOverlay } from './MaintenanceOverlay';
 
 export default function Layout({ children, showSidebar = true }: { children: React.ReactNode, showSidebar?: boolean }) {
-  const { user, isAdmin, signOut, systemSettings } = useAuth();
+  const { user, isAdmin, isMainAdmin, signOut, systemSettings } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
@@ -77,12 +78,13 @@ export default function Layout({ children, showSidebar = true }: { children: Rea
     { name: 'Reports', path: '/reports', icon: Calendar, key: 'show_reports' },
     { name: 'Members', path: '/members', icon: Users, key: 'always_visible' },
     { name: 'Dashboard', path: '/', icon: Home, key: 'show_dashboard', isCenter: true },
+    { name: 'Investments', path: '/investments', icon: StickyNote, key: 'show_investments' },
     { name: 'Discussion', path: '/discussion', icon: Bell, key: 'show_discussion' },
     { name: 'My Savings', path: '/my-savings', icon: User, key: 'show_savings' },
   ].filter(item => {
     if (item.key === 'always_visible') return true;
     return (systemSettings as any)?.[item.key] !== false;
-  }), [systemSettings, isAdmin]);
+  }), [systemSettings]);
 
   // Desktop sidebar items (more comprehensive)
   const desktopNavItems = React.useMemo(() => [
@@ -94,14 +96,14 @@ export default function Layout({ children, showSidebar = true }: { children: Rea
     { name: 'My Savings', path: '/my-savings', icon: Wallet, key: 'show_savings' },
     ...(isAdmin ? [{ name: 'Settings', path: '/settings', icon: SettingsIcon, key: 'admin_only' }] : []),
   ].filter(item => {
-    if (isAdmin) return true;
+    if (item.key === 'admin_only') return isAdmin;
     if (item.key === 'always_visible') return true;
-    if (item.key === 'admin_only') return false;
     return (systemSettings as any)?.[item.key] !== false;
   }), [isAdmin, systemSettings]);
 
   return (
     <div className="min-h-screen transition-colors duration-300 text-gray-900 dark:text-white font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      {systemSettings?.is_apps_off && !isMainAdmin && <MaintenanceOverlay />}
       {/* Exit Confirmation Modal */}
       <AnimatePresence>
         {showExitModal && (
