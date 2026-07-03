@@ -1,8 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { PowerOff, ShieldAlert, Zap, Lock } from 'lucide-react';
+import { PowerOff, ShieldAlert, Zap, Lock, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const MaintenanceOverlay: React.FC = () => {
+  const { signOut } = useAuth();
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-black">
       {/* Animated Background Layers */}
@@ -67,16 +70,28 @@ export const MaintenanceOverlay: React.FC = () => {
               The application has been temporarily disabled by the administrator for maintenance. Please check back later.
             </p>
 
-            {/* Status Pills */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
-                <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
-                <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest">Admin Locked</span>
+            {/* Actions */}
+            <div className="flex flex-col gap-4 items-center justify-center mb-8">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
+                  <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-pink-500 uppercase tracking-widest">Admin Locked</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
+                  <Zap className="w-3 h-3 text-indigo-400" />
+                  <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Maintenance</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
-                <Zap className="w-3 h-3 text-indigo-400" />
-                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Maintenance</span>
-              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => signOut()}
+                className="group flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
+              >
+                <LogOut className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
+                <span className="text-xs font-black text-zinc-400 group-hover:text-white uppercase tracking-widest">Sign Out</span>
+              </motion.button>
             </div>
 
             {/* Decorative Grid */}
